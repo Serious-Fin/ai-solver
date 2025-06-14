@@ -1,30 +1,71 @@
 package main
 
 import (
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type problem struct {
-	Id             int
-	Title          string
-	Description    string
-	TestScenarions []testScenario
+	Id          int        `json:"id"`
+	Title       string     `json:"title"`
+	Description string     `json:"description"`
+	TestCases   []testCase `json:"testCases"`
 }
 
-type testScenario struct {
-	Input  string
-	Output string
+type testCase struct {
+	Input  string `json:"input"`
+	Output string `json:"output"`
 }
 
-var problems = []problem{
+type APIError struct {
+	Message string `json:"message"`
+	Details string `json:"details,omitempty"`
+}
+
+func sendAPIErrorResponse(c *gin.Context, statusCode int, message string, err error) {
+	log.Printf("API_ERROR: Status=%d, Message='%s', InternalError='%v'", statusCode, message, err)
+
+	apiError := APIError{Message: message}
+	if gin.IsDebugging() {
+		apiError.Details = err.Error()
+	}
+	c.IndentedJSON(statusCode, apiError)
+}
+
+func ErrorHandlerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		if len(c.Errors) > 0 {
+			err := c.Errors.Last().Err
+
+			statusCode := http.StatusInternalServerError
+			message := "An unexpected server error encountered"
+
+			if errors.Is(err, sql.ErrNoRows) {
+				statusCode = http.StatusNotFound
+				message = "Resource not found"
+			}
+
+			sendAPIErrorResponse(c, statusCode, message, err)
+		}
+	}
+}
+
+var problems2 = []problem{
 	{
 		Id:          1,
 		Title:       "Largest Sum",
 		Description: "Find the largest sum foo bar",
-		TestScenarions: []testScenario{
+		TestCases: []testCase{
 			{
 				Input:  "[1, 2, 3]",
 				Output: "6",
@@ -39,7 +80,7 @@ var problems = []problem{
 		Id:          2,
 		Title:       "Maximum sub array",
 		Description: "Find the largest sub-array in the provided array",
-		TestScenarions: []testScenario{
+		TestCases: []testCase{
 			{
 				Input:  "[-8, -9, 10, 80, 30, -8]",
 				Output: "[10, 80, 30]",
@@ -52,8 +93,27 @@ var problems = []problem{
 	},
 }
 
+var db *sql.DB
+
 func main() {
+	var err error
+
+	// Connection to database
+	databaseName := "database.db"
+	db, err = sql.Open("sqlite3", fmt.Sprintf("./%s", databaseName))
+	if err != nil {
+		log.Fatalf("Error while opening database: %v", err)
+	}
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	log.Println("Successfully connected to database")
+	defer db.Close()
+
+	// Initializing router
 	router := gin.Default()
+	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", getProblems)
 	router.GET("/problems/:id", getProblemById)
 
@@ -61,6 +121,30 @@ func main() {
 }
 
 func getProblems(c *gin.Context) {
+	rows, err := db.Query("SELECT id, title, description, testCases FROM problems;")
+	if err != nil {
+		c.Error(err)
+	}
+	defer rows.Close()
+
+	problems := make([]problem, 0)
+	for rows.Next() {
+		var newProblem problem
+		var testCasesString string
+		err = rows.Scan(&newProblem.Id, &newProblem.Title, &newProblem.Description, &testCasesString)
+		if err != nil {
+			c.Error(err)
+		}
+		err := json.Unmarshal([]byte(testCasesString), &newProblem.TestCases)
+		if err != nil {
+			c.Error(err)
+		}
+		problems = append(problems, newProblem)
+	}
+	err = rows.Err()
+	if err != nil {
+		c.Error(err)
+	}
 	c.IndentedJSON(http.StatusOK, problems)
 }
 
@@ -74,7 +158,7 @@ func getProblemById(c *gin.Context) {
 		return
 	}
 
-	for _, problem := range problems {
+	for _, problem := range problems2 {
 		if problem.Id == stringifiedId {
 			c.IndentedJSON(http.StatusOK, problem)
 			return
