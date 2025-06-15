@@ -1,15 +1,19 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 type problem struct {
@@ -60,6 +64,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 }
 
 var db *sql.DB
+var chatGPTClient *openai.Client
 
 func main() {
 	var err error
@@ -77,11 +82,15 @@ func main() {
 	log.Println("Successfully connected to database")
 	defer db.Close()
 
+	// Connect to AI agents
+	chatGPTClient = openai.NewClient(os.Getenv("CHATGPT_KEY"))
+
 	// Initializing router
 	router := gin.Default()
 	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", getProblems)
 	router.GET("/problems/:id", getProblemById)
+	router.POST("/query/:sessionId", queryAgent)
 
 	router.Run("localhost:8080")
 }
@@ -138,3 +147,33 @@ func getProblemById(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusOK, newProblem)
 }
+
+func queryAgent(c *gin.Context) {
+	resp, err := chatGPTClient.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model: openai.GPT3Dot5Turbo,
+			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleUser,
+					Content: "Hello!",
+				},
+			},
+		},
+	)
+
+	if err != nil {
+		fmt.Printf("ChatCompletion error: %v\n", err)
+		return
+	}
+
+	fmt.Println(resp.Choices[0].Message.Content)
+}
+
+/*
+AI endpoint should:
+1. Read body parameter which should include user code
+2. Read body parameter which should include user message
+3. Read body parameter of used programming language
+4. Read previous context (lets say 5 last messages. Keep it in a queue in the style of system (always is)/user/assistant/user/assistent/user/assistant)
+*/
