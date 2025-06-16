@@ -16,14 +16,14 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-type problem struct {
+type Problem struct {
 	Id          int        `json:"id"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
-	TestCases   []testCase `json:"testCases"`
+	TestCases   []TestCase `json:"testCases"`
 }
 
-type testCase struct {
+type TestCase struct {
 	Input  string `json:"input"`
 	Output string `json:"output"`
 }
@@ -31,6 +31,17 @@ type testCase struct {
 type APIError struct {
 	Message string `json:"message"`
 	Details string `json:"details,omitempty"`
+}
+
+type QueryRequest struct {
+	Input    string `form:"input"`
+	Code     string `form:"code"`
+	Language string `form:"language"`
+	Agent    string `form:"agent"`
+}
+
+type Uri struct {
+	SessionId string `uri:"sessionId" binding:"required"`
 }
 
 func sendAPIErrorResponse(c *gin.Context, statusCode int, message string, err error) {
@@ -103,21 +114,21 @@ func getProblems(c *gin.Context) {
 	}
 	defer rows.Close()
 
-	problems := make([]problem, 0)
+	problems := make([]Problem, 0)
 	for rows.Next() {
-		var newProblem problem
+		var problem Problem
 		var testCasesString string
-		err = rows.Scan(&newProblem.Id, &newProblem.Title, &newProblem.Description, &testCasesString)
+		err = rows.Scan(&problem.Id, &problem.Title, &problem.Description, &testCasesString)
 		if err != nil {
 			c.Error(err)
 			return
 		}
-		err := json.Unmarshal([]byte(testCasesString), &newProblem.TestCases)
+		err := json.Unmarshal([]byte(testCasesString), &problem.TestCases)
 		if err != nil {
 			c.Error(err)
 			return
 		}
-		problems = append(problems, newProblem)
+		problems = append(problems, problem)
 	}
 	err = rows.Err()
 	if err != nil {
@@ -131,29 +142,65 @@ func getProblemById(c *gin.Context) {
 	id := c.Param("id")
 	row := db.QueryRow("SELECT id, title, description, testCases FROM problems WHERE id = ?;", id)
 
-	var newProblem problem
+	var problem Problem
 	var testCaseString string
-	err := row.Scan(&newProblem.Id, &newProblem.Title, &newProblem.Description, &testCaseString)
+	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	err = json.Unmarshal([]byte(testCaseString), &newProblem.TestCases)
+	err = json.Unmarshal([]byte(testCaseString), &problem.TestCases)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	c.IndentedJSON(http.StatusOK, newProblem)
+	c.IndentedJSON(http.StatusOK, problem)
 }
 
 func queryAgent(c *gin.Context) {
+	var uri Uri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.Error(err)
+		return
+	}
+
+	var body QueryRequest
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	var err error
+	var resp string
+	if body.Agent == "chatgpt" {
+		resp, err = queryChatGPT(uri.SessionId, body.Input)
+	} else {
+		err = fmt.Errorf("Agent of type %s does not exist", body.Agent)
+	}
+
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, resp)
+}
+
+func queryChatGPT(sessionId string, userInput string) (string, error) {
+	// get user previous queries
+
+	// make query
 	resp, err := chatGPTClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model: openai.GPT3Dot5Turbo,
 			Messages: []openai.ChatCompletionMessage{
+				{
+					Role:    openai.ChatMessageRoleSystem,
+					Content: "You are an expert Go programmer solving LeetCode problems. Only return the code. Do not include any text, explanations, or markdown formatting outside of the code block itself. The code must be runnable. Leave main method structure as is, only modify content within or helper classes.",
+				},
 				{
 					Role:    openai.ChatMessageRoleUser,
 					Content: "Hello!",
@@ -163,11 +210,13 @@ func queryAgent(c *gin.Context) {
 	)
 
 	if err != nil {
-		fmt.Printf("ChatCompletion error: %v\n", err)
-		return
+		return "", err
 	}
 
-	fmt.Println(resp.Choices[0].Message.Content)
+	// advance query
+
+	// return response
+	return resp.Choices[0].Message.Content, nil
 }
 
 /*
