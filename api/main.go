@@ -76,9 +76,17 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 
 var db *sql.DB
 var chatGPTClient *openai.Client
+var contextCache *ContextCache
+var maxUserContext = 5
 
 func main() {
 	var err error
+
+	// Iniialize cache
+	contextCache, err = NewContextCache(maxUserContext)
+	if err != nil {
+		log.Fatalf("Error creating context cache: %v", err)
+	}
 
 	// Connection to database
 	databaseName := "database.db"
@@ -177,7 +185,7 @@ func queryAgent(c *gin.Context) {
 	if body.Agent == "chatgpt" {
 		resp, err = queryChatGPT(uri.SessionId, body.Input)
 	} else {
-		err = fmt.Errorf("Agent of type %s does not exist", body.Agent)
+		err = fmt.Errorf("agent of type %s does not exist", body.Agent)
 	}
 
 	if err != nil {
@@ -189,40 +197,28 @@ func queryAgent(c *gin.Context) {
 }
 
 func queryChatGPT(sessionId string, userInput string) (string, error) {
-	// get user previous queries
+	previousContext := contextCache.Get(sessionId)
+	messages := make([]openai.ChatCompletionMessage, 0)
+	// TODO: also add system prompt
+	for _, context := range previousContext {
+		messages = append(messages, openai.ChatCompletionMessage{
+			Role:    context.Role,
+			Content: context.Content,
+		})
+	}
 
-	// make query
 	resp, err := chatGPTClient.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: openai.GPT3Dot5Turbo,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleSystem,
-					Content: "You are an expert Go programmer solving LeetCode problems. Only return the code. Do not include any text, explanations, or markdown formatting outside of the code block itself. The code must be runnable. Leave main method structure as is, only modify content within or helper classes.",
-				},
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: "Hello!",
-				},
-			},
+			Model:    openai.GPT3Dot5Turbo,
+			Messages: messages,
 		},
 	)
-
 	if err != nil {
 		return "", err
 	}
 
-	// advance query
-
-	// return response
-	return resp.Choices[0].Message.Content, nil
+	aiOutput := resp.Choices[0].Message.Content
+	contextCache.Add(sessionId, userInput, aiOutput)
+	return aiOutput, nil
 }
-
-/*
-AI endpoint should:
-1. Read body parameter which should include user code
-2. Read body parameter which should include user message
-3. Read body parameter of used programming language
-4. Read previous context (lets say 5 last messages. Keep it in a queue in the style of system (always is)/user/assistant/user/assistent/user/assistant)
-*/
