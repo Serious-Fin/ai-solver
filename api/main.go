@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
@@ -199,6 +200,8 @@ func queryAgent(c *gin.Context) {
 		return
 	}
 
+	resp = postProcessResponse(resp)
+
 	c.IndentedJSON(http.StatusOK, resp)
 }
 
@@ -235,3 +238,20 @@ func queryChatGPT(sessionId string, systemPrompt string, userQuery string) (stri
 	contextCache.Add(sessionId, userQuery, aiOutput)
 	return aiOutput, nil
 }
+
+func postProcessResponse(aiOutput string) string {
+	if isMarkdownFormat(aiOutput) {
+		aiOutput, _ = strings.CutPrefix(aiOutput, "```go")
+		aiOutput, _ = strings.CutSuffix(aiOutput, "```")
+	}
+	return aiOutput
+}
+
+func isMarkdownFormat(str string) bool {
+	return strings.HasPrefix(str, "```go") && strings.HasSuffix(str, "```")
+}
+
+/*
+TODO: Write tests for API
+TODO: make authentication so not everyone could use the query endpoint to access AIs
+*/

@@ -68,6 +68,5 @@ func (cc *ContextCache) Get(sessionId string) []Context {
 }
 
 /*
-TODO:
-- Implement automatic cache expiration mechanism
+TODO: Implement automatic cache expiration mechanism
 */
