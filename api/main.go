@@ -78,11 +78,15 @@ var db *sql.DB
 var chatGPTClient *openai.Client
 var contextCache *ContextCache
 var maxUserContext = 5
+var systemPromptTemplate = `You are an expert %s programmer. The user will describe programming problems in natural 
+language and also provide his current code. Respond with only %s code, no explanations, no markdown, no questions. 
+Do not modify the function named run. It is the entry point for evaluation. You may define helper functions outside 
+run. Do not import any external modules or packages. Code must be self-contained and runnable in a standard %s environment.`
 
 func main() {
 	var err error
 
-	// Iniialize cache
+	// Iniialize context cache
 	contextCache, err = NewContextCache(maxUserContext)
 	if err != nil {
 		log.Fatalf("Error creating context cache: %v", err)
@@ -182,8 +186,10 @@ func queryAgent(c *gin.Context) {
 
 	var err error
 	var resp string
+	systemPrompt := fmt.Sprintf(systemPromptTemplate, body.Language, body.Language, body.Language)
+	userQuery := fmt.Sprintf("User input: %s\nProgramming language used: %s\nCurrent user code: %s", body.Input, body.Language, body.Code)
 	if body.Agent == "chatgpt" {
-		resp, err = queryChatGPT(uri.SessionId, body.Input)
+		resp, err = queryChatGPT(uri.SessionId, systemPrompt, userQuery)
 	} else {
 		err = fmt.Errorf("agent of type %s does not exist", body.Agent)
 	}
@@ -196,16 +202,23 @@ func queryAgent(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, resp)
 }
 
-func queryChatGPT(sessionId string, userInput string) (string, error) {
+func queryChatGPT(sessionId string, systemPrompt string, userQuery string) (string, error) {
 	previousContext := contextCache.Get(sessionId)
 	messages := make([]openai.ChatCompletionMessage, 0)
-	// TODO: also add system prompt
+	messages = append(messages, openai.ChatCompletionMessage{
+		Role:    RoleSystem,
+		Content: systemPrompt,
+	})
 	for _, context := range previousContext {
 		messages = append(messages, openai.ChatCompletionMessage{
 			Role:    context.Role,
 			Content: context.Content,
 		})
 	}
+	messages = append(messages, openai.ChatCompletionMessage{
+		Role:    RoleUser,
+		Content: userQuery,
+	})
 
 	resp, err := chatGPTClient.CreateChatCompletion(
 		context.Background(),
@@ -219,6 +232,6 @@ func queryChatGPT(sessionId string, userInput string) (string, error) {
 	}
 
 	aiOutput := resp.Choices[0].Message.Content
-	contextCache.Add(sessionId, userInput, aiOutput)
+	contextCache.Add(sessionId, userQuery, aiOutput)
 	return aiOutput, nil
 }
