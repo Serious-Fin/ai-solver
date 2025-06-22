@@ -198,7 +198,9 @@ func queryAgent(c *gin.Context) {
 
 	resp = postProcessResponse(resp)
 
-	c.IndentedJSON(http.StatusOK, resp)
+	c.IndentedJSON(http.StatusOK, struct {
+		Response string `json:"response"`
+	}{Response: resp})
 }
 
 func queryChatGPT(sessionId string, systemPrompt string, userQuery string) (string, error) {

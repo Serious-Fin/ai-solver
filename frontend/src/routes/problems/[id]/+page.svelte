@@ -1,17 +1,51 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import { enhance } from '$app/forms';
 	import Prism from 'prismjs';
 	import 'prismjs/components/prism-go';
+	import 'prismjs/components/prism-c.js';
 	import { marked } from 'marked';
+	import { v4 as uuidv4 } from 'uuid';
 
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	let sessionId: string = $state(uuidv4());
 
-	onMount(() => {
+	onMount(async () => {
+		// @ts-ignore
+		await import('prismjs/components/prism-cpp.js');
 		Prism.highlightAll();
 	});
 
-	let code = $state(data.problem.goCode);
+	let code = $state(data.problem.goCode ?? '');
+	let currentLanguage = $state('go');
+	let codeElement: HTMLElement;
+
+	$effect(() => {
+		codeElement.innerHTML = code;
+		Prism.highlightElement(codeElement);
+	});
+
+	const changeCodeTemplate = () => {
+		switch (currentLanguage) {
+			case 'go':
+				code = data.problem.goCode ?? '';
+				break;
+			case 'cpp':
+				code = data.problem.cppCode ?? '';
+				break;
+		}
+	};
+
+	const handleReturnedCode = () => {
+		return async ({ result }) => {
+			console.log(result);
+			if (result.type === 'success') {
+				console.log('ya');
+				code = result.data.response;
+			}
+		};
+	};
 </script>
 
 <section id="main-area">
@@ -34,24 +68,34 @@
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Code</h2>
 
-			<select name="programming-language" id="programming-language">
+			<select
+				name="programming-language"
+				id="programming-language"
+				bind:value={currentLanguage}
+				onchange={changeCodeTemplate}
+			>
 				<option value="go">Go</option>
 				<option value="cpp">C++</option>
-				<option value="csharp">C#</option>
 			</select>
 		</header>
-		<pre class="code"><code class="language-go">{code}</code></pre>
+		<pre class="code"><code class="language-{currentLanguage}" bind:this={codeElement}>{code}</code
+			></pre>
 	</article>
 
 	<article class="block">
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Chat box</h2>
 		</header>
-		<form action="#">
-			<textarea class="chat_box_input inter-400"></textarea>
+		<form method="POST" action="?/query" use:enhance={handleReturnedCode}>
+			<textarea class="chat_box_input inter-400" name="input" id="input"></textarea>
+
+			<input type="hidden" name="code" value={code} />
+			<input type="hidden" name="language" value={currentLanguage} />
+			<input type="hidden" name="sessionId" value={sessionId} />
 
 			<footer class="block_footer send_box_footer">
-				<select name="assistant" id="assistant">
+				<select name="agent" id="agent">
+					<option value="chatgpt">ChatGPT</option>
 					<option value="gpt-4_1">GPT-4.1</option>
 					<option value="gpt-4_1_mini">GPT-4.1 Mini</option>
 					<option value="gemini_2_5_flash">Gemini 2.5 Flash</option>

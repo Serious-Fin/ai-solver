@@ -35,6 +35,7 @@
 	},
 	"dependencies": {
 		"marked": "^15.0.12",
-		"prismjs": "^1.30.0"
+		"prismjs": "^1.30.0",
+		"uuid": "^11.1.0"
 	}
 }
