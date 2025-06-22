@@ -20,8 +20,10 @@ import (
 type Problem struct {
 	Id          int        `json:"id"`
 	Title       string     `json:"title"`
-	Description string     `json:"description"`
-	TestCases   []TestCase `json:"testCases"`
+	Description string     `json:"description,omitempty"`
+	TestCases   []TestCase `json:"testCases,omitempty"`
+	GoCode      string     `json:"goCode,omitempty"`
+	CppCode     string     `json:"cppCode,omitempty"`
 }
 
 type TestCase struct {
@@ -120,7 +122,7 @@ func main() {
 }
 
 func getProblems(c *gin.Context) {
-	rows, err := db.Query("SELECT id, title, description, testCases FROM problems;")
+	rows, err := db.Query("SELECT id, title FROM problems;")
 	if err != nil {
 		c.Error(err)
 		return
@@ -130,13 +132,7 @@ func getProblems(c *gin.Context) {
 	problems := make([]Problem, 0)
 	for rows.Next() {
 		var problem Problem
-		var testCasesString string
-		err = rows.Scan(&problem.Id, &problem.Title, &problem.Description, &testCasesString)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-		err := json.Unmarshal([]byte(testCasesString), &problem.TestCases)
+		err = rows.Scan(&problem.Id, &problem.Title)
 		if err != nil {
 			c.Error(err)
 			return
@@ -153,11 +149,11 @@ func getProblems(c *gin.Context) {
 
 func getProblemById(c *gin.Context) {
 	id := c.Param("id")
-	row := db.QueryRow("SELECT id, title, description, testCases FROM problems WHERE id = ?;", id)
+	row := db.QueryRow("SELECT id, title, description, testCases, goCode, cppCode FROM problems WHERE id = ?;", id)
 
 	var problem Problem
 	var testCaseString string
-	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString)
+	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString, &problem.GoCode, &problem.CppCode)
 	if err != nil {
 		c.Error(err)
 		return

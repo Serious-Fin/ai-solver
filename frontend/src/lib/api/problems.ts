@@ -1,8 +1,10 @@
 export interface Problem {
     id: string;
     title: string;
-    description: string;
-    testCases: TestCase[];
+    description?: string;
+    testCases?: TestCase[];
+    goCode?: string
+    cppCode?: string
 }
 
 export interface TestCase {

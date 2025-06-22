@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import Prism from 'prismjs';
 	import 'prismjs/components/prism-go';
+	import { marked } from 'marked';
+
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 
@@ -9,12 +11,7 @@
 		Prism.highlightAll();
 	});
 
-	const code = `package main
-
-import "fmt"
-func main() {
-	fmt.Println("Hello!")
-}`;
+	let code = $state(data.problem.goCode);
 </script>
 
 <section id="main-area">
@@ -23,16 +20,14 @@ func main() {
 			<img class="img_icon" src="/back-arrow.svg" alt="return back arrow" />
 		</a>
 		<h1 id="main_header" class="inter-600">{data.problem.title}</h1>
-		<img src="/done-symbol.svg" alt="exercise already completed check" />
+		<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
 	</article>
 
 	<article class="block">
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Description</h2>
 		</header>
-		<p class="block_description inter-400">
-			{data.problem.description}
-		</p>
+		{@html marked.parse(data.problem.description ?? '')}
 	</article>
 
 	<article class="block">
@@ -102,6 +97,7 @@ func main() {
 		margin-top: 16px;
 		padding: 8px 16px;
 		box-sizing: border-box;
+		max-width: 100%;
 	}
 
 	.chat_box_input {
@@ -187,6 +183,12 @@ func main() {
 		font-optical-sizing: auto;
 		font-weight: 400;
 		font-style: normal;
+	}
+
+	.completed_icon {
+		width: 13px;
+		height: 13px;
+		opacity: 80%;
 	}
 
 	@media (min-width: 760px) {
