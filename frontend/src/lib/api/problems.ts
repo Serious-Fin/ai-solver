@@ -26,3 +26,18 @@ export async function getProblems(): Promise<Problem[]> {
         throw error
     }
 }
+
+export async function getProblemById(id: string): Promise<Problem> {
+    try {
+        const response = await fetch(`${BASE_URL}/problems/${id}`)
+        if (!response.ok) {
+            const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+            throw new Error(`Error fetching problem with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
+        }
+        const problems: Problem = await response.json()
+        return problems
+    } catch (error) {
+        console.log(`Error fetching problem with id '${id}'`, error)
+        throw error
+    }
+}

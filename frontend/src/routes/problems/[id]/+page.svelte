@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import Prism from 'prismjs';
 	import 'prismjs/components/prism-go';
+	import type { PageProps } from './$types';
+	let { data }: PageProps = $props();
 
 	onMount(() => {
 		Prism.highlightAll();
@@ -17,10 +19,10 @@ func main() {
 
 <section id="main-area">
 	<article id="header">
-		<button class="expand btn">
+		<a class="back btn" href="/problems">
 			<img class="img_icon" src="/back-arrow.svg" alt="return back arrow" />
-		</button>
-		<h1 id="main_header" class="inter-600">Largest sub-array</h1>
+		</a>
+		<h1 id="main_header" class="inter-600">{data.problem.title}</h1>
 		<img src="/done-symbol.svg" alt="exercise already completed check" />
 	</article>
 
@@ -29,11 +31,7 @@ func main() {
 			<h2 class="block_header_text inter-700">Description</h2>
 		</header>
 		<p class="block_description inter-400">
-			Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi eget elementum diam. Lorem
-			ipsum dolor sit amet, consectetur adipiscing elit. Aliquam nulla diam, malesuada vitae pretium
-			eget, egestas nec justo. Morbi placerat mi at venenatis consequat. Integer vestibulum felis
-			eros, eget commodo metus dapibus ac. Sed facilisis tortor ut feugiat ornare. Donec ullamcorper
-			lorem est, finibus ornare libero vehicula ut. Aliquam sagittis augue a suscipit venenatis.
+			{data.problem.description}
 		</p>
 	</article>
 
@@ -81,6 +79,7 @@ func main() {
 		background-color: #3b2645;
 		width: 100vw;
 		height: auto;
+		min-height: 100vh;
 		padding: 16px;
 		box-sizing: border-box;
 	}
@@ -123,18 +122,21 @@ func main() {
 		height: 50px;
 		border-radius: 10px;
 		border: 2px solid black;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.img_icon {
-		width: 100%;
-		height: 100%;
+		width: 80%;
+		height: 80%;
 	}
 
 	.send {
 		background-color: black;
 	}
 
-	.expand {
+	.back {
 		background-color: white;
 	}
 
