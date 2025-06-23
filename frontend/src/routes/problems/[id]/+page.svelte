@@ -61,7 +61,9 @@
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Description</h2>
 		</header>
-		{@html marked.parse(data.problem.description ?? '')}
+		<div class="classy-font">
+			{@html marked.parse(data.problem.description ?? '')}
+		</div>
 	</article>
 
 	<article class="block">
@@ -233,6 +235,18 @@
 		width: 13px;
 		height: 13px;
 		opacity: 80%;
+	}
+
+	.classy-font {
+		font-family:
+			-apple-system,
+			BlinkMacSystemFont,
+			Segoe UI,
+			Helvetica,
+			Arial,
+			sans-serif,
+			Apple Color Emoji,
+			Segoe UI Emoji;
 	}
 
 	@media (min-width: 760px) {
