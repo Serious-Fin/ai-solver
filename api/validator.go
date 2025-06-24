@@ -54,6 +54,7 @@ func validateCode(c *gin.Context) {
 	// validate
 	// run the following:
 	//  docker run -it --rm -v ./test_run_2531706648:/app --network none go-testing-image:latest /bin/sh -c "go mod init test_proj && go test -v"
+	// remove temp folder
 	c.IndentedJSON(http.StatusOK, ValidateResponse{})
 }
 
