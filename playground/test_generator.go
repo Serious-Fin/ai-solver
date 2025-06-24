@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -19,7 +21,21 @@ func main() {
 	}
 }`
 
-	userCode := ``
+	userCode := `func twoSum(nums []int, target int) []int {
+	numMap := make(map[int]int)
+
+	for i, num := range nums {
+		complement := target - num
+
+		if prevIndex, ok := numMap[complement]; ok {
+			return []int{prevIndex, i}
+		}
+
+		numMap[num] = i
+	}
+
+	return nil
+}`
 
 	testCases := []TestCase{
 		{
@@ -38,21 +54,55 @@ func main() {
 		},
 	}
 
-	CreateTestFile("foo_test.go", userCode, testTemplate, testCases)
+	helperFuncs := `func areEqual(got []int, want []int) bool {
+	if len(got) != 2 {
+		return false
+	}
+
+	if got[0] == want[0] && got[1] == want[1] {
+		return true
+	}
+	if got[0] == want[1] && got[1] == want[0] {
+		return true
+	}
+
+	return false
+}
+`
+
+	CreateTestFile("foo_test.go", userCode, testTemplate, testCases, helperFuncs)
 }
 
-func CreateTestFile(filename string, userCode string, testTemplate string, testCases []TestCase) {
-	fmt.Printf("Creating and opening file %s", filename)
-	fmt.Println("Adding \"package main\" and \"import \"testing\"\" to the file")
-	fmt.Printf("Adding user code:\n%s\n", userCode)
+var fileStartTemplate = `package main
+import "testing"
+`
+
+func CreateTestFile(filename string, userCode string, testTemplate string, testCases []TestCase, helperFuncs string) {
+	file, err := os.Create(filename)
+	check(err)
+	defer file.Close()
+
+	_, err = file.WriteString(fmt.Sprintf("%s\n", fileStartTemplate))
+	check(err)
+	_, err = file.WriteString(fmt.Sprintf("%s\n", userCode))
+	check(err)
 
 	for testCaseIndex, testCase := range testCases {
 		newTestCode := testTemplate
-		newTestCode = strings.Replace(newTestCode, "{{ID}}", string(testCaseIndex), 1)
+		newTestCode = strings.Replace(newTestCode, "{{ID}}", strconv.Itoa(testCaseIndex), 1)
 		newTestCode = strings.Replace(newTestCode, "{{OUTPUT}}", testCase.ExpectedOutput, 1)
 		for inputIndex, input := range testCase.Inputs {
 			newTestCode = strings.Replace(newTestCode, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
 		}
-		fmt.Printf("Adding test:\n%s\n", newTestCode)
+		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCode))
+		check(err)
+	}
+	_, err = file.WriteString(helperFuncs)
+	check(err)
+}
+
+func check(err error) {
+	if err != nil {
+		panic(err)
 	}
 }

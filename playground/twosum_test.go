@@ -9,17 +9,9 @@ func twoSum(nums []int, target int) []int {
 	return []int{}
 }
 
-func TestTwoSum1(t *testing.T) {
+func TestTwoSum(t *testing.T) {
 	got := twoSum([]int{2, 7, 11, 15}, 9)
 	want := []int{0, 1}
-	if !areEqual(got, want) {
-		t.Errorf("got %v, want %v", got, want)
-	}
-}
-
-func TestTwoSum{{ID}}(t *testing.T) {
-	got := twoSum({{INPUT1}}, {{INPUT2}})
-	want := {{OUTPUT}}
 	if !areEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
