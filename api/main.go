@@ -18,17 +18,16 @@ import (
 )
 
 type Problem struct {
-	Id          int        `json:"id"`
-	Title       string     `json:"title"`
-	Description string     `json:"description,omitempty"`
-	TestCases   []TestCase `json:"testCases,omitempty"`
-	GoCode      string     `json:"goCode,omitempty"`
-	CppCode     string     `json:"cppCode,omitempty"`
+	Id            int        `json:"id"`
+	Title         string     `json:"title"`
+	Description   string     `json:"description,omitempty"`
+	TestCases     []TestCase `json:"testCases,omitempty"`
+	GoPlaceholder string     `json:"goPlaceholder,omitempty"`
 }
 
 type TestCase struct {
 	Id             int      `json:"id"`
-	Inputs         []string `json:"input"`
+	Inputs         []string `json:"inputs"`
 	ExpectedOutput string   `json:"output"`
 }
 
@@ -151,11 +150,11 @@ func getProblems(c *gin.Context) {
 
 func getProblemById(c *gin.Context) {
 	id := c.Param("id")
-	row := db.QueryRow("SELECT id, title, description, testCases, goCode, cppCode FROM problems WHERE id = ?;", id)
+	row := db.QueryRow("SELECT id, title, description, testCases, GoPlaceholder FROM problems WHERE id = ?;", id)
 
 	var problem Problem
 	var testCaseString string
-	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString, &problem.GoCode, &problem.CppCode)
+	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString, &problem.GoPlaceholder)
 	if err != nil {
 		c.Error(err)
 		return

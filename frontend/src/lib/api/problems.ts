@@ -3,8 +3,7 @@ export interface Problem {
     title: string;
     description?: string;
     testCases?: TestCase[];
-    goCode?: string
-    cppCode?: string
+    goPlaceholder?: string
 }
 
 export interface TestCase {

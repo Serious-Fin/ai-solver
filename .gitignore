@@ -1,3 +1,4 @@
 *.db
 .env
 *:Zone.Identifier
+test_run_*

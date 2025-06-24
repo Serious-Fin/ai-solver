@@ -17,7 +17,7 @@
 		Prism.highlightAll();
 	});
 
-	let code = $state(data.problem.goCode ?? '');
+	let code = $state(data.problem.goPlaceholder ?? '');
 	let currentLanguage = $state('go');
 	let codeElement: HTMLElement;
 
@@ -29,10 +29,10 @@
 	const changeCodeTemplate = () => {
 		switch (currentLanguage) {
 			case 'go':
-				code = data.problem.goCode ?? '';
+				code = data.problem.goPlaceholder ?? '';
 				break;
 			case 'cpp':
-				code = data.problem.cppCode ?? '';
+				code = data.problem.goPlaceholder ?? '';
 				break;
 		}
 	};

@@ -45,13 +45,15 @@ func validateCode(c *gin.Context) {
 		return
 	}
 
-	for _, testCase := range testParams.Cases {
-		CreateTestFile(fmt.Sprintf("test%s_test.go", body.ProblemId), body.Code, testParams.Template, testCase, testParams.Helpers)
-		// run it
-		// expect a result
-		// delete
+	dirPath, err := os.MkdirTemp(".", "test_run_")
+	if err != nil {
+		c.Error(err)
+		return
 	}
-
+	CreateTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, testParams.Template, testParams.Cases, testParams.Helpers)
+	// validate
+	// run the following:
+	//  docker run -it --rm -v ./test_run_2531706648:/app --network none go-testing-image:latest /bin/sh -c "go mod init test_proj && go test -v"
 	c.IndentedJSON(http.StatusOK, ValidateResponse{})
 }
 
@@ -72,7 +74,7 @@ func FetchTestDetails(language string, problemId string) (*TestParams, error) {
 	return &testParams, nil
 }
 
-func CreateTestFile(filename string, userCode string, testTemplate string, testCase TestCase, helperFuncs string) {
+func CreateTestFile(filename string, userCode string, testTemplate string, testCases []TestCase, helperFuncs string) {
 	file, err := os.Create(filename)
 	check(err)
 	defer file.Close()
@@ -82,14 +84,20 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 	_, err = file.WriteString(fmt.Sprintf("%s\n", userCode))
 	check(err)
 
-	newTestCode := testTemplate
-	newTestCode = strings.Replace(newTestCode, "{{ID}}", strconv.Itoa(1), 1)
-	newTestCode = strings.Replace(newTestCode, "{{OUTPUT}}", testCase.ExpectedOutput, 1)
-	for inputIndex, input := range testCase.Inputs {
-		newTestCode = strings.Replace(newTestCode, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
+	for _, testCase := range testCases {
+		newTestCode := testTemplate
+		newTestCode = strings.Replace(newTestCode, "{{ID}}", strconv.Itoa(testCase.Id), 1)
+		newTestCode = strings.Replace(newTestCode, "{{OUTPUT}}", testCase.ExpectedOutput, 1)
+		fmt.Printf("%v\n", testCase.Inputs)
+		for inputIndex, input := range testCase.Inputs {
+			toChange := fmt.Sprintf("{{INPUT%d}}", inputIndex)
+			fmt.Printf("Changing %s with %s", toChange, input)
+			newTestCode = strings.Replace(newTestCode, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
+		}
+		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCode))
+		check(err)
 	}
-	_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCode))
-	check(err)
+
 	_, err = file.WriteString(helperFuncs)
 	check(err)
 }
