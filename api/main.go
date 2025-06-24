@@ -27,8 +27,9 @@ type Problem struct {
 }
 
 type TestCase struct {
-	Input  string `json:"input"`
-	Output string `json:"output"`
+	Id             int      `json:"id"`
+	Inputs         []string `json:"input"`
+	ExpectedOutput string   `json:"output"`
 }
 
 type APIError struct {
@@ -117,6 +118,7 @@ func main() {
 	router.GET("/problems", getProblems)
 	router.GET("/problems/:id", getProblemById)
 	router.POST("/query/:sessionId", queryAgent)
+	router.POST("/validate", validateCode)
 
 	router.Run("localhost:8080")
 }
