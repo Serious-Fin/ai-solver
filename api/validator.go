@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 
@@ -17,9 +19,15 @@ type ValidateRequest struct {
 	Language  string `form:"language"`
 }
 
+type FailReason struct {
+	Want    string `json:"want"`
+	Got     string `json:"got"`
+	Message string `json:"message"`
+}
+
 type ValidateResponse struct {
-	FailedTests    []int `json:"failed"`
-	SucceededTests []int `json:"succeeded"`
+	FailedTests    map[int]FailReason `json:"failed"`
+	SucceededTests []int              `json:"succeeded"`
 }
 
 type TestParams struct {
@@ -51,12 +59,31 @@ func validateCode(c *gin.Context) {
 		return
 	}
 	CreateTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, testParams.Template, testParams.Cases, testParams.Helpers)
+	var outputBuffer bytes.Buffer
+	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", dirPath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test -v")
+	testCommand.Stdout = &outputBuffer
+	testCommand.Stderr = &outputBuffer
+
+	err = testCommand.Run()
+	if err != nil {
+		fmt.Println("--- Err Output ---")
+		fmt.Println(outputBuffer.String())
+		fmt.Println("----------------------")
+
+		c.Error(err)
+		return
+	}
+
+	fmt.Println(outputBuffer.String())
+
 	// validate
 	// run the following:
 	//  docker run -it --rm -v ./test_run_2531706648:/app --network none go-testing-image:latest /bin/sh -c "go mod init test_proj && go test -v"
 	// remove temp folder
 	c.IndentedJSON(http.StatusOK, ValidateResponse{})
 }
+
+// TODO: make validation a long running process: first POST request creates a validation request and subsequent GET requests get the status
 
 func FetchTestDetails(language string, problemId string) (*TestParams, error) {
 	var testParams TestParams
@@ -87,12 +114,9 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 
 	for _, testCase := range testCases {
 		newTestCode := testTemplate
-		newTestCode = strings.Replace(newTestCode, "{{ID}}", strconv.Itoa(testCase.Id), 1)
+		newTestCode = strings.Replace(newTestCode, "{{ID}}", fmt.Sprintf("_%s", strconv.Itoa(testCase.Id)), 1)
 		newTestCode = strings.Replace(newTestCode, "{{OUTPUT}}", testCase.ExpectedOutput, 1)
-		fmt.Printf("%v\n", testCase.Inputs)
 		for inputIndex, input := range testCase.Inputs {
-			toChange := fmt.Sprintf("{{INPUT%d}}", inputIndex)
-			fmt.Printf("Changing %s with %s", toChange, input)
 			newTestCode = strings.Replace(newTestCode, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
 		}
 		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCode))
