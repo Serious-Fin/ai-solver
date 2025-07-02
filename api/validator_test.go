@@ -1,7 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -68,10 +72,45 @@ FAIL    test_proj       0.002s
 }
 
 func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
+	var response ValidateResponse
+
 	// split everything on === RUN
-	// go over each element and try getting the Test.*_%d if no found then skip
-	// try find --- PASS if find add to passed array
-	// try find --- FAIL if find then parse reason
-	// else unrecognized error, return error which will be sent to me
-	return nil, nil
+	slices := strings.SplitSeq(cmdOutput, "=== RUN")
+	for slice := range slices {
+		// get  test id
+		re := regexp.MustCompile(`Test.*_\d+`)
+		regexMatches := re.FindStringSubmatch(slice)
+		if len(regexMatches) == 0 {
+			continue
+		}
+		testName := regexMatches[0]
+		re = regexp.MustCompile(`\d+$`)
+		regexMatches = re.FindStringSubmatch(testName)
+		if len(regexMatches) == 0 {
+			continue
+		}
+		testId, err := strconv.Atoi(regexMatches[0])
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println(testId)
+
+		// check if test succeeded
+		re = regexp.MustCompile(`--- PASS`)
+		regexMatches = re.FindStringSubmatch(slice)
+		if len(regexMatches) > 0 {
+			response.SucceededTests = append(response.SucceededTests, testId)
+		}
+
+		// check if test failed
+		re = regexp.MustCompile(`--- FAIL`)
+		regexMatches = re.FindStringSubmatch(testName)
+		if len(regexMatches) == 0 {
+			continue
+		}
+
+		// find the "want" and "got"
+		re = regexp.MustCompile()
+	}
+	return &response, nil
 }
