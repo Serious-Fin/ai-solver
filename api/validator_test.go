@@ -1,11 +1,7 @@
 package main
 
 import (
-	"bufio"
 	"reflect"
-	"regexp"
-	"strconv"
-	"strings"
 	"testing"
 )
 
@@ -69,81 +65,4 @@ FAIL    test_proj       0.002s
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
-}
-
-const (
-	WRONG_OUTPUT = "wrong output"
-)
-
-func ParseCommandOutput2(cmdOutput string) (*ValidateResponse, error) {
-	response := &ValidateResponse{
-		FailedTests: make(map[int]FailReason),
-	}
-
-	currentTestId := -1
-	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
-
-	runRegex := regexp.MustCompile(`^=== RUN\s+Test.*_(\d+)$`)
-	passRegex := regexp.MustCompile(`^--- PASS:`)
-	failRegex := regexp.MustCompile(``)
-
-	return response, nil
-}
-
-func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
-	var response ValidateResponse
-	response.FailedTests = make(map[int]FailReason)
-
-	// split everything on === RUN
-	slices := strings.SplitSeq(cmdOutput, "=== RUN")
-	for slice := range slices {
-		// get  test id
-		re := regexp.MustCompile(`Test.*_\d+`)
-		regexMatches := re.FindStringSubmatch(slice)
-		if len(regexMatches) == 0 {
-			continue
-		}
-		testName := regexMatches[0]
-		re = regexp.MustCompile(`\d+$`)
-		regexMatches = re.FindStringSubmatch(testName)
-		if len(regexMatches) == 0 {
-			continue
-		}
-		testId, err := strconv.Atoi(regexMatches[0])
-		if err != nil {
-			return nil, err
-		}
-
-		// check if test succeeded
-		re = regexp.MustCompile(`--- PASS`)
-		regexMatches = re.FindStringSubmatch(slice)
-		if len(regexMatches) > 0 {
-			response.SucceededTests = append(response.SucceededTests, testId)
-		}
-
-		// check if test failed
-		re = regexp.MustCompile(`--- FAIL`)
-		regexMatches = re.FindStringSubmatch(slice)
-		if len(regexMatches) == 0 {
-			continue
-		}
-
-		// find the "want" and "got"
-		re = regexp.MustCompile(`got [\s\S]*, want [\s\S]*--- FAIL`)
-		regexMatches = re.FindStringSubmatch(slice)
-		if len(regexMatches) == 0 {
-			continue
-		}
-		testResults := regexMatches[0]
-		testResults, _ = strings.CutPrefix(testResults, "got ")
-		testResults, _ = strings.CutSuffix(testResults, "\n--- FAIL")
-		gotAndWantResult := strings.Split(testResults, ", want ")
-		response.FailedTests[testId] = FailReason{
-			Got:     gotAndWantResult[0],
-			Want:    gotAndWantResult[1],
-			Message: WRONG_OUTPUT,
-		}
-
-	}
-	return &response, nil
 }

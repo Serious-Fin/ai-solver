@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -39,6 +41,10 @@ type TestParams struct {
 var fileStartTemplate = `package main
 import "testing"
 `
+
+const (
+	WRONG_OUTPUT = "wrong output"
+)
 
 func validateCode(c *gin.Context) {
 	var body ValidateRequest
@@ -125,6 +131,46 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 
 	_, err = file.WriteString(helperFuncs)
 	check(err)
+}
+
+func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
+	response := &ValidateResponse{
+		FailedTests: make(map[int]FailReason),
+	}
+
+	currentTestId := -1
+	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
+
+	runRegex := regexp.MustCompile(`^=== RUN\s+Test.*_(\d+)$`)
+	passRegex := regexp.MustCompile(`^--- PASS:`)
+	failRegex := regexp.MustCompile(`^\s+.*?:\d+:\s+got\s+(.*),\s+want\s(.*)$`)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+
+		if matches := runRegex.FindStringSubmatch(line); len(matches) > 1 {
+			id, err := strconv.Atoi(matches[1])
+			if err != nil {
+				return nil, fmt.Errorf("could not parse test ID from line %s", line)
+			}
+			currentTestId = id
+		} else if passRegex.MatchString(line) && currentTestId != -1 {
+			response.SucceededTests = append(response.SucceededTests, currentTestId)
+			currentTestId = -1
+		} else if matches := failRegex.FindStringSubmatch(line); len(matches) > 2 && currentTestId != -1 {
+			response.FailedTests[currentTestId] = FailReason{
+				Got:     matches[1],
+				Want:    matches[2],
+				Message: WRONG_OUTPUT,
+			}
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return nil, fmt.Errorf("error scanning command output: %w", err)
+	}
+
+	return response, nil
 }
 
 func check(err error) {
