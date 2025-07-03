@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"bufio"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -40,23 +40,23 @@ FAIL
 exit status 1
 FAIL    test_proj       0.002s
 `
-	want := ValidateResponse{
+	want := &ValidateResponse{
 		SucceededTests: []int{0, 1, 2, 3, 6, 7, 9},
 		FailedTests: map[int]FailReason{
 			4: {
 				Want:    "[4 9]",
 				Got:     "[]",
-				Message: "Wrong output",
+				Message: "wrong output",
 			},
 			5: {
 				Want:    "[1 4]",
 				Got:     "[1 3]",
-				Message: "Wrong output",
+				Message: "wrong output",
 			},
 			8: {
 				Want:    "[3 7]",
 				Got:     "[4 5]",
-				Message: "Wrong output",
+				Message: "wrong output",
 			},
 		},
 	}
@@ -71,8 +71,28 @@ FAIL    test_proj       0.002s
 	}
 }
 
+const (
+	WRONG_OUTPUT = "wrong output"
+)
+
+func ParseCommandOutput2(cmdOutput string) (*ValidateResponse, error) {
+	response := &ValidateResponse{
+		FailedTests: make(map[int]FailReason),
+	}
+
+	currentTestId := -1
+	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
+
+	runRegex := regexp.MustCompile(`^=== RUN\s+Test.*_(\d+)$`)
+	passRegex := regexp.MustCompile(`^--- PASS:`)
+	failRegex := regexp.MustCompile(``)
+
+	return response, nil
+}
+
 func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 	var response ValidateResponse
+	response.FailedTests = make(map[int]FailReason)
 
 	// split everything on === RUN
 	slices := strings.SplitSeq(cmdOutput, "=== RUN")
@@ -93,7 +113,6 @@ func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(testId)
 
 		// check if test succeeded
 		re = regexp.MustCompile(`--- PASS`)
@@ -104,13 +123,27 @@ func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 
 		// check if test failed
 		re = regexp.MustCompile(`--- FAIL`)
-		regexMatches = re.FindStringSubmatch(testName)
+		regexMatches = re.FindStringSubmatch(slice)
 		if len(regexMatches) == 0 {
 			continue
 		}
 
 		// find the "want" and "got"
-		re = regexp.MustCompile()
+		re = regexp.MustCompile(`got [\s\S]*, want [\s\S]*--- FAIL`)
+		regexMatches = re.FindStringSubmatch(slice)
+		if len(regexMatches) == 0 {
+			continue
+		}
+		testResults := regexMatches[0]
+		testResults, _ = strings.CutPrefix(testResults, "got ")
+		testResults, _ = strings.CutSuffix(testResults, "\n--- FAIL")
+		gotAndWantResult := strings.Split(testResults, ", want ")
+		response.FailedTests[testId] = FailReason{
+			Got:     gotAndWantResult[0],
+			Want:    gotAndWantResult[1],
+			Message: WRONG_OUTPUT,
+		}
+
 	}
 	return &response, nil
 }
