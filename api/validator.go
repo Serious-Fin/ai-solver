@@ -21,15 +21,16 @@ type ValidateRequest struct {
 	Language  string `form:"language"`
 }
 
-type FailReason struct {
+type FailInfo struct {
+	Id      int    `json:"id"`
 	Want    string `json:"want"`
 	Got     string `json:"got"`
 	Message string `json:"message"`
 }
 
 type ValidateResponse struct {
-	FailedTests    []FailReason `json:"failedTests"`
-	SucceededTests []int        `json:"succeededTests"`
+	FailedTests    []FailInfo `json:"failedTests"`
+	SucceededTests []int      `json:"succeededTests"`
 }
 
 type TestParams struct {
@@ -133,7 +134,7 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 	response := &ValidateResponse{
 		SucceededTests: []int{},
-		FailedTests:    make([]FailReason, 0),
+		FailedTests:    make([]FailInfo, 0),
 	}
 
 	currentTestId := -1
@@ -156,7 +157,8 @@ func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 			response.SucceededTests = append(response.SucceededTests, currentTestId)
 			currentTestId = -1
 		} else if matches := failRegex.FindStringSubmatch(line); len(matches) > 2 && currentTestId != -1 {
-			response.FailedTests = append(response.FailedTests, FailReason{
+			response.FailedTests = append(response.FailedTests, FailInfo{
+				Id:      currentTestId,
 				Got:     matches[1],
 				Want:    matches[2],
 				Message: WRONG_OUTPUT,
