@@ -28,8 +28,8 @@ type FailReason struct {
 }
 
 type ValidateResponse struct {
-	FailedTests    map[int]FailReason `json:"failedTests"`
-	SucceededTests []int              `json:"succeededTests"`
+	FailedTests    []FailReason `json:"failedTests"`
+	SucceededTests []int        `json:"succeededTests"`
 }
 
 type TestParams struct {
@@ -133,7 +133,7 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 	response := &ValidateResponse{
 		SucceededTests: []int{},
-		FailedTests:    make(map[int]FailReason),
+		FailedTests:    make([]FailReason, 0),
 	}
 
 	currentTestId := -1
@@ -156,11 +156,11 @@ func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 			response.SucceededTests = append(response.SucceededTests, currentTestId)
 			currentTestId = -1
 		} else if matches := failRegex.FindStringSubmatch(line); len(matches) > 2 && currentTestId != -1 {
-			response.FailedTests[currentTestId] = FailReason{
+			response.FailedTests = append(response.FailedTests, FailReason{
 				Got:     matches[1],
 				Want:    matches[2],
 				Message: WRONG_OUTPUT,
-			}
+			})
 		}
 	}
 

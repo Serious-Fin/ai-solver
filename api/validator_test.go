@@ -38,18 +38,18 @@ FAIL    test_proj       0.002s
 `
 	want := &ValidateResponse{
 		SucceededTests: []int{0, 1, 2, 3, 6, 7, 9},
-		FailedTests: map[int]FailReason{
-			4: {
+		FailedTests: []FailReason{
+			{
 				Want:    "[4 9]",
 				Got:     "[]",
 				Message: "wrong output",
 			},
-			5: {
+			{
 				Want:    "[1 4]",
 				Got:     "[1 3]",
 				Message: "wrong output",
 			},
-			8: {
+			{
 				Want:    "[3 7]",
 				Got:     "[4 5]",
 				Message: "wrong output",
@@ -94,7 +94,7 @@ PASS    test_proj       0.002s
 `
 	want := &ValidateResponse{
 		SucceededTests: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-		FailedTests:    map[int]FailReason{},
+		FailedTests:    []FailReason{},
 	}
 
 	got, err := ParseCommandOutput(cmdOutput)
@@ -120,13 +120,13 @@ FAIL    test_proj       0.002s
 `
 	want := &ValidateResponse{
 		SucceededTests: []int{},
-		FailedTests: map[int]FailReason{
-			0: {
+		FailedTests: []FailReason{
+			{
 				Want:    "goodbye world",
 				Got:     "hello world",
 				Message: "wrong output",
 			},
-			1: {
+			{
 				Want:    "apple banana",
 				Got:     "foo bar baz",
 				Message: "wrong output",
