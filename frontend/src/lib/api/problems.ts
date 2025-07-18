@@ -3,7 +3,8 @@ export interface Problem {
     title: string;
     description?: string;
     testCases?: TestCase[];
-    goPlaceholder?: string
+    goPlaceholder?: string;
+    testCaseIds?: number[];
 }
 
 export interface TestCase {
@@ -35,8 +36,8 @@ export async function getProblemById(id: string): Promise<Problem> {
             const errorBody = await response.json().catch(() => ({ message: response.statusText }))
             throw new Error(`Error fetching problem with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
         }
-        const problems: Problem = await response.json()
-        return problems
+        const problem: Problem = await response.json()
+        return problem
     } catch (error) {
         console.log(`Error fetching problem with id '${id}'`, error)
         throw error

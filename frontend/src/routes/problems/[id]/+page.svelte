@@ -17,7 +17,9 @@
 		Prism.highlightAll();
 	});
 
+	console.log(data.problem);
 	let code = $state(data.problem.goPlaceholder ?? '');
+	let testCaseIds = $state(data.problem.testCaseIds ?? []);
 	let currentLanguage = $state('go');
 	let codeElement: HTMLElement;
 
@@ -112,6 +114,18 @@
 				</button>
 			</footer>
 		</form>
+	</article>
+
+	<article class="block">
+		<header class="block_header">
+			<h2 class="block_header_text inter-700">Tests</h2>
+		</header>
+		{#each testCaseIds as testCaseId}
+			<div>
+				<p>{testCaseId}</p>
+				if ( )
+			</div>
+		{/each}
 	</article>
 </section>
 

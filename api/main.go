@@ -23,6 +23,7 @@ type Problem struct {
 	Description   string     `json:"description,omitempty"`
 	TestCases     []TestCase `json:"testCases,omitempty"`
 	GoPlaceholder string     `json:"goPlaceholder,omitempty"`
+	TestIds       []int      `json:"testCaseIds,omitempty"`
 }
 
 type TestCase struct {
@@ -89,7 +90,7 @@ run. Do not import any external modules or packages. Code must be self-contained
 func main() {
 	var err error
 
-	// Iniialize context cache
+	// Initialize context cache
 	contextCache, err = NewContextCache(maxUserContext)
 	if err != nil {
 		log.Fatalf("Error creating context cache: %v", err)
@@ -165,8 +166,16 @@ func getProblemById(c *gin.Context) {
 		c.Error(err)
 		return
 	}
-
+	problem.TestIds = extractTestIds(problem.TestCases)
 	c.IndentedJSON(http.StatusOK, problem)
+}
+
+func extractTestIds(testCases []TestCase) []int {
+	testCaseIds := make([]int, 0)
+	for _, testCase := range testCases {
+		testCaseIds = append(testCaseIds, testCase.Id)
+	}
+	return testCaseIds
 }
 
 func queryAgent(c *gin.Context) {

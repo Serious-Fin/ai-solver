@@ -28,8 +28,8 @@ type FailReason struct {
 }
 
 type ValidateResponse struct {
-	FailedTests    map[int]FailReason `json:"failed"`
-	SucceededTests []int              `json:"succeeded"`
+	FailedTests    map[int]FailReason `json:"failedTests"`
+	SucceededTests []int              `json:"succeededTests"`
 }
 
 type TestParams struct {
