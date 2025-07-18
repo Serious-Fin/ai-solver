@@ -2,3 +2,4 @@
 .env
 *:Zone.Identifier
 test_run_*
+*.DS_Store

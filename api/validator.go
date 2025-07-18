@@ -70,26 +70,23 @@ func validateCode(c *gin.Context) {
 	testCommand.Stdout = &outputBuffer
 	testCommand.Stderr = &outputBuffer
 
-	err = testCommand.Run()
+	_ = testCommand.Run()
+	testStates, err := ParseCommandOutput(outputBuffer.String())
 	if err != nil {
-		fmt.Println("--- Err Output ---")
-		fmt.Println(outputBuffer.String())
-		fmt.Println("----------------------")
-
 		c.Error(err)
 		return
 	}
 
-	fmt.Println(outputBuffer.String())
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		fmt.Printf("Could not remove test dir: %v\n", err)
+	}
 
-	// validate
-	// run the following:
-	//  docker run -it --rm -v ./test_run_2531706648:/app --network none go-testing-image:latest /bin/sh -c "go mod init test_proj && go test -v"
-	// remove temp folder
-	c.IndentedJSON(http.StatusOK, ValidateResponse{})
+	c.IndentedJSON(http.StatusOK, testStates)
 }
 
 // TODO: make validation a long running process: first POST request creates a validation request and subsequent GET requests get the status
+// TODO: make it so I could see the errors (personal discord channel maybe)
 
 func FetchTestDetails(language string, problemId string) (*TestParams, error) {
 	var testParams TestParams
@@ -135,7 +132,8 @@ func CreateTestFile(filename string, userCode string, testTemplate string, testC
 
 func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
 	response := &ValidateResponse{
-		FailedTests: make(map[int]FailReason),
+		SucceededTests: []int{},
+		FailedTests:    make(map[int]FailReason),
 	}
 
 	currentTestId := -1
@@ -178,3 +176,5 @@ func check(err error) {
 		panic(err)
 	}
 }
+
+// TODO: redo validation step using `go test --json`
