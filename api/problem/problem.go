@@ -1,10 +1,7 @@
-package problems
+package problem
 
 import (
 	"encoding/json"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 )
 
 type Problem struct {
@@ -22,11 +19,30 @@ type TestCase struct {
 	ExpectedOutput string   `json:"output"`
 }
 
-func GetProblems(c *gin.Context) {
-	rows, err := db.Query("SELECT id, title FROM problems;")
+type RowInterface interface {
+	Scan(dest ...any) error
+	Next() bool
+	Err() error
+	Close() error
+}
+
+type DBInterface interface {
+	Query(query string, args ...any) (RowInterface, error)
+	QueryRow(query string, args ...any) RowInterface
+}
+
+type ProblemDBHandler struct {
+	DB DBInterface
+}
+
+func NewProblemDBHandler(db DBInterface) *ProblemDBHandler {
+	return &ProblemDBHandler{DB: db}
+}
+
+func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
+	rows, err := handler.DB.Query("SELECT id, title FROM problems;")
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -35,38 +51,33 @@ func GetProblems(c *gin.Context) {
 		var problem Problem
 		err = rows.Scan(&problem.Id, &problem.Title)
 		if err != nil {
-			c.Error(err)
-			return
+			return nil, err
 		}
 		problems = append(problems, problem)
 	}
 	err = rows.Err()
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
-	c.IndentedJSON(http.StatusOK, problems)
+	return problems, nil
 }
 
-func getProblemById(c *gin.Context) {
-	id := c.Param("id")
-	row := db.QueryRow("SELECT id, title, description, testCases, GoPlaceholder FROM problems WHERE id = ?;", id)
+func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
+	row := handler.DB.QueryRow("SELECT id, title, description, testCases, GoPlaceholder FROM problems WHERE id = ?;", id)
 
 	var problem Problem
 	var testCaseString string
 	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString, &problem.GoPlaceholder)
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 
 	err = json.Unmarshal([]byte(testCaseString), &problem.TestCases)
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 	problem.TestIds = extractTestIds(problem.TestCases)
-	c.IndentedJSON(http.StatusOK, problem)
+	return &problem, nil
 }
 
 func extractTestIds(testCases []TestCase) []int {

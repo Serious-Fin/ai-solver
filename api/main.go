@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"serious-fin/api/problem"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -54,6 +55,7 @@ var db *sql.DB
 var chatGPTClient *openai.Client
 var contextCache *ContextCache
 var maxUserContext = 5
+var problemHandler *problem.ProblemDBHandler
 
 func main() {
 	var err error
@@ -80,6 +82,9 @@ func main() {
 	// Connect to AI agents
 	chatGPTClient = openai.NewClient(os.Getenv("CHATGPT_KEY"))
 
+	// Create DB handlers
+	problemHandler = problem.NewProblemDBHandler(db)
+
 	// Initializing router
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
@@ -88,8 +93,8 @@ func main() {
 		AllowHeaders: []string{"Content-Type"},
 	}))
 	router.Use(ErrorHandlerMiddleware())
-	router.GET("/problems", getProblems)
-	router.GET("/problems/:id", getProblemById)
+	router.GET("/problems", GetProblems)
+	router.GET("/problems/:id", GetProblemById)
 	router.POST("/query/:sessionId", queryAgent)
 	router.POST("/validate", validateCode)
 
@@ -100,3 +105,22 @@ func main() {
 TODO: Write tests for API
 TODO: make authentication so not everyone could use the query endpoint to access AIs
 */
+
+func GetProblems(c *gin.Context) {
+	problems, err := problemHandler.GetProblems()
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, problems)
+}
+
+func GetProblemById(c *gin.Context) {
+	id := c.Param("id")
+	problem, err := problemHandler.GetProblemById(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, problem)
+}
