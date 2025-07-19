@@ -161,6 +161,7 @@
 </section>
 
 <!-- TODO: add images instead of status numbers -->
+<!-- TODO: add fail reason explanaition -->
 <!-- TODO: extract code for different components to different files -->
 
 <style>
