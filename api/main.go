@@ -268,4 +268,5 @@ func isMarkdownFormat(str string) bool {
 /*
 TODO: Write tests for API
 TODO: make authentication so not everyone could use the query endpoint to access AIs
+TODO: remove ```cpp
 */
