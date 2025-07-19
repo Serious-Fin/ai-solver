@@ -6,6 +6,7 @@
 	import 'prismjs/components/prism-c.js';
 	import { marked } from 'marked';
 	import { v4 as uuidv4 } from 'uuid';
+	import { TestStatusReporter, type TestRunOutput } from '$lib/TestStatusReporter';
 
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
@@ -17,11 +18,11 @@
 		Prism.highlightAll();
 	});
 
-	console.log(data.problem);
 	let code = $state(data.problem.goPlaceholder ?? '');
-	let testCaseIds = $state(data.problem.testCaseIds ?? []);
 	let currentLanguage = $state('go');
+	let isLoading = $state(false);
 	let codeElement: HTMLElement;
+	let testStatusReporter = $state(new TestStatusReporter(data.problem.testCaseIds ?? []));
 
 	$effect(() => {
 		codeElement.innerHTML = code;
@@ -47,6 +48,35 @@
 				code = result.data.response;
 			}
 		};
+	};
+
+	const runTests = async () => {
+		isLoading = true;
+		try {
+			const testRunOutput = await fetch('http://localhost:8080/validate', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					problemId: data.problem.id,
+					code,
+					language: currentLanguage
+				})
+			});
+			if (!testRunOutput.ok) {
+				throw new Error(`HTTP error with status ${testRunOutput.status}`);
+			}
+			const response: TestRunOutput = await testRunOutput.json();
+			testStatusReporter.UpdateTestStatuses(response);
+		} catch (err) {
+			console.log(err);
+		} finally {
+			isLoading = false;
+		}
+		// take problem id
+		// take code
+		// take language
 	};
 </script>
 
@@ -120,14 +150,20 @@
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Tests</h2>
 		</header>
-		{#each testCaseIds as testCaseId}
+		{#each testStatusReporter.GetTestStatuses() as testCase}
 			<div>
-				<p>{testCaseId}</p>
-				if ( )
+				<p>Test {testCase.id}</p>
+				<p>Status: {testCase.status}</p>
 			</div>
 		{/each}
+		<footer>
+			<button onclick={runTests}> Run tests </button>
+		</footer>
 	</article>
 </section>
+
+<!-- TODO: add images instead of status numbers -->
+<!-- TODO: extract code for different components to different files -->
 
 <style>
 	#main-area {

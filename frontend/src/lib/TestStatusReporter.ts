@@ -1,26 +1,32 @@
-enum TestStatus{
+enum TestStatus {
     UNKNOWN, PASS, FAIL
 }
 
 interface SingleTestStatus {
-    status: TestStatus,
-    want?: string,
-    got?: string
+    id: number;
+    status: TestStatus;
+    want?: string;
+    got?: string;
 }
 
-interface TestRunOutput {
+export interface TestRunOutput {
     succeededTests: number[];
-    failedTests: {[id: number]: TestFailReason}
+    failedTests: FailReason[];
 }
 
-interface TestFailReason {
-    want: string,
-    got: string,
-    message: string
+interface FailReason {
+    id: number
+    want: string;
+    got: string;
+    message: string;
 }
 
 export class TestStatusReporter {
     private statuses: { [id: number]: SingleTestStatus } = {};
+
+    get getTestStatuses() {
+        return this.statuses
+    }
 
     public constructor(testCaseIds: number[]) {
         testCaseIds.forEach(id => {
@@ -36,11 +42,21 @@ export class TestStatusReporter {
             this.statuses[id].status = TestStatus.PASS
         })
 
-        output.failedTests.forEach(id => {
-            this.statuses[id].status = TestStatus.FAIL
-            this.statuses[id].want = 
+        output.failedTests.forEach(failReason => {
+            this.statuses[failReason.id].status = TestStatus.FAIL
+            this.statuses[failReason.id].want = failReason.want
+            this.statuses[failReason.id].got = failReason.got
         })
+    }
+
+    public GetTestStatuses(): SingleTestStatus[] {
+        const testResults: SingleTestStatus[] = []
+        for (const key in this.statuses) {
+            testResults.push(this.statuses[key])
+        }
+        return testResults
     }
 }
 
-// TODO: failed test output better be array of objects instead of hash
+// TODO: lint the project
+// sort the tests?

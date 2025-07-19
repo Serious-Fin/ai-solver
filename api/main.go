@@ -11,6 +11,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
@@ -114,6 +115,9 @@ func main() {
 
 	// Initializing router
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:5173"},
+	}))
 	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", getProblems)
 	router.GET("/problems/:id", getProblemById)
