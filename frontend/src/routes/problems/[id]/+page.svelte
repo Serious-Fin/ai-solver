@@ -22,7 +22,8 @@
 	let currentLanguage = $state('go');
 	let isLoading = $state(false);
 	let codeElement: HTMLElement;
-	let testStatusReporter = $state(new TestStatusReporter(data.problem.testCaseIds ?? []));
+	let testStatusReporter = new TestStatusReporter(data.problem.testCaseIds ?? []);
+	let testStates = $state(testStatusReporter.GetTestStatuses());
 
 	$effect(() => {
 		codeElement.innerHTML = code;
@@ -44,7 +45,6 @@
 		return async ({ result }) => {
 			console.log(result);
 			if (result.type === 'success') {
-				console.log('ya');
 				code = result.data.response;
 			}
 		};
@@ -69,14 +69,12 @@
 			}
 			const response: TestRunOutput = await testRunOutput.json();
 			testStatusReporter.UpdateTestStatuses(response);
+			testStates = testStatusReporter.GetTestStatuses();
 		} catch (err) {
 			console.log(err);
 		} finally {
 			isLoading = false;
 		}
-		// take problem id
-		// take code
-		// take language
 	};
 </script>
 
@@ -150,10 +148,10 @@
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Tests</h2>
 		</header>
-		{#each testStatusReporter.GetTestStatuses() as testCase}
+		{#each testStates as testState}
 			<div>
-				<p>Test {testCase.id}</p>
-				<p>Status: {testCase.status}</p>
+				<p>Test {testState.id}</p>
+				<p>Status: {testState.status}</p>
 			</div>
 		{/each}
 		<footer>

@@ -16,7 +16,7 @@ import (
 )
 
 type ValidateRequest struct {
-	ProblemId string `form:"problemId"`
+	ProblemId int    `form:"problemId"`
 	Code      string `form:"code"`
 	Language  string `form:"language"`
 }
@@ -89,7 +89,7 @@ func validateCode(c *gin.Context) {
 // TODO: make validation a long running process: first POST request creates a validation request and subsequent GET requests get the status
 // TODO: make it so I could see the errors (personal discord channel maybe)
 
-func FetchTestDetails(language string, problemId string) (*TestParams, error) {
+func FetchTestDetails(language string, problemId int) (*TestParams, error) {
 	var testParams TestParams
 	var testCasesString string
 	sqlString := fmt.Sprintf("SELECT testCases, %sTestTemplate, %sTestHelpers FROM problems WHERE id = ?;", language, language)
