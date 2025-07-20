@@ -1,4 +1,4 @@
-package main
+package query
 
 import (
 	"errors"
@@ -69,4 +69,5 @@ func (cc *ContextCache) Get(sessionId string) []Context {
 
 /*
 TODO: Implement automatic cache expiration mechanism
+TODO: add tests
 */

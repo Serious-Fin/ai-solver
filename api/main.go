@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"serious-fin/api/problem"
+	"serious-fin/api/query"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -53,15 +54,16 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 
 var db *sql.DB
 var chatGPTClient *openai.Client
-var contextCache *ContextCache
+var contextCache *query.ContextCache
 var maxUserContext = 5
 var problemHandler *problem.ProblemDBHandler
+var queryHandler *query.QueryHandler
 
 func main() {
 	var err error
 
 	// Initialize context cache
-	contextCache, err = NewContextCache(maxUserContext)
+	contextCache, err = query.NewContextCache(maxUserContext)
 	if err != nil {
 		log.Fatalf("Error creating context cache: %v", err)
 	}
@@ -84,6 +86,9 @@ func main() {
 
 	// Create DB handlers
 	problemHandler = problem.NewProblemDBHandler(db)
+	queryHandler = query.NewQueryHandler(contextCache, query.AIClients{
+		Chatgpt: chatGPTClient,
+	})
 
 	// Initializing router
 	router := gin.Default()
@@ -96,7 +101,7 @@ func main() {
 	router.GET("/problems", GetProblems)
 	router.GET("/problems/:id", GetProblemById)
 	router.GET("/problems/:id/go", GetProblemTemplateGo)
-	router.POST("/query/:sessionId", queryAgent)
+	router.POST("/query/:sessionId", QueryAgent)
 	router.POST("/validate", validateCode)
 
 	router.Run("localhost:8080")
@@ -134,4 +139,22 @@ func GetProblemTemplateGo(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, template)
+}
+
+func QueryAgent(c *gin.Context) {
+	sessionId := c.Param("sessionId")
+	var body query.Request
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	agentResponse, err := queryHandler.QueryAgent(sessionId, body)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, query.Response{
+		Response: agentResponse,
+	})
 }
