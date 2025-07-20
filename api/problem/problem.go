@@ -3,21 +3,16 @@ package problem
 import (
 	"database/sql"
 	"encoding/json"
+	"serious-fin/api/common"
 )
 
 type Problem struct {
-	Id            int        `json:"id"`
-	Title         string     `json:"title"`
-	Description   string     `json:"description,omitempty"`
-	TestCases     []TestCase `json:"testCases,omitempty"`
-	GoPlaceholder string     `json:"goPlaceholder,omitempty"`
-	TestIds       []int      `json:"testCaseIds,omitempty"`
-}
-
-type TestCase struct {
-	Id             int      `json:"id"`
-	Inputs         []string `json:"inputs"`
-	ExpectedOutput string   `json:"output"`
+	Id            int               `json:"id"`
+	Title         string            `json:"title"`
+	Description   string            `json:"description,omitempty"`
+	TestCases     []common.TestCase `json:"testCases,omitempty"`
+	GoPlaceholder string            `json:"goPlaceholder,omitempty"`
+	TestIds       []int             `json:"testCaseIds,omitempty"`
 }
 
 type DBInterface interface {
@@ -86,7 +81,7 @@ func (handler *ProblemDBHandler) GetMainFuncGo(problemId string) (string, error)
 	return mainFunction, nil
 }
 
-func extractTestIds(testCases []TestCase) []int {
+func extractTestIds(testCases []common.TestCase) []int {
 	testCaseIds := make([]int, 0)
 	for _, testCase := range testCases {
 		testCaseIds = append(testCaseIds, testCase.Id)

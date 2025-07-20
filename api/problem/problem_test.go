@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"serious-fin/api/common"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -89,7 +90,7 @@ func TestGetProblemById(t *testing.T) {
 		Id:          1,
 		Title:       "foo",
 		Description: "bar",
-		TestCases: []TestCase{
+		TestCases: []common.TestCase{
 			{
 				Id: 0,
 				Inputs: []string{

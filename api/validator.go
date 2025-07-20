@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"serious-fin/api/common"
 	"strconv"
 	"strings"
 
@@ -33,11 +34,10 @@ type ValidateResponse struct {
 	SucceededTests []int      `json:"succeededTests"`
 }
 
-// TODO: extract TestCase to common or smth
 type TestParams struct {
 	Template string
 	Helpers  string
-	Cases    []TestCase
+	Cases    []common.TestCase
 }
 
 var fileStartTemplate = `package main
@@ -107,7 +107,7 @@ func FetchTestDetails(language string, problemId int) (*TestParams, error) {
 	return &testParams, nil
 }
 
-func CreateTestFile(filename string, userCode string, testTemplate string, testCases []TestCase, helperFuncs string) {
+func CreateTestFile(filename string, userCode string, testTemplate string, testCases []common.TestCase, helperFuncs string) {
 	file, err := os.Create(filename)
 	check(err)
 	defer file.Close()
