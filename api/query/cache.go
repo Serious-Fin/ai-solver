@@ -2,6 +2,7 @@ package query
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -71,12 +72,14 @@ func (cc *ContextCache) Add(sessionId string, userInput string, aiOutput string)
 	}
 	cc.Cache[sessionId] = cache
 	cc.LastAccessed[sessionId] = time.Now()
+	fmt.Printf("Session %s: Added contexts. Current count: %d\n", sessionId, len(cc.Cache[sessionId]))
 }
 
 func (cc *ContextCache) Get(sessionId string) []Context {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 	cc.LastAccessed[sessionId] = time.Now()
+	fmt.Printf("Session %s: Retrieved contexts.\n", sessionId)
 	return cc.Cache[sessionId]
 }
 
@@ -84,11 +87,13 @@ func (cc *ContextCache) StartCleanupRoutine() {
 	ticker := time.NewTicker(cc.cleanupInterval)
 	go func() {
 		defer ticker.Stop()
+		fmt.Printf("Cleanup routine started, running every %s, session timeout is %s.\n", cc.cleanupInterval, cc.sessionTimeout)
 		for {
 			select {
 			case <-ticker.C:
 				cc.cleanupStaleSessions()
 			case <-cc.stopChan:
+				fmt.Println("Cleanup routine stopped.")
 				return
 			}
 		}
@@ -112,9 +117,14 @@ func (cc *ContextCache) cleanupStaleSessions() {
 		}
 	}
 
+	if len(sessionsToDelete) > 0 {
+		fmt.Printf("Cleanup: Found %d expired sessions.\n", len(sessionsToDelete))
+	}
+
 	for _, sessionId := range sessionsToDelete {
 		delete(cc.Cache, sessionId)
 		delete(cc.LastAccessed, sessionId)
+		fmt.Printf("Cleanup: Deleted session %s (not accessed for %s).\n", sessionId, now.Sub(cc.LastAccessed[sessionId]))
 	}
 }
 
