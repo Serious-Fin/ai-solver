@@ -75,7 +75,7 @@ func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
 }
 
 func (handler *ProblemDBHandler) GetGolangMainFunc(problemId string) (string, error) {
-	row := handler.DB.QueryRow("SELECT mainFunction FROM goTemplates WHERE problemFk = ?;", problemId)
+	row := handler.DB.QueryRow("SELECT mainFunction FROM goTemplates WHERE problemFk = ?", problemId)
 
 	var mainFunction string
 	err := row.Scan(&mainFunction)

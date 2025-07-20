@@ -3,6 +3,7 @@ package problem
 import (
 	"database/sql/driver"
 	"errors"
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -24,7 +25,6 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 		t.Error("expected error when query fails")
 	}
 
-	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -64,14 +64,13 @@ func TestGetProblems(t *testing.T) {
 
 	got, err := mockDb.GetProblems()
 	if err != nil {
-		t.Error("unexpected error when returned rows are in a correct format")
+		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
 
 	if res := reflect.DeepEqual(got, want); res == false {
 		t.Errorf("want: %v, got: %v", want, got)
 	}
 
-	// we make sure that all expectations were met
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -86,7 +85,7 @@ func TestGetProblemById(t *testing.T) {
 
 	var mockDb = NewProblemDBHandler(db)
 	problemId := "1"
-	want := Problem{
+	want := &Problem{
 		Id:          1,
 		Title:       "foo",
 		Description: "bar",
@@ -99,6 +98,7 @@ func TestGetProblemById(t *testing.T) {
 				ExpectedOutput: "[]int{0, 1}",
 			},
 		},
+		TestIds: []int{0},
 	}
 
 	values := [][]driver.Value{
@@ -111,16 +111,46 @@ func TestGetProblemById(t *testing.T) {
 		"id", "title", "description", "testCases",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetProblemById(string(rune(want.Id)))
+	got, err := mockDb.GetProblemById(fmt.Sprint(want.Id))
 	if err != nil {
-		t.Error("unexpected error when returned rows are in a correct format")
+		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
 
 	if res := reflect.DeepEqual(got, want); res == false {
 		t.Errorf("want: %v, got: %v", want, got)
 	}
 
-	// we make sure that all expectations were met
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestGetGolangMainFunc(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewProblemDBHandler(db)
+	problemId := "1"
+	want := "foo"
+
+	values := [][]driver.Value{{want}}
+
+	mock.ExpectQuery("SELECT mainFunction FROM goTemplates WHERE problemFk = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"mainFunction",
+	}).AddRows(values...))
+
+	got, err := mockDb.GetGolangMainFunc(problemId)
+	if err != nil {
+		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
+	}
+
+	if want != got {
+		t.Errorf("want: %v, got: %v", want, got)
+	}
+
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
