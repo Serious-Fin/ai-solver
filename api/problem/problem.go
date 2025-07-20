@@ -1,6 +1,7 @@
 package problem
 
 import (
+	"database/sql"
 	"encoding/json"
 )
 
@@ -19,16 +20,9 @@ type TestCase struct {
 	ExpectedOutput string   `json:"output"`
 }
 
-type RowInterface interface {
-	Scan(dest ...any) error
-	Next() bool
-	Err() error
-	Close() error
-}
-
 type DBInterface interface {
-	Query(query string, args ...any) (RowInterface, error)
-	QueryRow(query string, args ...any) RowInterface
+	Query(query string, args ...any) (*sql.Rows, error)
+	QueryRow(query string, args ...any) *sql.Row
 }
 
 type ProblemDBHandler struct {
@@ -40,7 +34,7 @@ func NewProblemDBHandler(db DBInterface) *ProblemDBHandler {
 }
 
 func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
-	rows, err := handler.DB.Query("SELECT id, title FROM problems;")
+	rows, err := handler.DB.Query("SELECT id, title FROM problems")
 	if err != nil {
 		return nil, err
 	}
@@ -63,11 +57,11 @@ func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
 }
 
 func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
-	row := handler.DB.QueryRow("SELECT id, title, description, testCases, GoPlaceholder FROM problems WHERE id = ?;", id)
+	row := handler.DB.QueryRow("SELECT id, title, description, testCases FROM problems WHERE id = ?", id)
 
 	var problem Problem
 	var testCaseString string
-	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString, &problem.GoPlaceholder)
+	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString)
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +72,18 @@ func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
 	}
 	problem.TestIds = extractTestIds(problem.TestCases)
 	return &problem, nil
+}
+
+func (handler *ProblemDBHandler) GetGolangMainFunc(problemId string) (string, error) {
+	row := handler.DB.QueryRow("SELECT mainFunction FROM goTemplates WHERE problemFk = ?;", problemId)
+
+	var mainFunction string
+	err := row.Scan(&mainFunction)
+	if err != nil {
+		return "", err
+	}
+
+	return mainFunction, nil
 }
 
 func extractTestIds(testCases []TestCase) []int {
