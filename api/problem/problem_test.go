@@ -125,7 +125,7 @@ func TestGetProblemById(t *testing.T) {
 	}
 }
 
-func TestGetGolangMainFunc(t *testing.T) {
+func TestGetMainFuncGo(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -142,7 +142,7 @@ func TestGetGolangMainFunc(t *testing.T) {
 		"mainFunction",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetGolangMainFunc(problemId)
+	got, err := mockDb.GetMainFuncGo(problemId)
 	if err != nil {
 		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}

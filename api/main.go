@@ -95,6 +95,7 @@ func main() {
 	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", GetProblems)
 	router.GET("/problems/:id", GetProblemById)
+	router.GET("/problems/:id/go", GetProblemTemplateGo)
 	router.POST("/query/:sessionId", queryAgent)
 	router.POST("/validate", validateCode)
 
@@ -103,7 +104,7 @@ func main() {
 
 /*
 TODO: Write tests for API
-TODO: make authentication so not everyone could use the query endpoint to access AIs
+TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
 */
 
 func GetProblems(c *gin.Context) {
@@ -123,4 +124,14 @@ func GetProblemById(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, problem)
+}
+
+func GetProblemTemplateGo(c *gin.Context) {
+	id := c.Param("id")
+	template, err := problemHandler.GetMainFuncGo(id)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, template)
 }
