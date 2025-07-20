@@ -33,6 +33,7 @@ type ValidateResponse struct {
 	SucceededTests []int      `json:"succeededTests"`
 }
 
+// TODO: extract TestCase to common or smth
 type TestParams struct {
 	Template string
 	Helpers  string

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	_ "github.com/mattn/go-sqlite3"
 	openai "github.com/sashabaranov/go-openai"
+	gemini "google.golang.org/genai"
 )
 
 type APIError struct {
@@ -83,11 +85,20 @@ func main() {
 
 	// Connect to AI agents
 	chatGPTClient = openai.NewClient(os.Getenv("CHATGPT_KEY"))
+	ctx := context.Background()
+	geminiClient, err := gemini.NewClient(ctx, &gemini.ClientConfig{
+		APIKey:  os.Getenv("GEMINI_KEY"),
+		Backend: gemini.BackendGeminiAPI,
+	})
+	if err != nil {
+		log.Fatalf("Error creating gemini client: %v", err)
+	}
 
 	// Create DB handlers
 	problemHandler = problem.NewProblemDBHandler(db)
 	queryHandler = query.NewQueryHandler(contextCache, query.AIClients{
 		Chatgpt: chatGPTClient,
+		Gemini:  geminiClient,
 	})
 
 	// Initializing router

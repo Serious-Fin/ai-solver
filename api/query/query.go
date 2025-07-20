@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	openai "github.com/sashabaranov/go-openai"
+	gemini "google.golang.org/genai"
 )
 
 type Request struct {
@@ -21,10 +22,12 @@ type Response struct {
 
 type AIClients struct {
 	Chatgpt *openai.Client
+	Gemini  *gemini.Client
 }
 
 type QueryHandler struct {
 	Clients      AIClients
+	Context      context.Context
 	ContextCache *ContextCache
 }
 
@@ -65,6 +68,8 @@ func (handler *QueryHandler) dispatchToAgent(agent string, sessionId string, use
 	switch agent {
 	case "chatgpt":
 		return handler.queryChatGPT(sessionId, userQuery)
+	case "gemini":
+		return handler.queryGemini(sessionId, userQuery)
 	default:
 		return "", fmt.Errorf("agent of type %s does not exist", agent)
 	}
@@ -104,6 +109,36 @@ func (handler *QueryHandler) queryChatGPT(sessionId string, userQuery string) (s
 	return aiOutput, nil
 }
 
+func (handler *QueryHandler) queryGemini(sessionId string, userQuery string) (string, error) {
+	config := &gemini.GenerateContentConfig{
+		SystemInstruction: gemini.NewContentFromText(systemPrompt, gemini.RoleUser),
+	}
+
+	previousContext := handler.ContextCache.Get(sessionId)
+	history := make([]*gemini.Content, 0)
+	for _, context := range previousContext {
+		role, err := getGeminiRole(context.Role)
+		if err != nil {
+			return "", err
+		}
+		history = append(history, gemini.NewContentFromText(context.Content, role))
+	}
+
+	chat, err := handler.Clients.Gemini.Chats.Create(handler.Context, "gemini-2.5-flash", config, history)
+	if err != nil {
+		return "", fmt.Errorf("failed to initialize new gemini chat session: %v", err)
+	}
+	res, err := chat.SendMessage(handler.Context, gemini.Part{Text: userQuery})
+	if err != nil {
+		return "", fmt.Errorf("failed to send new message to gemini: %v", err)
+	}
+
+	if len(res.Candidates) == 0 {
+		return "", fmt.Errorf("no response was received from gemini query")
+	}
+	return res.Candidates[0].Content.Parts[0].Text, nil
+}
+
 func postProcessResponse(aiOutput string) string {
 	if isGoMarkdownFormat(aiOutput) {
 		aiOutput, _ = strings.CutPrefix(aiOutput, "```go")
@@ -124,5 +159,15 @@ func isCppMarkdownFormat(str string) bool {
 	return strings.HasPrefix(str, "```cpp") && strings.HasSuffix(str, "```")
 }
 
-// TODO: add gemini as another agent
+func getGeminiRole(role string) (gemini.Role, error) {
+	switch role {
+	case RoleUser:
+		return gemini.RoleUser, nil
+	case RoleAssistant:
+		return gemini.RoleModel, nil
+	default:
+		return "", fmt.Errorf("unknown role type %s", role)
+	}
+}
+
 // TODO: add tests
