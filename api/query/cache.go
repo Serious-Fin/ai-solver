@@ -18,25 +18,36 @@ type Context struct {
 }
 
 type ContextCache struct {
-	mu      sync.Mutex
-	Cache   map[string][]Context
-	MaxSize int
-}
-
-type TimeRecord struct {
-	LastModified time.Time
-	SessionId    string
+	mu              sync.Mutex
+	Cache           map[string][]Context
+	MaxSize         int
+	LastAccessed    map[string]time.Time
+	cleanupInterval time.Duration
+	sessionTimeout  time.Duration
+	stopChan        chan struct{}
 }
 
 // maxSize - number of most recent user queries to cache
-func NewContextCache(maxSize int) (*ContextCache, error) {
+// cleanupInterval - how often the session cleanup function runs
+// sessionTimeout - duration after which a session is considered stale
+func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration) (*ContextCache, error) {
 	if maxSize < 0 {
 		return nil, errors.New("cache size can not be negative")
 	}
+	if cleanupInterval <= 0 {
+		return nil, errors.New("cleanup interval has to be positive")
+	}
+	if sessionTimeout <= 0 {
+		return nil, errors.New("session timeout has to be positive")
+	}
 
 	return &ContextCache{
-		Cache:   make(map[string][]Context),
-		MaxSize: maxSize,
+		Cache:           make(map[string][]Context),
+		MaxSize:         maxSize,
+		LastAccessed:    make(map[string]time.Time),
+		cleanupInterval: cleanupInterval,
+		sessionTimeout:  sessionTimeout,
+		stopChan:        make(chan struct{}),
 	}, nil
 }
 
@@ -59,15 +70,54 @@ func (cc *ContextCache) Add(sessionId string, userInput string, aiOutput string)
 		cache = cache[valuesToRemove:]
 	}
 	cc.Cache[sessionId] = cache
+	cc.LastAccessed[sessionId] = time.Now()
 }
 
 func (cc *ContextCache) Get(sessionId string) []Context {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
+	cc.LastAccessed[sessionId] = time.Now()
 	return cc.Cache[sessionId]
 }
 
+func (cc *ContextCache) StartCleanupRoutine() {
+	ticker := time.NewTicker(cc.cleanupInterval)
+	go func() {
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				cc.cleanupStaleSessions()
+			case <-cc.stopChan:
+				return
+			}
+		}
+	}()
+}
+
+func (cc *ContextCache) StopCleanupRoutine() {
+	close(cc.stopChan)
+}
+
+func (cc *ContextCache) cleanupStaleSessions() {
+	cc.mu.Lock()
+	defer cc.mu.Unlock()
+
+	now := time.Now()
+	sessionsToDelete := []string{}
+
+	for sessionId, lastAccessed := range cc.LastAccessed {
+		if now.Sub(lastAccessed) >= cc.sessionTimeout {
+			sessionsToDelete = append(sessionsToDelete, sessionId)
+		}
+	}
+
+	for _, sessionId := range sessionsToDelete {
+		delete(cc.Cache, sessionId)
+		delete(cc.LastAccessed, sessionId)
+	}
+}
+
 /*
-TODO: Implement automatic cache expiration mechanism
 TODO: add tests
 */
