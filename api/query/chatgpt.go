@@ -7,7 +7,7 @@ import (
 )
 
 type ChatgptClientInterface interface {
-	QueryWithContext(sessionId string, userQuery string, systemPrompt string) (string, error)
+	QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error)
 	QueryAgent(messages []openai.ChatCompletionMessage) (string, error)
 }
 
@@ -27,7 +27,7 @@ func NewChatgptClientWrapper(client *openai.Client, model string, cache *Context
 	}
 }
 
-func (wrapper *ChatgptClientWrapper) QueryWithContext(sessionId string, userQuery string, systemPrompt string) (string, error) {
+func (wrapper *ChatgptClientWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	previousContext := wrapper.Cache.Get(sessionId)
 	messages := make([]openai.ChatCompletionMessage, 0)
 	messages = append(messages, openai.ChatCompletionMessage{

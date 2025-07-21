@@ -7,19 +7,19 @@ import (
 	gemini "google.golang.org/genai"
 )
 
-type GeminiCLientInterface interface {
-	QueryWithContext(sessionId string, userQuery string, systemPrompt string) (string, error)
+type GeminiClientInterface interface {
+	QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error)
 	QueryAgent(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error)
 }
 
 type GeminiClientWrapper struct {
 	Client *gemini.Client
 	Model  string
-	Cache  *ContextCache
+	Cache  CacheInterface
 	Ctx    context.Context
 }
 
-func NewGeminiClientWrapper(client *gemini.Client, model string, cache *ContextCache, ctx context.Context) *GeminiClientWrapper {
+func NewGeminiClientWrapper(client *gemini.Client, model string, cache CacheInterface, ctx context.Context) *GeminiClientWrapper {
 	return &GeminiClientWrapper{
 		Client: client,
 		Model:  model,
@@ -28,7 +28,7 @@ func NewGeminiClientWrapper(client *gemini.Client, model string, cache *ContextC
 	}
 }
 
-func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId string, userQuery string, systemPrompt string) (string, error) {
+func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	config := &gemini.GenerateContentConfig{
 		SystemInstruction: gemini.NewContentFromText(systemPrompt, gemini.RoleUser),
 	}
@@ -45,7 +45,7 @@ func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId string, userQuery
 
 	output, err := wrapper.QueryAgent(config, history, userQuery)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	wrapper.Cache.Add(sessionId, userQuery, output)
 	return output, nil
@@ -65,4 +65,15 @@ func (wrapper *GeminiClientWrapper) QueryAgent(config *gemini.GenerateContentCon
 		return "", fmt.Errorf("no response was received from gemini query")
 	}
 	return res.Candidates[0].Content.Parts[0].Text, nil
+}
+
+func getGeminiRole(role string) (gemini.Role, error) {
+	switch role {
+	case RoleUser:
+		return gemini.RoleUser, nil
+	case RoleAssistant:
+		return gemini.RoleModel, nil
+	default:
+		return "", fmt.Errorf("unknown role type %s", role)
+	}
 }

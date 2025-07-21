@@ -77,7 +77,7 @@ var fileStartTemplate = `package main
 import "testing"
 `
 
-func CreateTestFile(filename string, userCode string, testTemplate string, testCases []TestCase, helperFuncs string) {
+func CreateTestFile(filename, userCode, testTemplate string, testCases []TestCase, helperFuncs string) {
 	file, err := os.Create(filename)
 	check(err)
 	defer file.Close()

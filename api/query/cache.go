@@ -13,6 +13,13 @@ const (
 	RoleSystem    = "system"
 )
 
+type CacheInterface interface {
+	Add(sessionId, userInput, aiOutput string)
+	Get(sessionId string) []Context
+	StartCleanupRoutine()
+	StopCleanupRoutine()
+}
+
 type Context struct {
 	Role    string
 	Content string
@@ -52,7 +59,7 @@ func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout 
 	}, nil
 }
 
-func (cc *ContextCache) Add(sessionId string, userInput string, aiOutput string) {
+func (cc *ContextCache) Add(sessionId, userInput, aiOutput string) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 

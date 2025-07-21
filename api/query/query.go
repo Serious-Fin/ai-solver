@@ -3,8 +3,6 @@ package query
 import (
 	"fmt"
 	"strings"
-
-	gemini "google.golang.org/genai"
 )
 
 type Request struct {
@@ -20,7 +18,7 @@ type Response struct {
 
 type AIClients struct {
 	Chatgpt ChatgptClientInterface
-	Gemini  GeminiCLientInterface
+	Gemini  GeminiClientInterface
 }
 
 type QueryHandler struct {
@@ -52,20 +50,25 @@ var userPromptTemplate = `<description>
 %s
 </code>`
 
+const (
+	GEMINI  = "gemini"
+	CHATGPT = "chatgpt"
+)
+
 func (handler *QueryHandler) QueryAgent(sessionId string, requestBody Request) (string, error) {
 	userQuery := fmt.Sprintf(userPromptTemplate, requestBody.Input, requestBody.Language, requestBody.Code)
 	response, err := handler.dispatchToAgent(requestBody.Agent, sessionId, userQuery)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	return postProcessResponse(response), nil
 }
 
-func (handler *QueryHandler) dispatchToAgent(agent string, sessionId string, userQuery string) (string, error) {
+func (handler *QueryHandler) dispatchToAgent(agent, sessionId, userQuery string) (string, error) {
 	switch agent {
-	case "chatgpt":
+	case CHATGPT:
 		return handler.Clients.Chatgpt.QueryWithContext(sessionId, userQuery, systemPrompt)
-	case "gemini":
+	case GEMINI:
 		return handler.Clients.Gemini.QueryWithContext(sessionId, userQuery, systemPrompt)
 	default:
 		return "", fmt.Errorf("agent of type %s does not exist", agent)
@@ -81,6 +84,7 @@ func postProcessResponse(aiOutput string) string {
 		aiOutput, _ = strings.CutPrefix(aiOutput, "```cpp")
 		aiOutput, _ = strings.CutSuffix(aiOutput, "```")
 	}
+	aiOutput = strings.TrimSpace(aiOutput)
 	return aiOutput
 }
 
@@ -90,17 +94,6 @@ func isGoMarkdownFormat(str string) bool {
 
 func isCppMarkdownFormat(str string) bool {
 	return strings.HasPrefix(str, "```cpp") && strings.HasSuffix(str, "```")
-}
-
-func getGeminiRole(role string) (gemini.Role, error) {
-	switch role {
-	case RoleUser:
-		return gemini.RoleUser, nil
-	case RoleAssistant:
-		return gemini.RoleModel, nil
-	default:
-		return "", fmt.Errorf("unknown role type %s", role)
-	}
 }
 
 // TODO: add tests

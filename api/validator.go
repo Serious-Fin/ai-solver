@@ -107,7 +107,7 @@ func FetchTestDetails(language string, problemId int) (*TestParams, error) {
 	return &testParams, nil
 }
 
-func CreateTestFile(filename string, userCode string, testTemplate string, testCases []common.TestCase, helperFuncs string) {
+func CreateTestFile(filename, userCode, testTemplate string, testCases []common.TestCase, helperFuncs string) {
 	file, err := os.Create(filename)
 	check(err)
 	defer file.Close()
