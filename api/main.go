@@ -10,6 +10,7 @@ import (
 	"os"
 	"serious-fin/api/problem"
 	"serious-fin/api/query"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -55,7 +56,6 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 }
 
 var db *sql.DB
-var chatGPTClient *openai.Client
 var contextCache *query.ContextCache
 var maxUserContext = 5
 var problemHandler *problem.ProblemDBHandler
@@ -65,7 +65,7 @@ func main() {
 	var err error
 
 	// Initialize context cache
-	contextCache, err = query.NewContextCache(maxUserContext)
+	contextCache, err = query.NewContextCache(maxUserContext, 20*time.Second, 3*time.Minute)
 	if err != nil {
 		log.Fatalf("Error creating context cache: %v", err)
 	}
@@ -84,8 +84,9 @@ func main() {
 	defer db.Close()
 
 	// Connect to AI agents
-	chatGPTClient = openai.NewClient(os.Getenv("CHATGPT_KEY"))
 	ctx := context.Background()
+	chatGPTClient := openai.NewClient(os.Getenv("CHATGPT_KEY"))
+	chatgptCLientWrapper := query.NewChatgptClientWrapper(chatGPTClient, openai.GPT3Dot5Turbo, contextCache, ctx)
 	geminiClient, err := gemini.NewClient(ctx, &gemini.ClientConfig{
 		APIKey:  os.Getenv("GEMINI_KEY"),
 		Backend: gemini.BackendGeminiAPI,
@@ -93,12 +94,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating gemini client: %v", err)
 	}
+	geminiClientWrapper := query.NewGeminiClientWrapper(geminiClient, "gemini-2.5-flash", contextCache, ctx)
 
 	// Create DB handlers
 	problemHandler = problem.NewProblemDBHandler(db)
 	queryHandler = query.NewQueryHandler(contextCache, query.AIClients{
-		Chatgpt: chatGPTClient,
-		Gemini:  geminiClient,
+		Chatgpt: chatgptCLientWrapper,
+		Gemini:  geminiClientWrapper,
 	})
 
 	// Initializing router

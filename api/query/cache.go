@@ -28,9 +28,9 @@ type ContextCache struct {
 	stopChan        chan struct{}
 }
 
-// maxSize - number of most recent user queries to cache
-// cleanupInterval - how often the session cleanup function runs
-// sessionTimeout - duration after which a session is considered stale
+// maxSize - number of most recent user queries to cache;
+// cleanupInterval - how often the session cleanup function runs;
+// sessionTimeout - duration after which a session is considered stale;
 func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration) (*ContextCache, error) {
 	if maxSize < 0 {
 		return nil, errors.New("cache size can not be negative")
