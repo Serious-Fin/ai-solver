@@ -16,5 +16,15 @@ func (gptMock *MockAIClient) Query(sessionId string, userQuery string, systemPro
 }
 
 func TestQueryChatgpt(t *testing.T) {
+	mockChatgptClient := &MockAIClient{
+		QueryFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
+			return "test code", nil
+		},
+	}
+
+	queryHandler := NewQueryHandler(nil, AIClients{
+		Chatgpt: mockChatgptClient,
+		Gemini:  &MockAIClient{},
+	})
 
 }

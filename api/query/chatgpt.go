@@ -40,18 +40,20 @@ func (wrapper *ChatgptClientWrapper) Query(sessionId string, userQuery string, s
 		Content: userQuery,
 	})
 
+	wrapper.Cache.Add(sessionId, userQuery, output)
+	return output, nil
+}
+
+func (wrapper *ChatgptClientWrapper) QueryAgent(history []any) (string, error) {
 	resp, err := wrapper.Client.CreateChatCompletion(
 		wrapper.Ctx,
 		openai.ChatCompletionRequest{
 			Model:    wrapper.Model,
-			Messages: messages,
+			Messages: history,
 		},
 	)
 	if err != nil {
 		return "", err
 	}
-
-	output := resp.Choices[0].Message.Content
-	wrapper.Cache.Add(sessionId, userQuery, output)
-	return output, nil
+	return resp.Choices[0].Message.Content, nil
 }
