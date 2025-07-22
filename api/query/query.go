@@ -17,7 +17,7 @@ type Response struct {
 }
 
 type AIAgents struct {
-	Chatgpt ChatgptClientInterface
+	Chatgpt ChatgptAgentWrapperInterface
 	Gemini  GeminiAgentWrapperInterface
 }
 

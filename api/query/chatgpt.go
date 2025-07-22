@@ -6,28 +6,37 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type ChatgptClientInterface interface {
+type ChatgptAgentWrapperInterface interface {
 	QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error)
-	QueryAgent(messages []openai.ChatCompletionMessage) (string, error)
 }
 
-type ChatgptClientWrapper struct {
+type ChatgptAgentWrapper struct {
+	Agent ChatgptInterface
+	Cache CacheInterface
+}
+
+type ChatgptInterface interface {
+	Query(messages []openai.ChatCompletionMessage) (string, error)
+}
+
+type Chatgpt struct {
 	Client *openai.Client
 	Model  string
-	Cache  *ContextCache
 	Ctx    context.Context
 }
 
-func NewChatgptClientWrapper(client *openai.Client, model string, cache *ContextCache, ctx context.Context) *ChatgptClientWrapper {
-	return &ChatgptClientWrapper{
-		Client: client,
-		Model:  model,
-		Cache:  cache,
-		Ctx:    ctx,
+func NewChatgptClientWrapper(client *openai.Client, model string, cache *ContextCache, ctx context.Context) *ChatgptAgentWrapper {
+	return &ChatgptAgentWrapper{
+		Agent: &Chatgpt{
+			Client: client,
+			Model:  model,
+			Ctx:    ctx,
+		},
+		Cache: cache,
 	}
 }
 
-func (wrapper *ChatgptClientWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
+func (wrapper *ChatgptAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	previousContext := wrapper.Cache.Get(sessionId)
 	messages := make([]openai.ChatCompletionMessage, 0)
 	messages = append(messages, openai.ChatCompletionMessage{
@@ -45,7 +54,7 @@ func (wrapper *ChatgptClientWrapper) QueryWithContext(sessionId, userQuery, syst
 		Content: userQuery,
 	})
 
-	output, err := wrapper.QueryAgent(messages)
+	output, err := wrapper.Agent.Query(messages)
 	if err != nil {
 		return "", err
 	}
@@ -54,7 +63,7 @@ func (wrapper *ChatgptClientWrapper) QueryWithContext(sessionId, userQuery, syst
 	return output, nil
 }
 
-func (wrapper *ChatgptClientWrapper) QueryAgent(messages []openai.ChatCompletionMessage) (string, error) {
+func (wrapper *Chatgpt) Query(messages []openai.ChatCompletionMessage) (string, error) {
 	resp, err := wrapper.Client.CreateChatCompletion(
 		wrapper.Ctx,
 		openai.ChatCompletionRequest{
