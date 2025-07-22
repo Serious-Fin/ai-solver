@@ -16,20 +16,18 @@ type Response struct {
 	Response string `json:"response"`
 }
 
-type AIClients struct {
+type AIAgents struct {
 	Chatgpt ChatgptClientInterface
-	Gemini  GeminiClientInterface
+	Gemini  GeminiAgentWrapperInterface
 }
 
 type QueryHandler struct {
-	Clients      AIClients
-	ContextCache *ContextCache
+	Agents AIAgents
 }
 
-func NewQueryHandler(cc *ContextCache, clients AIClients) *QueryHandler {
+func NewQueryHandler(agents AIAgents) *QueryHandler {
 	return &QueryHandler{
-		Clients:      clients,
-		ContextCache: cc,
+		Agents: agents,
 	}
 }
 
@@ -67,9 +65,9 @@ func (handler *QueryHandler) QueryAgent(sessionId string, requestBody Request) (
 func (handler *QueryHandler) dispatchToAgent(agent, sessionId, userQuery string) (string, error) {
 	switch agent {
 	case CHATGPT:
-		return handler.Clients.Chatgpt.QueryWithContext(sessionId, userQuery, systemPrompt)
+		return handler.Agents.Chatgpt.QueryWithContext(sessionId, userQuery, systemPrompt)
 	case GEMINI:
-		return handler.Clients.Gemini.QueryWithContext(sessionId, userQuery, systemPrompt)
+		return handler.Agents.Gemini.QueryWithContext(sessionId, userQuery, systemPrompt)
 	default:
 		return "", fmt.Errorf("agent of type %s does not exist", agent)
 	}

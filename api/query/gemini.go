@@ -7,28 +7,37 @@ import (
 	gemini "google.golang.org/genai"
 )
 
-type GeminiClientInterface interface {
+type GeminiAgentWrapperInterface interface {
 	QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error)
-	QueryAgent(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error)
 }
 
-type GeminiClientWrapper struct {
+type GeminiAgentWrapper struct {
+	Agent GeminiInterface
+	Cache CacheInterface
+}
+
+type GeminiInterface interface {
+	Query(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error)
+}
+
+type Gemini struct {
 	Client *gemini.Client
 	Model  string
-	Cache  CacheInterface
 	Ctx    context.Context
 }
 
-func NewGeminiClientWrapper(client *gemini.Client, model string, cache CacheInterface, ctx context.Context) *GeminiClientWrapper {
-	return &GeminiClientWrapper{
-		Client: client,
-		Model:  model,
-		Cache:  cache,
-		Ctx:    ctx,
+func NewGeminiAgentWrapper(client *gemini.Client, model string, cache CacheInterface, ctx context.Context) *GeminiAgentWrapper {
+	return &GeminiAgentWrapper{
+		Agent: &Gemini{
+			Client: client,
+			Model:  model,
+			Ctx:    ctx,
+		},
+		Cache: cache,
 	}
 }
 
-func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
+func (wrapper *GeminiAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	config := &gemini.GenerateContentConfig{
 		SystemInstruction: gemini.NewContentFromText(systemPrompt, gemini.RoleUser),
 	}
@@ -43,7 +52,7 @@ func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId, userQuery, syste
 		history = append(history, gemini.NewContentFromText(context.Content, role))
 	}
 
-	output, err := wrapper.QueryAgent(config, history, userQuery)
+	output, err := wrapper.Agent.Query(config, history, userQuery)
 	if err != nil {
 		return "", err
 	}
@@ -51,12 +60,12 @@ func (wrapper *GeminiClientWrapper) QueryWithContext(sessionId, userQuery, syste
 	return output, nil
 }
 
-func (wrapper *GeminiClientWrapper) QueryAgent(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
-	chat, err := wrapper.Client.Chats.Create(wrapper.Ctx, wrapper.Model, config, history)
+func (agent *Gemini) Query(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+	chat, err := agent.Client.Chats.Create(agent.Ctx, agent.Model, config, history)
 	if err != nil {
 		return "", fmt.Errorf("failed to initialize new gemini chat session: %v", err)
 	}
-	res, err := chat.SendMessage(wrapper.Ctx, gemini.Part{Text: userQuery})
+	res, err := chat.SendMessage(agent.Ctx, gemini.Part{Text: userQuery})
 	if err != nil {
 		return "", fmt.Errorf("failed to send new message to gemini: %v", err)
 	}

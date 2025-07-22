@@ -94,13 +94,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating gemini client: %v", err)
 	}
-	geminiClientWrapper := query.NewGeminiClientWrapper(geminiClient, "gemini-2.5-flash", contextCache, ctx)
+	geminiAgent := query.NewGeminiAgentWrapper(geminiClient, "gemini-2.5-flash", contextCache, ctx)
 
 	// Create DB handlers
 	problemHandler = problem.NewProblemDBHandler(db)
-	queryHandler = query.NewQueryHandler(contextCache, query.AIClients{
+	queryHandler = query.NewQueryHandler(query.AIAgents{
 		Chatgpt: chatgptCLientWrapper,
-		Gemini:  geminiClientWrapper,
+		Gemini:  geminiAgent,
 	})
 
 	// Initializing router

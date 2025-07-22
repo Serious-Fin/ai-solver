@@ -33,9 +33,9 @@ func TestShouldInvokeChatgpt(t *testing.T) {
 		},
 	}
 
-	queryHandler := NewQueryHandler(nil, AIClients{
+	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: mockChatgptClient,
-		Gemini:  &MockGeminiClientWrapper{},
+		Gemini:  &MockGeminiAgentWrapper{},
 	})
 
 	got, err := queryHandler.QueryAgent("1", Request{
@@ -54,13 +54,13 @@ func TestShouldInvokeChatgpt(t *testing.T) {
 
 func TestShouldInvokeGemini(t *testing.T) {
 	want := "test code"
-	mockGeminiClient := &MockGeminiClientWrapper{
+	mockGeminiClient := &MockGeminiAgentWrapper{
 		QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
 			return want, nil
 		},
 	}
 
-	queryHandler := NewQueryHandler(nil, AIClients{
+	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: &MockChatgptClient{},
 		Gemini:  mockGeminiClient,
 	})
@@ -80,9 +80,9 @@ func TestShouldInvokeGemini(t *testing.T) {
 }
 
 func TestShouldThrowOnUnrecognizedAgent(t *testing.T) {
-	queryHandler := NewQueryHandler(nil, AIClients{
+	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: &MockChatgptClient{},
-		Gemini:  &MockGeminiClientWrapper{},
+		Gemini:  &MockGeminiAgentWrapper{},
 	})
 
 	_, err := queryHandler.QueryAgent("1", Request{
@@ -115,13 +115,13 @@ func TestShouldTrimSpace(t *testing.T) {
 }
 
 func ExecuteAndExpectText(t *testing.T, aiOutput, want string) {
-	mockGeminiClient := &MockGeminiClientWrapper{
+	mockGeminiClient := &MockGeminiAgentWrapper{
 		QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
 			return aiOutput, nil
 		},
 	}
 
-	queryHandler := NewQueryHandler(nil, AIClients{
+	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: &MockChatgptClient{},
 		Gemini:  mockGeminiClient,
 	})
