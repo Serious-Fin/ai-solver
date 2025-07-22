@@ -1,6 +1,8 @@
 package query
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	gemini "google.golang.org/genai"
@@ -28,35 +30,134 @@ func (mockGemini *MockGemini) Query(config *gemini.GenerateContentConfig, histor
 	return "", nil
 }
 
-func TestGeminiShouldAddSystemInstructions(t *testing.T) {
-	/*
-		systemInstructions := "system instruction"
-		mockGeminiClientWrapper := &MockGeminiClientWrapper{
-			QueryAgentFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
-				return config.SystemInstruction.Parts[0].Text, nil
+func TestGeminiShouldAddSystemPromptToQuery(t *testing.T) {
+	geminiAgentWrapper := &GeminiAgentWrapper{
+		Agent: &MockGemini{
+			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+				return fmt.Sprintf("%s||%s", config.SystemInstruction.Parts[0].Text, config.SystemInstruction.Role), nil
 			},
-			QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
-				originalGeminiClientWrapper := NewGeminiAgentWrapper(nil, "model", &mockCache{}, context.Background())
-				return originalGeminiClientWrapper.QueryWithContext(sessionId, userQuery, systemPrompt)
+		},
+		Cache: &MockCache{},
+	}
+
+	queryHandler := NewQueryHandler(AIAgents{
+		Chatgpt: &MockChatgptClient{},
+		Gemini:  geminiAgentWrapper,
+	})
+
+	got, err := queryHandler.QueryAgent("1", Request{
+		Input:    "input",
+		Code:     "code",
+		Language: "lang",
+		Agent:    GEMINI,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if got != fmt.Sprintf("%s||%s", systemPrompt, string(gemini.RoleUser)) {
+		t.Errorf("got %s, want %s", got, systemPrompt)
+	}
+}
+
+func TestGeminiShouldAddHistory(t *testing.T) {
+	contextToString := func(context []Context) string {
+		extractedStrings := []string{}
+		for _, msg := range context {
+			extractedStrings = append(extractedStrings, msg.Content)
+			role, _ := getGeminiRole(msg.Role)
+			extractedStrings = append(extractedStrings, string(role))
+		}
+		return strings.Join(extractedStrings, "||")
+	}
+	history := []Context{
+		{
+			Role:    RoleUser,
+			Content: "Hey",
+		},
+		{
+			Role:    RoleAssistant,
+			Content: "Hello, how can I help you?",
+		},
+		{
+			Role:    RoleUser,
+			Content: "what's 2+2?",
+		},
+		{
+			Role:    RoleAssistant,
+			Content: "4",
+		},
+	}
+
+	geminiAgentWrapper := &GeminiAgentWrapper{
+		Agent: &MockGemini{
+			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+				extractedStrings := []string{}
+				for _, msg := range history {
+					extractedStrings = append(extractedStrings, msg.Parts[0].Text)
+					extractedStrings = append(extractedStrings, msg.Role)
+				}
+				return strings.Join(extractedStrings, "||"), nil
 			},
-		}
+		},
+		Cache: &MockCache{
+			GetFunc: func(sessionId string) []Context {
+				return history
+			},
+		},
+	}
 
-		queryHandler := NewQueryHandler(nil, AIClients{
-			Chatgpt: &MockChatgptClient{},
-			Gemini:  mockGeminiClientWrapper,
-		})
+	queryHandler := NewQueryHandler(AIAgents{
+		Chatgpt: &MockChatgptClient{},
+		Gemini:  geminiAgentWrapper,
+	})
 
-		got, err := queryHandler.QueryAgent("1", Request{
-			Input:    "input",
-			Code:     "code",
-			Language: "lang",
-			Agent:    GEMINI,
-		})
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if got != systemInstructions {
-			t.Errorf("got %s, want %s", got, systemInstructions)
-		}
-	*/
+	got, err := queryHandler.QueryAgent("1", Request{
+		Input:    "input",
+		Code:     "code",
+		Language: "lang",
+		Agent:    GEMINI,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if got != contextToString(history) {
+		t.Errorf("got %s, want %s", got, contextToString(history))
+	}
+}
+
+func TestGeminiShouldAddUserQuery(t *testing.T) {
+	wantInput := "foo bar baz"
+	wantCode := "func int main"
+	wantLanguage := "golang"
+	want := fmt.Sprintf(userPromptTemplate, wantInput, wantLanguage, wantCode)
+	geminiAgentWrapper := &GeminiAgentWrapper{
+		Agent: &MockGemini{
+			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+				return userQuery, nil
+			},
+		},
+		Cache: &MockCache{},
+	}
+
+	queryHandler := NewQueryHandler(AIAgents{
+		Chatgpt: &MockChatgptClient{},
+		Gemini:  geminiAgentWrapper,
+	})
+
+	got, err := queryHandler.QueryAgent("1", Request{
+		Input:    wantInput,
+		Code:     wantCode,
+		Language: wantLanguage,
+		Agent:    GEMINI,
+	})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if got != want {
+		t.Errorf("got %s, want %s", got, want)
+	}
+}
+
+func TestGeminiHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
+
 }
