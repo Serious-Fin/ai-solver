@@ -11,6 +11,7 @@ import (
 	"serious-fin/api/common"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type ValidatorHandler struct {
@@ -32,6 +33,16 @@ type FailInfo struct {
 	Want    string `json:"want"`
 	Got     string `json:"got"`
 	Message string `json:"message"`
+}
+
+type testEvent struct {
+	Time        time.Time `json:"Time"`
+	Action      string    `json:"Action"`
+	Package     string    `json:"Package"`
+	Test        string    `json:"Test,omitempty"`
+	Elapsed     float64   `json:"Elapsed,omitempty"`
+	Output      string    `json:"Output,omitempty"`
+	FailedBuild string    `json:"FailedBuild,omitempty"`
 }
 
 type testCreationParams struct {
@@ -204,6 +215,64 @@ func parseCommandOutput(cmdOutput string) (*Response, error) {
 	}
 
 	return response, nil
+}
+
+func parseCommandOutput2(cmdOutput string) (*Response, error) {
+	response := &Response{
+		SucceededTests: []int{},
+		FailedTests:    make([]FailInfo, 0),
+	}
+
+	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
+	var testLog testEvent
+	var err error
+	var line string
+	for scanner.Scan() {
+		line = scanner.Text()
+
+		err = json.Unmarshal([]byte(line), &testLog)
+		if err != nil {
+			return nil, fmt.Errorf("could not unmarshal test output to testEvent: %v", err)
+		}
+
+		if testLog.Test == "" {
+			// test event log is not associated with any specific test so we skip this log
+			continue
+		}
+
+		switch testLog.Action {
+		case "output":
+			// get test id
+			// save output
+		case "pass":
+			// get test id
+			// delete output logs
+			// add test as success
+		case "fail":
+			// get test id
+			// find the want and got from output
+			// add as failed test
+			// delete output logs
+
+		}
+	}
+
+	return response, nil
+}
+
+var testNameRegex = regexp.MustCompile(`.+_(\d+)$`)
+
+func getTestId(testName string) (int, error) {
+	matches := testNameRegex.FindStringSubmatch(testName)
+	if len(matches) != 2 {
+		return -1, fmt.Errorf("could not find one test id match in test name \"%s\", found matches %d (expected 2)", testName, len(matches))
+	}
+
+	id, err := strconv.Atoi(matches[1])
+	if err != nil {
+		return -1, fmt.Errorf("could not parse test id from match \"%s\"", matches[1])
+	}
+	return id, nil
 }
 
 // TODO: redo validation step using `go test --json`
