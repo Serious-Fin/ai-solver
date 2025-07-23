@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/sashabaranov/go-openai"
-	gemini "google.golang.org/genai"
 )
 
 type MockChatgptAgentWrapper struct {
@@ -136,48 +135,15 @@ func TestChatgptShouldAddHistory(t *testing.T) {
 	}
 }
 
-func TestChatgptShouldAddUserQuery(t *testing.T) {
-	wantInput := "foo bar baz"
-	wantCode := "func int main"
-	wantLanguage := "golang"
-	want := fmt.Sprintf(userPromptTemplate, wantInput, wantLanguage, wantCode)
-	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
-			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
-				return userQuery, nil
-			},
-		},
-		Cache: &MockCache{},
-	}
-
-	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
-		Gemini:  geminiAgentWrapper,
-	})
-
-	got, err := queryHandler.QueryAgent("1", Request{
-		Input:    wantInput,
-		Code:     wantCode,
-		Language: wantLanguage,
-		Agent:    GEMINI,
-	})
-	if err != nil {
-		t.Errorf("unexpected error: %v", err)
-	}
-	if got != want {
-		t.Errorf("got %s, want %s", got, want)
-	}
-}
-
 func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 	inputs := []string{fmt.Sprintf(userPromptTemplate, "input1", "lang1", "code1"), fmt.Sprintf(userPromptTemplate, "input2", "lang2", "code2")}
 	outputs := []string{"agent response 1", "agent response 2"}
 	requestResponseIndex := 0
 	sessionId := "1"
 	cache, _ := NewContextCache(5, time.Minute, 2*time.Minute)
-	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
-			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+	chatgptAgentWrapper := &ChatgptAgentWrapper{
+		Agent: &MockChatgpt{
+			QueryFunc: func(messages []openai.ChatCompletionMessage) (string, error) {
 				return outputs[requestResponseIndex], nil
 			},
 		},
@@ -185,8 +151,8 @@ func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
-		Gemini:  geminiAgentWrapper,
+		Chatgpt: chatgptAgentWrapper,
+		Gemini:  &MockGeminiAgentWrapper{},
 	})
 
 	// send first message. request/response should be cached
@@ -194,7 +160,7 @@ func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 		Input:    "input1",
 		Code:     "code1",
 		Language: "lang1",
-		Agent:    GEMINI,
+		Agent:    CHATGPT,
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -206,7 +172,7 @@ func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 		Input:    "input2",
 		Code:     "code2",
 		Language: "lang2",
-		Agent:    GEMINI,
+		Agent:    CHATGPT,
 	})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
