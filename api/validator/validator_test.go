@@ -148,3 +148,31 @@ FAIL    test_proj       0.002s
 		t.Errorf("got %v, want %v", got, want)
 	}
 }
+
+var saved = `
+{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}
+{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestGetProblemsQueryThrowsError"}
+{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblemsQueryThrowsError","Output":"=== RUN   TestGetProblemsQueryThrowsError\n"}
+{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblemsQueryThrowsError","Output":"--- PASS: TestGetProblemsQueryThrowsError (0.00s)\n"}
+{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestGetProblemsQueryThrowsError","Elapsed":0}
+{"Time":"2025-07-23T17:39:44.977998+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestGetProblems"}
+{"Time":"2025-07-23T17:39:44.978004+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblems","Output":"=== RUN   TestGetProblems\n"}
+{"Time":"2025-07-23T17:39:44.978091+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblems","Output":"--- PASS: TestGetProblems (0.00s)\n"}
+{"Time":"2025-07-23T17:39:44.978097+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestGetProblems","Elapsed":0}
+{"Time":"2025-07-23T17:39:44.978103+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestGetProblemById"}
+{"Time":"2025-07-23T17:39:44.978107+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblemById","Output":"=== RUN   TestGetProblemById\n"}
+{"Time":"2025-07-23T17:39:44.978294+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetProblemById","Output":"--- PASS: TestGetProblemById (0.00s)\n"}
+{"Time":"2025-07-23T17:39:44.978304+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestGetProblemById","Elapsed":0}
+{"Time":"2025-07-23T17:39:44.978309+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestGetMainFuncGo"}
+{"Time":"2025-07-23T17:39:44.978312+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetMainFuncGo","Output":"=== RUN   TestGetMainFuncGo\n"}
+{"Time":"2025-07-23T17:39:44.978332+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestGetMainFuncGo","Output":"--- PASS: TestGetMainFuncGo (0.00s)\n"}
+{"Time":"2025-07-23T17:39:44.978336+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestGetMainFuncGo","Elapsed":0}
+{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestPurposefulBad1"}
+{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestPurposefulBad1","Output":"=== RUN   TestPurposefulBad1\n"}
+{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestPurposefulBad1","Output":"    problem_test.go:161: got [foo bar], want [apple banana]\n"}
+{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestPurposefulBad1","Output":"--- FAIL: TestPurposefulBad1 (0.00s)\n"}
+{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestPurposefulBad1","Elapsed":0}
+{"Time":"2025-07-23T17:39:44.978384+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\n"}
+{"Time":"2025-07-23T17:39:44.978865+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"exit status 1\n"}
+{"Time":"2025-07-23T17:39:44.978872+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\tserious-fin/api/problem\t0.172s\n"}
+{"Time":"2025-07-23T17:39:44.978877+03:00","Action":"fail","Package":"serious-fin/api/problem","Elapsed":0.172}`

@@ -20,7 +20,6 @@ type ValidatorHandler struct {
 type Request struct {
 	ProblemId int    `form:"problemId"`
 	Code      string `form:"code"`
-	Language  string `form:"language"`
 }
 
 type Response struct {
@@ -35,10 +34,10 @@ type FailInfo struct {
 	Message string `json:"message"`
 }
 
-type TestParams struct {
-	Template string
-	Helpers  string
-	Cases    []common.TestCase
+type testCreationParams struct {
+	singleTestTemplate string
+	additionalHelpers  string
+	problemTestCases   []common.TestCase
 }
 
 var fileStartTemplate = `package main
@@ -56,7 +55,7 @@ func NewValidatorHandler(db common.DBInterface) *ValidatorHandler {
 }
 
 func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
-	testParams, err := vh.FetchTestDetails(body.Language, body.ProblemId)
+	testParams, err := vh.fetchTestCreationParams(body.ProblemId)
 	if err != nil {
 		return nil, err
 	}
@@ -65,70 +64,107 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	CreateTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, testParams.Template, testParams.Cases, testParams.Helpers)
-	var outputBuffer bytes.Buffer
-	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", dirPath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test -v")
-	testCommand.Stdout = &outputBuffer
-	testCommand.Stderr = &outputBuffer
 
-	_ = testCommand.Run()
-	testStates, err := ParseCommandOutput(outputBuffer.String())
+	err = createTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, *testParams)
+	if err != nil {
+		return nil, err
+	}
+
+	testOutput, err := runTests(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	testStates, err := parseCommandOutput(testOutput)
 	if err != nil {
 		return nil, err
 	}
 
 	err = os.RemoveAll(dirPath)
 	if err != nil {
-		fmt.Printf("Could not remove test dir: %v\n", err)
+		return nil, fmt.Errorf("error removing test dir: %v", err)
 	}
-
 	return testStates, nil
 }
 
 // TODO: Write tests for API
-func (vh *ValidatorHandler) FetchTestDetails(language string, problemId int) (*TestParams, error) {
-	var testParams TestParams
-	var testCasesString string
-	sqlString := fmt.Sprintf("SELECT testCases, %sTestTemplate, %sTestHelpers FROM problems WHERE id = ?;", language, language)
-	row := vh.DB.QueryRow(sqlString, problemId)
-	err := row.Scan(&testCasesString, &testParams.Template, &testParams.Helpers)
+func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreationParams, error) {
+	var testParams testCreationParams
+	row := vh.DB.QueryRow("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?", problemId)
+	err := row.Scan(&testParams.singleTestTemplate, &testParams.additionalHelpers)
 	if err != nil {
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(testCasesString), &testParams.Cases)
+	var testCasesString string
+	row = vh.DB.QueryRow("SELECT testCases FROM problems WHERE id = ?", problemId)
+	err = row.Scan(&testCasesString)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal([]byte(testCasesString), &testParams.problemTestCases)
 	if err != nil {
 		return nil, err
 	}
 	return &testParams, nil
 }
 
-func CreateTestFile(filename, userCode, testTemplate string, testCases []common.TestCase, helperFuncs string) {
+func createTestFile(filename, testableCode string, testParams testCreationParams) error {
 	file, err := os.Create(filename)
-	check(err)
+	if err != nil {
+		return err
+	}
 	defer file.Close()
 
-	_, err = file.WriteString(fmt.Sprintf("%s\n", fileStartTemplate))
-	check(err)
-	_, err = file.WriteString(fmt.Sprintf("%s\n", userCode))
-	check(err)
-
-	for _, testCase := range testCases {
-		newTestCode := testTemplate
-		newTestCode = strings.Replace(newTestCode, "{{ID}}", fmt.Sprintf("_%s", strconv.Itoa(testCase.Id)), 1)
-		newTestCode = strings.Replace(newTestCode, "{{OUTPUT}}", testCase.ExpectedOutput, 1)
-		for inputIndex, input := range testCase.Inputs {
-			newTestCode = strings.Replace(newTestCode, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
-		}
-		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCode))
-		check(err)
+	_, err = file.WriteString(fmt.Sprintf("%s\n%s\n", fileStartTemplate, testableCode))
+	if err != nil {
+		return err
 	}
 
-	_, err = file.WriteString(helperFuncs)
-	check(err)
+	var newTestCase string
+	for _, testCaseData := range testParams.problemTestCases {
+		newTestCase = testParams.singleTestTemplate
+		newTestCase = strings.Replace(newTestCase, "{{ID}}", fmt.Sprintf("_%s", strconv.Itoa(testCaseData.Id)), 1)
+		newTestCase = strings.Replace(newTestCase, "{{OUTPUT}}", testCaseData.ExpectedOutput, 1)
+		for inputIndex, input := range testCaseData.Inputs {
+			newTestCase = strings.Replace(newTestCase, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
+		}
+		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCase))
+		if err != nil {
+			return err
+		}
+	}
+
+	_, err = file.WriteString(testParams.additionalHelpers)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-func ParseCommandOutput(cmdOutput string) (*Response, error) {
+func runTests(testFilePath string) (string, error) {
+	var outputBuffer bytes.Buffer
+	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", testFilePath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test -v")
+	testCommand.Stdout = &outputBuffer
+	testCommand.Stderr = &outputBuffer
+
+	err := testCommand.Run()
+	output := outputBuffer.String()
+	if err != nil {
+		// return error only if it's status code is other than 1, because failing go tests return exit code 1
+		exitError, ok := err.(*exec.ExitError)
+		if !ok {
+			return output, fmt.Errorf("command execution returned error not of type ExitError: %v", err)
+		}
+		if exitError.ExitCode() != 1 {
+			return output, fmt.Errorf("command execution returned error: %v", err)
+		}
+	}
+	return output, nil
+}
+
+func parseCommandOutput(cmdOutput string) (*Response, error) {
 	response := &Response{
 		SucceededTests: []int{},
 		FailedTests:    make([]FailInfo, 0),
@@ -168,12 +204,6 @@ func ParseCommandOutput(cmdOutput string) (*Response, error) {
 	}
 
 	return response, nil
-}
-
-func check(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 // TODO: redo validation step using `go test --json`
