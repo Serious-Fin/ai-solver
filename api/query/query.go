@@ -93,5 +93,3 @@ func isGoMarkdownFormat(str string) bool {
 func isCppMarkdownFormat(str string) bool {
 	return strings.HasPrefix(str, "```cpp") && strings.HasSuffix(str, "```")
 }
-
-// TODO: add tests
