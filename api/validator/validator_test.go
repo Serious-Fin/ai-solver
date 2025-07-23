@@ -6,36 +6,56 @@ import (
 )
 
 func TestValidationOutputParsing(t *testing.T) {
-	cmdOutput := `go: creating new go.mod: module test_proj
-go: to add module requirements and sums:
-        go mod tidy
-=== RUN   TestTwoSum_0
---- PASS: TestTwoSum_0 (0.00s)
-=== RUN   TestTwoSum_1
---- PASS: TestTwoSum_1 (0.00s)
-=== RUN   TestTwoSum_2
---- PASS: TestTwoSum_2 (0.00s)
-=== RUN   TestTwoSum_3
---- PASS: TestTwoSum_3 (0.00s)
-=== RUN   TestTwoSum_4
-    code_test.go:48: got [], want [4 9]
---- FAIL: TestTwoSum_4 (0.00s)
-=== RUN   TestTwoSum_5
-    code_test.go:55: got [1 3], want [1 4]
---- FAIL: TestTwoSum_5 (0.00s)
-=== RUN   TestTwoSum_6
---- PASS: TestTwoSum_6 (0.00s)
-=== RUN   TestTwoSum_7
---- PASS: TestTwoSum_7 (0.00s)
-=== RUN   TestTwoSum_8
-    code_test.go:76: got [4 5], want [3 7]
---- FAIL: TestTwoSum_8 (0.00s)
-=== RUN   TestTwoSum_9
---- PASS: TestTwoSum_9 (0.00s)
-FAIL
-exit status 1
-FAIL    test_proj       0.002s
-`
+	cmdOutput := `
+	{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_0"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"=== RUN   TestTwoSum_0\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"--- PASS: TestTwoSum_0 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_1"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"=== RUN   TestTwoSum_1\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"--- PASS: TestTwoSum_1 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_2"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Output":"=== RUN   TestTwoSum_2\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Output":"--- PASS: TestTwoSum_2 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_3"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Output":"=== RUN   TestTwoSum_3\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Output":"--- PASS: TestTwoSum_3 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_4"}
+	{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_4","Output":"=== RUN   TestTwoSum_4\n"}
+	{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_4","Output":"    code_test.go:48: got [], want [4 9]\n"}
+	{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_4","Output":"--- FAIL: TestTwoSum_4 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestTwoSum_4","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_5"}
+	{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_5","Output":"=== RUN   TestTwoSum_5\n"}
+	{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_5","Output":"    code_test.go:55: got [1 3], want [1 4]\n"}
+	{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_5","Output":"--- FAIL: TestTwoSum_5 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestTwoSum_5","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_6"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_6","Output":"=== RUN   TestTwoSum_6\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_6","Output":"--- PASS: TestTwoSum_6 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_6","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_7"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_7","Output":"=== RUN   TestTwoSum_7\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_7","Output":"--- PASS: TestTwoSum_7 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_7","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_8"}
+	{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_8","Output":"=== RUN   TestTwoSum_8\n"}
+	{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_8","Output":"    code_test.go:76: got [4 5], want [3 7]\n"}
+	{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_8","Output":"--- FAIL: TestTwoSum_8 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestTwoSum_8","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_9"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_9","Output":"=== RUN   TestTwoSum_9\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_9","Output":"--- PASS: TestTwoSum_9 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_9","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.978384+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\n"}
+	{"Time":"2025-07-23T17:39:44.978865+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"exit status 1\n"}
+	{"Time":"2025-07-23T17:39:44.978872+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\ttest_proj\t0.002s\n"}
+	{"Time":"2025-07-23T17:39:44.978877+03:00","Action":"fail","Package":"serious-fin/api/problem","Elapsed":0.172}`
+
 	want := &Response{
 		SucceededTests: []int{0, 1, 2, 3, 6, 7, 9},
 		FailedTests: []FailInfo{
@@ -71,32 +91,31 @@ FAIL    test_proj       0.002s
 }
 
 func TestAllPassingCase(t *testing.T) {
-	cmdOutput := `=== RUN   TestTwoSum_0
---- PASS: TestTwoSum_0 (0.00s)
-=== RUN   TestTwoSum_1
---- PASS: TestTwoSum_1 (0.00s)
-=== RUN   TestTwoSum_2
---- PASS: TestTwoSum_2 (0.00s)
-=== RUN   TestTwoSum_3
---- PASS: TestTwoSum_3 (0.00s)
-=== RUN   TestTwoSum_4
---- PASS: TestTwoSum_4 (0.00s)
-=== RUN   TestTwoSum_5
---- PASS: TestTwoSum_5 (0.00s)
-=== RUN   TestTwoSum_6
---- PASS: TestTwoSum_6 (0.00s)
-=== RUN   TestTwoSum_7
---- PASS: TestTwoSum_7 (0.00s)
-=== RUN   TestTwoSum_8
---- PASS: TestTwoSum_8 (0.00s)
-=== RUN   TestTwoSum_9
---- PASS: TestTwoSum_9 (0.00s)
-PASS
-exit status 0
-PASS    test_proj       0.002s
-`
+	cmdOutput := `
+	{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_0"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"=== RUN   TestTwoSum_0\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"--- PASS: TestTwoSum_0 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_1"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"=== RUN   TestTwoSum_1\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"--- PASS: TestTwoSum_1 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_2"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Output":"=== RUN   TestTwoSum_2\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Output":"--- PASS: TestTwoSum_2 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_2","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_3"}
+	{"Time":"2025-07-23T17:39:44.977634+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Output":"=== RUN   TestTwoSum_3\n"}
+	{"Time":"2025-07-23T17:39:44.977976+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Output":"--- PASS: TestTwoSum_3 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.977987+03:00","Action":"pass","Package":"serious-fin/api/problem","Test":"TestTwoSum_3","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.978384+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"PASS\n"}
+	{"Time":"2025-07-23T17:39:44.978865+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"exit status 0\n"}
+	{"Time":"2025-07-23T17:39:44.978872+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"PASS\ttest_proj\t0.002s\n"}
+	{"Time":"2025-07-23T17:39:44.978877+03:00","Action":"fail","Package":"serious-fin/api/problem","Elapsed":0.172}`
+
 	want := &Response{
-		SucceededTests: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+		SucceededTests: []int{0, 1, 2, 3},
 		FailedTests:    []FailInfo{},
 	}
 
@@ -111,16 +130,23 @@ PASS    test_proj       0.002s
 }
 
 func TestAllFailingCase(t *testing.T) {
-	cmdOutput := `=== RUN   TestTwoSum_0
-    code_test.go:48: got hello world, want goodbye world
---- FAIL: TestTwoSum_0 (0.00s)
-=== RUN   TestTwoSum_1
-    code_test.go:48: got foo bar baz, want apple banana
---- FAIL: TestTwoSum_1 (0.00s)
-FAIL
-exit status 1
-FAIL    test_proj       0.002s
-`
+	cmdOutput := `
+	{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}
+	{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_0"}
+	{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"=== RUN   TestTwoSum_0\n"}
+	{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"    code_test.go:48: got hello world, want goodbye world\n"}
+	{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Output":"--- FAIL: TestTwoSum_0 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestTwoSum_0","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.97834+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_1"}
+	{"Time":"2025-07-23T17:39:44.978342+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"=== RUN   TestTwoSum_1\n"}
+	{"Time":"2025-07-23T17:39:44.978362+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"    code_test.go:48: got foo bar baz, want apple banana\n"}
+	{"Time":"2025-07-23T17:39:44.978374+03:00","Action":"output","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Output":"--- FAIL: TestTwoSum_1 (0.00s)\n"}
+	{"Time":"2025-07-23T17:39:44.97838+03:00","Action":"fail","Package":"serious-fin/api/problem","Test":"TestTwoSum_1","Elapsed":0}
+	{"Time":"2025-07-23T17:39:44.978384+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\n"}
+	{"Time":"2025-07-23T17:39:44.978865+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"exit status 1\n"}
+	{"Time":"2025-07-23T17:39:44.978872+03:00","Action":"output","Package":"serious-fin/api/problem","Output":"FAIL\ttest_proj\t0.002s\n"}
+	{"Time":"2025-07-23T17:39:44.978877+03:00","Action":"fail","Package":"serious-fin/api/problem","Elapsed":0.172}`
+
 	want := &Response{
 		SucceededTests: []int{},
 		FailedTests: []FailInfo{
@@ -149,7 +175,7 @@ FAIL    test_proj       0.002s
 	}
 }
 
-func TestNewParsingFunc(t *testing.T) {
+func TestSuccessAndFailureWithArrays(t *testing.T) {
 	cmdOutput := `
 	{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}
 	{"Time":"2025-07-23T17:39:44.977589+03:00","Action":"run","Package":"serious-fin/api/problem","Test":"TestTwoSum_0"}
@@ -182,7 +208,7 @@ func TestNewParsingFunc(t *testing.T) {
 		},
 	}
 
-	got, err := parseCommandOutput2(cmdOutput)
+	got, err := parseCommandOutput(cmdOutput)
 	if err != nil {
 		t.Errorf("error while parsing: %v", err)
 	}

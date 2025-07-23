@@ -156,7 +156,7 @@ func createTestFile(filename, testableCode string, testParams testCreationParams
 
 func runTests(testFilePath string) (string, error) {
 	var outputBuffer bytes.Buffer
-	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", testFilePath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test -v")
+	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", testFilePath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test --json")
 	testCommand.Stdout = &outputBuffer
 	testCommand.Stderr = &outputBuffer
 
@@ -176,48 +176,6 @@ func runTests(testFilePath string) (string, error) {
 }
 
 func parseCommandOutput(cmdOutput string) (*Response, error) {
-	response := &Response{
-		SucceededTests: []int{},
-		FailedTests:    make([]FailInfo, 0),
-	}
-
-	currentTestId := -1
-	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
-
-	runRegex := regexp.MustCompile(`^=== RUN\s+Test.*_(\d+)$`)
-	passRegex := regexp.MustCompile(`^--- PASS:`)
-	failRegex := regexp.MustCompile(`^\s+.*?:\d+:\s+got\s+(.*),\s+want\s(.*)$`)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-
-		if matches := runRegex.FindStringSubmatch(line); len(matches) > 1 {
-			id, err := strconv.Atoi(matches[1])
-			if err != nil {
-				return nil, fmt.Errorf("could not parse test ID from line %s", line)
-			}
-			currentTestId = id
-		} else if passRegex.MatchString(line) && currentTestId != -1 {
-			response.SucceededTests = append(response.SucceededTests, currentTestId)
-			currentTestId = -1
-		} else if matches := failRegex.FindStringSubmatch(line); len(matches) > 2 && currentTestId != -1 {
-			response.FailedTests = append(response.FailedTests, FailInfo{
-				Id:      currentTestId,
-				Got:     matches[1],
-				Want:    matches[2],
-				Message: WRONG_OUTPUT,
-			})
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		return nil, fmt.Errorf("error scanning command output: %w", err)
-	}
-
-	return response, nil
-}
-
-func parseCommandOutput2(cmdOutput string) (*Response, error) {
 	response := &Response{
 		SucceededTests: []int{},
 		FailedTests:    make([]FailInfo, 0),
@@ -312,5 +270,3 @@ func getGotWantValues(text string) (string, string, error) {
 	}
 	return matches[1], matches[2], nil
 }
-
-// TODO: redo validation step using `go test --json`
