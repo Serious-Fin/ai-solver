@@ -27,18 +27,27 @@ type Context struct {
 
 type ContextCache struct {
 	mu              sync.Mutex
-	Cache           map[string][]Context
-	MaxSize         int
-	LastAccessed    map[string]time.Time
+	cache           map[string][]Context
+	maxSize         int
+	lastAccessed    map[string]time.Time
 	cleanupInterval time.Duration
 	sessionTimeout  time.Duration
 	stopChan        chan struct{}
+	nowFunc         func() time.Time
 }
 
-// maxSize - number of most recent user queries to cache;
+// maxSize - number of most recent requests/responses to cache;
 // cleanupInterval - how often the session cleanup function runs;
 // sessionTimeout - duration after which a session is considered stale;
 func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration) (*ContextCache, error) {
+	return NewContextCacheWithTimeFunc(maxSize, cleanupInterval, sessionTimeout, time.Now)
+}
+
+// maxSize - number of most recent requests/responses to cache;
+// cleanupInterval - how often the session cleanup function runs;
+// sessionTimeout - duration after which a session is considered stale;
+// nowFunc - function which gets current time. time.Now() by default but can be overwritten for tests
+func NewContextCacheWithTimeFunc(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration, nowFunc func() time.Time) (*ContextCache, error) {
 	if maxSize < 0 {
 		return nil, errors.New("cache size can not be negative")
 	}
@@ -50,12 +59,13 @@ func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout 
 	}
 
 	return &ContextCache{
-		Cache:           make(map[string][]Context),
-		MaxSize:         maxSize,
-		LastAccessed:    make(map[string]time.Time),
+		cache:           make(map[string][]Context),
+		maxSize:         maxSize,
+		lastAccessed:    make(map[string]time.Time),
 		cleanupInterval: cleanupInterval,
 		sessionTimeout:  sessionTimeout,
 		stopChan:        make(chan struct{}),
+		nowFunc:         nowFunc,
 	}, nil
 }
 
@@ -63,7 +73,7 @@ func (cc *ContextCache) Add(sessionId, userInput, aiOutput string) {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 
-	cache := cc.Cache[sessionId]
+	cache := cc.cache[sessionId]
 	cache = append(cache, Context{
 		Role:    RoleUser,
 		Content: userInput,
@@ -73,21 +83,21 @@ func (cc *ContextCache) Add(sessionId, userInput, aiOutput string) {
 		Content: aiOutput,
 	})
 
-	if len(cache) > cc.MaxSize*2 {
-		valuesToRemove := (len(cache) - (cc.MaxSize * 2))
+	if len(cache) > cc.maxSize*2 {
+		valuesToRemove := (len(cache) - (cc.maxSize * 2))
 		cache = cache[valuesToRemove:]
 	}
-	cc.Cache[sessionId] = cache
-	cc.LastAccessed[sessionId] = time.Now()
-	fmt.Printf("Session %s: Added contexts. Current count: %d\n", sessionId, len(cc.Cache[sessionId]))
+	cc.cache[sessionId] = cache
+	cc.lastAccessed[sessionId] = cc.nowFunc()
+	fmt.Printf("Session %s: Added contexts. Current count: %d\n", sessionId, len(cc.cache[sessionId]))
 }
 
 func (cc *ContextCache) Get(sessionId string) []Context {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
-	cc.LastAccessed[sessionId] = time.Now()
+	cc.lastAccessed[sessionId] = cc.nowFunc()
 	fmt.Printf("Session %s: Retrieved contexts.\n", sessionId)
-	return cc.Cache[sessionId]
+	return cc.cache[sessionId]
 }
 
 func (cc *ContextCache) StartCleanupRoutine() {
@@ -115,10 +125,10 @@ func (cc *ContextCache) cleanupStaleSessions() {
 	cc.mu.Lock()
 	defer cc.mu.Unlock()
 
-	now := time.Now()
+	now := cc.nowFunc()
 	sessionsToDelete := []string{}
 
-	for sessionId, lastAccessed := range cc.LastAccessed {
+	for sessionId, lastAccessed := range cc.lastAccessed {
 		if now.Sub(lastAccessed) >= cc.sessionTimeout {
 			sessionsToDelete = append(sessionsToDelete, sessionId)
 		}
@@ -129,12 +139,8 @@ func (cc *ContextCache) cleanupStaleSessions() {
 	}
 
 	for _, sessionId := range sessionsToDelete {
-		delete(cc.Cache, sessionId)
-		delete(cc.LastAccessed, sessionId)
-		fmt.Printf("Cleanup: Deleted session %s (not accessed for %s).\n", sessionId, now.Sub(cc.LastAccessed[sessionId]))
+		fmt.Printf("Cleanup: Deleted session %s (not accessed for %s).\n", sessionId, now.Sub(cc.lastAccessed[sessionId]))
+		delete(cc.cache, sessionId)
+		delete(cc.lastAccessed, sessionId)
 	}
 }
-
-/*
-TODO: add tests
-*/
