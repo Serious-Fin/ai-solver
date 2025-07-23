@@ -127,7 +127,6 @@ func main() {
 TODO: Write tests for API
 TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
 TODO: extract setup steps to separate functions
-TODO: extract package tests to sub-folders named tests
 */
 
 func GetProblems(c *gin.Context) {
