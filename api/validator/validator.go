@@ -85,9 +85,7 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	return testStates, nil
 }
 
-// TODO: make validation a long running process: first POST request creates a validation request and subsequent GET requests get the status
-// TODO: make it so I could see the errors (personal discord channel maybe)
-
+// TODO: Write tests for API
 func (vh *ValidatorHandler) FetchTestDetails(language string, problemId int) (*TestParams, error) {
 	var testParams TestParams
 	var testCasesString string
