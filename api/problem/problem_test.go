@@ -18,7 +18,7 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 	}
 	defer db.Close()
 
-	var mockDb = NewProblemDBHandler(db)
+	var mockDb = NewProblemHandler(db)
 
 	mock.ExpectQuery("SELECT id, title FROM problems").WillReturnError(errors.New("error querying data"))
 
@@ -38,7 +38,7 @@ func TestGetProblems(t *testing.T) {
 	}
 	defer db.Close()
 
-	var mockDb = NewProblemDBHandler(db)
+	var mockDb = NewProblemHandler(db)
 	want := []Problem{
 		{
 			Id:    1,
@@ -84,7 +84,7 @@ func TestGetProblemById(t *testing.T) {
 	}
 	defer db.Close()
 
-	var mockDb = NewProblemDBHandler(db)
+	var mockDb = NewProblemHandler(db)
 	problemId := "1"
 	want := &Problem{
 		Id:          1,
@@ -133,7 +133,7 @@ func TestGetMainFuncGo(t *testing.T) {
 	}
 	defer db.Close()
 
-	var mockDb = NewProblemDBHandler(db)
+	var mockDb = NewProblemHandler(db)
 	problemId := "1"
 	want := "foo"
 

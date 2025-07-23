@@ -10,6 +10,7 @@ import (
 	"os"
 	"serious-fin/api/problem"
 	"serious-fin/api/query"
+	"serious-fin/api/validator"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -60,6 +61,7 @@ var contextCache *query.ContextCache
 var maxUserContext = 5
 var problemHandler *problem.ProblemDBHandler
 var queryHandler *query.QueryHandler
+var validatorHandler *validator.ValidatorHandler
 
 func main() {
 	var err error
@@ -96,12 +98,13 @@ func main() {
 	}
 	geminiAgent := query.NewGeminiAgentWrapper(geminiClient, "gemini-2.5-flash", contextCache, ctx)
 
-	// Create DB handlers
-	problemHandler = problem.NewProblemDBHandler(db)
+	// Create handlers
+	problemHandler = problem.NewProblemHandler(db)
 	queryHandler = query.NewQueryHandler(query.AIAgents{
 		Chatgpt: chatgptCLientWrapper,
 		Gemini:  geminiAgent,
 	})
+	validatorHandler = validator.NewValidatorHandler(db)
 
 	// Initializing router
 	router := gin.Default()
@@ -115,7 +118,7 @@ func main() {
 	router.GET("/problems/:id", GetProblemById)
 	router.GET("/problems/:id/go", GetProblemTemplateGo)
 	router.POST("/query/:sessionId", QueryAgent)
-	router.POST("/validate", validateCode)
+	router.POST("/validate", ValidateCode)
 
 	router.Run("localhost:8080")
 }
@@ -124,6 +127,7 @@ func main() {
 TODO: Write tests for API
 TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
 TODO: extract setup steps to separate functions
+TODO: extract package tests to sub-folders named tests
 */
 
 func GetProblems(c *gin.Context) {
@@ -171,4 +175,19 @@ func QueryAgent(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, query.Response{
 		Response: agentResponse,
 	})
+}
+
+func ValidateCode(c *gin.Context) {
+	var body validator.Request
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	validatorResponse, err := validatorHandler.Validate(body)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, validatorResponse)
 }

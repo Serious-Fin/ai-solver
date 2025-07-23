@@ -287,6 +287,7 @@ func TestCacheStopCleanupRoutine(t *testing.T) {
 
 	cache.StopCleanupRoutine()
 	timer.Advance(30 * time.Millisecond)
+	time.Sleep(cleanupInterval * 2)
 
 	cache.Add("1", "input2", "output2")
 	timer.Advance(30 * time.Millisecond)

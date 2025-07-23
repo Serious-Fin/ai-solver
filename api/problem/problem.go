@@ -1,7 +1,6 @@
 package problem
 
 import (
-	"database/sql"
 	"encoding/json"
 	"serious-fin/api/common"
 )
@@ -15,16 +14,11 @@ type Problem struct {
 	TestIds       []int             `json:"testCaseIds,omitempty"`
 }
 
-type DBInterface interface {
-	Query(query string, args ...any) (*sql.Rows, error)
-	QueryRow(query string, args ...any) *sql.Row
-}
-
 type ProblemDBHandler struct {
-	DB DBInterface
+	DB common.DBInterface
 }
 
-func NewProblemDBHandler(db DBInterface) *ProblemDBHandler {
+func NewProblemHandler(db common.DBInterface) *ProblemDBHandler {
 	return &ProblemDBHandler{DB: db}
 }
 

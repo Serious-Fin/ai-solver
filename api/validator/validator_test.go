@@ -1,4 +1,4 @@
-package main
+package validator
 
 import (
 	"reflect"
@@ -36,7 +36,7 @@ FAIL
 exit status 1
 FAIL    test_proj       0.002s
 `
-	want := &ValidateResponse{
+	want := &Response{
 		SucceededTests: []int{0, 1, 2, 3, 6, 7, 9},
 		FailedTests: []FailInfo{
 			{
@@ -95,7 +95,7 @@ PASS
 exit status 0
 PASS    test_proj       0.002s
 `
-	want := &ValidateResponse{
+	want := &Response{
 		SucceededTests: []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
 		FailedTests:    []FailInfo{},
 	}
@@ -121,7 +121,7 @@ FAIL
 exit status 1
 FAIL    test_proj       0.002s
 `
-	want := &ValidateResponse{
+	want := &Response{
 		SucceededTests: []int{},
 		FailedTests: []FailInfo{
 			{

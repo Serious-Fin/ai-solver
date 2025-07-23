@@ -1,25 +1,31 @@
-package main
+package validator
 
 import (
 	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
 	"serious-fin/api/common"
 	"strconv"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
-type ValidateRequest struct {
+type ValidatorHandler struct {
+	DB common.DBInterface
+}
+
+type Request struct {
 	ProblemId int    `form:"problemId"`
 	Code      string `form:"code"`
 	Language  string `form:"language"`
+}
+
+type Response struct {
+	FailedTests    []FailInfo `json:"failedTests"`
+	SucceededTests []int      `json:"succeededTests"`
 }
 
 type FailInfo struct {
@@ -27,11 +33,6 @@ type FailInfo struct {
 	Want    string `json:"want"`
 	Got     string `json:"got"`
 	Message string `json:"message"`
-}
-
-type ValidateResponse struct {
-	FailedTests    []FailInfo `json:"failedTests"`
-	SucceededTests []int      `json:"succeededTests"`
 }
 
 type TestParams struct {
@@ -48,23 +49,21 @@ const (
 	WRONG_OUTPUT = "wrong output"
 )
 
-func validateCode(c *gin.Context) {
-	var body ValidateRequest
-	if err := c.ShouldBind(&body); err != nil {
-		c.Error(err)
-		return
+func NewValidatorHandler(db common.DBInterface) *ValidatorHandler {
+	return &ValidatorHandler{
+		DB: db,
 	}
+}
 
-	testParams, err := FetchTestDetails(body.Language, body.ProblemId)
+func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
+	testParams, err := vh.FetchTestDetails(body.Language, body.ProblemId)
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 
 	dirPath, err := os.MkdirTemp(".", "test_run_")
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 	CreateTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, testParams.Template, testParams.Cases, testParams.Helpers)
 	var outputBuffer bytes.Buffer
@@ -75,8 +74,7 @@ func validateCode(c *gin.Context) {
 	_ = testCommand.Run()
 	testStates, err := ParseCommandOutput(outputBuffer.String())
 	if err != nil {
-		c.Error(err)
-		return
+		return nil, err
 	}
 
 	err = os.RemoveAll(dirPath)
@@ -84,17 +82,17 @@ func validateCode(c *gin.Context) {
 		fmt.Printf("Could not remove test dir: %v\n", err)
 	}
 
-	c.IndentedJSON(http.StatusOK, testStates)
+	return testStates, nil
 }
 
 // TODO: make validation a long running process: first POST request creates a validation request and subsequent GET requests get the status
 // TODO: make it so I could see the errors (personal discord channel maybe)
 
-func FetchTestDetails(language string, problemId int) (*TestParams, error) {
+func (vh *ValidatorHandler) FetchTestDetails(language string, problemId int) (*TestParams, error) {
 	var testParams TestParams
 	var testCasesString string
 	sqlString := fmt.Sprintf("SELECT testCases, %sTestTemplate, %sTestHelpers FROM problems WHERE id = ?;", language, language)
-	row := db.QueryRow(sqlString, problemId)
+	row := vh.DB.QueryRow(sqlString, problemId)
 	err := row.Scan(&testCasesString, &testParams.Template, &testParams.Helpers)
 	if err != nil {
 		return nil, err
@@ -132,8 +130,8 @@ func CreateTestFile(filename, userCode, testTemplate string, testCases []common.
 	check(err)
 }
 
-func ParseCommandOutput(cmdOutput string) (*ValidateResponse, error) {
-	response := &ValidateResponse{
+func ParseCommandOutput(cmdOutput string) (*Response, error) {
+	response := &Response{
 		SucceededTests: []int{},
 		FailedTests:    make([]FailInfo, 0),
 	}
