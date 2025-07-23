@@ -9,22 +9,22 @@ import (
 	gemini "google.golang.org/genai"
 )
 
-type MockGeminiAgentWrapper struct {
+type mockGeminiAgentWrapper struct {
 	QueryWithContextFunc func(sessionId, userQuery, systemPrompt string) (string, error)
 }
 
-func (mockWrapper *MockGeminiAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
+func (mockWrapper *mockGeminiAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	if mockWrapper.QueryWithContextFunc != nil {
 		return mockWrapper.QueryWithContextFunc(sessionId, userQuery, systemPrompt)
 	}
 	return "", nil
 }
 
-type MockGemini struct {
+type mockGemini struct {
 	QueryFunc func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error)
 }
 
-func (mockGemini *MockGemini) Query(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
+func (mockGemini *mockGemini) Query(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 	if mockGemini.QueryFunc != nil {
 		return mockGemini.QueryFunc(config, history, userQuery)
 	}
@@ -33,16 +33,16 @@ func (mockGemini *MockGemini) Query(config *gemini.GenerateContentConfig, histor
 
 func TestGeminiShouldAddSystemPromptToQuery(t *testing.T) {
 	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
+		Agent: &mockGemini{
 			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 				return fmt.Sprintf("%s||%s", config.SystemInstruction.Parts[0].Text, config.SystemInstruction.Role), nil
 			},
 		},
-		Cache: &MockCache{},
+		Cache: &mockCache{},
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  geminiAgentWrapper,
 	})
 
@@ -81,7 +81,7 @@ func TestGeminiShouldAddHistory(t *testing.T) {
 	}
 
 	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
+		Agent: &mockGemini{
 			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 				extractedStrings := []string{}
 				for _, msg := range history {
@@ -91,7 +91,7 @@ func TestGeminiShouldAddHistory(t *testing.T) {
 				return strings.Join(extractedStrings, "||"), nil
 			},
 		},
-		Cache: &MockCache{
+		Cache: &mockCache{
 			GetFunc: func(sessionId string) []Context {
 				return history
 			},
@@ -99,7 +99,7 @@ func TestGeminiShouldAddHistory(t *testing.T) {
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  geminiAgentWrapper,
 	})
 
@@ -123,16 +123,16 @@ func TestGeminiShouldAddUserQuery(t *testing.T) {
 	wantLanguage := "golang"
 	want := fmt.Sprintf(userPromptTemplate, wantInput, wantLanguage, wantCode)
 	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
+		Agent: &mockGemini{
 			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 				return userQuery, nil
 			},
 		},
-		Cache: &MockCache{},
+		Cache: &mockCache{},
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  geminiAgentWrapper,
 	})
 
@@ -157,7 +157,7 @@ func TestGeminiHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 	sessionId := "1"
 	cache, _ := NewContextCache(5, time.Minute, 2*time.Minute)
 	geminiAgentWrapper := &GeminiAgentWrapper{
-		Agent: &MockGemini{
+		Agent: &mockGemini{
 			QueryFunc: func(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 				return outputs[requestResponseIndex], nil
 			},
@@ -166,7 +166,7 @@ func TestGeminiHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  geminiAgentWrapper,
 	})
 

@@ -8,22 +8,22 @@ import (
 	"github.com/sashabaranov/go-openai"
 )
 
-type MockChatgptAgentWrapper struct {
+type mockChatgptAgentWrapper struct {
 	QueryWithContextFunc func(sessionId, userQuery, systemPrompt string) (string, error)
 }
 
-func (mockWrapper *MockChatgptAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
+func (mockWrapper *mockChatgptAgentWrapper) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
 	if mockWrapper.QueryWithContextFunc != nil {
 		return mockWrapper.QueryWithContextFunc(sessionId, userQuery, systemPrompt)
 	}
 	return "", nil
 }
 
-type MockChatgpt struct {
+type mockChatgpt struct {
 	QueryFunc func(messages []openai.ChatCompletionMessage) (string, error)
 }
 
-func (mockChatgpt *MockChatgpt) Query(messages []openai.ChatCompletionMessage) (string, error) {
+func (mockChatgpt *mockChatgpt) Query(messages []openai.ChatCompletionMessage) (string, error) {
 	if mockChatgpt.QueryFunc != nil {
 		return mockChatgpt.QueryFunc(messages)
 	}
@@ -32,7 +32,7 @@ func (mockChatgpt *MockChatgpt) Query(messages []openai.ChatCompletionMessage) (
 
 func TestChatgptShouldAddSystemPromptToQuery(t *testing.T) {
 	chatgptAgentWrapper := &ChatgptAgentWrapper{
-		Agent: &MockChatgpt{
+		Agent: &mockChatgpt{
 			QueryFunc: func(messages []openai.ChatCompletionMessage) (string, error) {
 				return contextToString([]Context{
 					{
@@ -42,12 +42,12 @@ func TestChatgptShouldAddSystemPromptToQuery(t *testing.T) {
 				}), nil
 			},
 		},
-		Cache: &MockCache{},
+		Cache: &mockCache{},
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: chatgptAgentWrapper,
-		Gemini:  &MockGeminiAgentWrapper{},
+		Gemini:  &mockGeminiAgentWrapper{},
 	})
 
 	got, err := queryHandler.QueryAgent("1", Request{
@@ -89,7 +89,7 @@ func TestChatgptShouldAddHistory(t *testing.T) {
 	}
 
 	chatgptAgentWrapper := &ChatgptAgentWrapper{
-		Agent: &MockChatgpt{
+		Agent: &mockChatgpt{
 			QueryFunc: func(messages []openai.ChatCompletionMessage) (string, error) {
 				context := []Context{}
 				for _, ctx := range messages {
@@ -101,7 +101,7 @@ func TestChatgptShouldAddHistory(t *testing.T) {
 				return contextToString(context), nil
 			},
 		},
-		Cache: &MockCache{
+		Cache: &mockCache{
 			GetFunc: func(sessionId string) []Context {
 				return history
 			},
@@ -110,7 +110,7 @@ func TestChatgptShouldAddHistory(t *testing.T) {
 
 	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: chatgptAgentWrapper,
-		Gemini:  &MockGeminiAgentWrapper{},
+		Gemini:  &mockGeminiAgentWrapper{},
 	})
 
 	got, err := queryHandler.QueryAgent("1", Request{
@@ -142,7 +142,7 @@ func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 	sessionId := "1"
 	cache, _ := NewContextCache(5, time.Minute, 2*time.Minute)
 	chatgptAgentWrapper := &ChatgptAgentWrapper{
-		Agent: &MockChatgpt{
+		Agent: &mockChatgpt{
 			QueryFunc: func(messages []openai.ChatCompletionMessage) (string, error) {
 				return outputs[requestResponseIndex], nil
 			},
@@ -152,7 +152,7 @@ func TestChatgptHistoryShouldSavePreviousRequestsConversation(t *testing.T) {
 
 	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: chatgptAgentWrapper,
-		Gemini:  &MockGeminiAgentWrapper{},
+		Gemini:  &mockGeminiAgentWrapper{},
 	})
 
 	// send first message. request/response should be cached

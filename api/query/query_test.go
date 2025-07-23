@@ -2,32 +2,11 @@ package query
 
 import (
 	"testing"
-
-	"github.com/sashabaranov/go-openai"
 )
-
-type MockChatgptClient struct {
-	QueryWithContextFunc func(sessionId, userQuery, systemPrompt string) (string, error)
-	QueryAgentFunc       func(messages []openai.ChatCompletionMessage) (string, error)
-}
-
-func (gptMock *MockChatgptClient) QueryWithContext(sessionId, userQuery, systemPrompt string) (string, error) {
-	if gptMock.QueryWithContextFunc != nil {
-		return gptMock.QueryWithContextFunc(sessionId, userQuery, systemPrompt)
-	}
-	return "", nil
-}
-
-func (gptMock *MockChatgptClient) QueryAgent(messages []openai.ChatCompletionMessage) (string, error) {
-	if gptMock.QueryAgentFunc != nil {
-		return gptMock.QueryAgentFunc(messages)
-	}
-	return "", nil
-}
 
 func TestShouldInvokeChatgpt(t *testing.T) {
 	want := "test code"
-	mockChatgptClient := &MockChatgptClient{
+	mockChatgptClient := &mockChatgptAgentWrapper{
 		QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
 			return want, nil
 		},
@@ -35,7 +14,7 @@ func TestShouldInvokeChatgpt(t *testing.T) {
 
 	queryHandler := NewQueryHandler(AIAgents{
 		Chatgpt: mockChatgptClient,
-		Gemini:  &MockGeminiAgentWrapper{},
+		Gemini:  &mockGeminiAgentWrapper{},
 	})
 
 	got, err := queryHandler.QueryAgent("1", Request{
@@ -54,14 +33,14 @@ func TestShouldInvokeChatgpt(t *testing.T) {
 
 func TestShouldInvokeGemini(t *testing.T) {
 	want := "test code"
-	mockGeminiClient := &MockGeminiAgentWrapper{
+	mockGeminiClient := &mockGeminiAgentWrapper{
 		QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
 			return want, nil
 		},
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  mockGeminiClient,
 	})
 
@@ -81,8 +60,8 @@ func TestShouldInvokeGemini(t *testing.T) {
 
 func TestShouldThrowOnUnrecognizedAgent(t *testing.T) {
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
-		Gemini:  &MockGeminiAgentWrapper{},
+		Chatgpt: &mockChatgptAgentWrapper{},
+		Gemini:  &mockGeminiAgentWrapper{},
 	})
 
 	_, err := queryHandler.QueryAgent("1", Request{
@@ -115,14 +94,14 @@ func TestShouldTrimSpace(t *testing.T) {
 }
 
 func ExecuteAndExpectText(t *testing.T, aiOutput, want string) {
-	mockGeminiClient := &MockGeminiAgentWrapper{
+	mockGeminiClient := &mockGeminiAgentWrapper{
 		QueryWithContextFunc: func(sessionId, userQuery, systemPrompt string) (string, error) {
 			return aiOutput, nil
 		},
 	}
 
 	queryHandler := NewQueryHandler(AIAgents{
-		Chatgpt: &MockChatgptClient{},
+		Chatgpt: &mockChatgptAgentWrapper{},
 		Gemini:  mockGeminiClient,
 	})
 
