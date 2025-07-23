@@ -296,5 +296,3 @@ func TestCacheStopCleanupRoutine(t *testing.T) {
 		t.Errorf("got %d, want %d context items", len(got), 2)
 	}
 }
-
-// TODO: Lowercase interfaces in this module that shouldn't be exported
