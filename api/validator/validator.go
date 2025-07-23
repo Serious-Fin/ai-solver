@@ -93,7 +93,7 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 
 	err = os.RemoveAll(dirPath)
 	if err != nil {
-		return nil, fmt.Errorf("error removing test dir: %v", err)
+		return nil, fmt.Errorf("error removing test dir \"%s\": %v", dirPath, err)
 	}
 	return testStates, nil
 }
@@ -222,17 +222,19 @@ func parseCommandOutput2(cmdOutput string) (*Response, error) {
 		SucceededTests: []int{},
 		FailedTests:    make([]FailInfo, 0),
 	}
+	testOutputs := make(map[int][]string)
 
+	cmdOutput = strings.TrimSpace(cmdOutput)
 	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
-	var testLog testEvent
 	var err error
 	var line string
 	for scanner.Scan() {
 		line = scanner.Text()
 
+		var testLog testEvent
 		err = json.Unmarshal([]byte(line), &testLog)
 		if err != nil {
-			return nil, fmt.Errorf("could not unmarshal test output to testEvent: %v", err)
+			return nil, fmt.Errorf("could not unmarshal test output \"%s\" to testEvent: %v", line, err)
 		}
 
 		if testLog.Test == "" {
@@ -242,28 +244,54 @@ func parseCommandOutput2(cmdOutput string) (*Response, error) {
 
 		switch testLog.Action {
 		case "output":
-			// get test id
-			// save output
+			testId, err := getTestId(testLog.Test)
+			if err != nil {
+				return nil, err
+			}
+			testOutputs[testId] = append(testOutputs[testId], testLog.Output)
 		case "pass":
-			// get test id
-			// delete output logs
-			// add test as success
+			testId, err := getTestId(testLog.Test)
+			if err != nil {
+				return nil, err
+			}
+			delete(testOutputs, testId)
+			response.SucceededTests = append(response.SucceededTests, testId)
 		case "fail":
-			// get test id
-			// find the want and got from output
-			// add as failed test
-			// delete output logs
+			testId, err := getTestId(testLog.Test)
+			if err != nil {
+				return nil, err
+			}
 
+			foundGotAndWant := false
+			for _, output := range testOutputs[testId] {
+				got, want, err := getGotWantValues(output)
+				if nil == err {
+					response.FailedTests = append(response.FailedTests, FailInfo{
+						Id:      testId,
+						Want:    want,
+						Got:     got,
+						Message: WRONG_OUTPUT,
+					})
+					delete(testOutputs, testId)
+					foundGotAndWant = true
+					break
+				}
+			}
+			if foundGotAndWant {
+				continue
+			}
+
+			return nil, fmt.Errorf("did not find \"got\" and \"want\" values for failed test \"%s\" in output values %v", testLog.Test, testOutputs[testId])
 		}
 	}
 
 	return response, nil
 }
 
-var testNameRegex = regexp.MustCompile(`.+_(\d+)$`)
+var testIdFromNameRegex = regexp.MustCompile(`.+_(\d+)$`)
 
 func getTestId(testName string) (int, error) {
-	matches := testNameRegex.FindStringSubmatch(testName)
+	matches := testIdFromNameRegex.FindStringSubmatch(testName)
 	if len(matches) != 2 {
 		return -1, fmt.Errorf("could not find one test id match in test name \"%s\", found matches %d (expected 2)", testName, len(matches))
 	}
@@ -273,6 +301,16 @@ func getTestId(testName string) (int, error) {
 		return -1, fmt.Errorf("could not parse test id from match \"%s\"", matches[1])
 	}
 	return id, nil
+}
+
+var gotAndWantValueRegex = regexp.MustCompile(`got\s+(.*),\s+want\s+(.*)\n$`)
+
+func getGotWantValues(text string) (string, string, error) {
+	matches := gotAndWantValueRegex.FindStringSubmatch(text)
+	if len(matches) != 3 {
+		return "", "", fmt.Errorf("could not find got and want values in \"%s\", found matches %d (expected 3)", text, len(matches))
+	}
+	return matches[1], matches[2], nil
 }
 
 // TODO: redo validation step using `go test --json`
