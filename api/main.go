@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -26,8 +28,8 @@ type APIError struct {
 	Details string `json:"details,omitempty"`
 }
 
-func sendAPIErrorResponse(c *gin.Context, statusCode int, message string, err error) {
-	log.Printf("API_ERROR: Status=%d, Message='%s', InternalError='%v'", statusCode, message, err)
+func sendError(c *gin.Context, statusCode int, message string, err error) {
+	sendDiscordMessage(err.Error())
 
 	apiError := APIError{Message: message}
 	if gin.IsDebugging() {
@@ -51,7 +53,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 				message = "Resource not found"
 			}
 
-			sendAPIErrorResponse(c, statusCode, message, err)
+			sendError(c, statusCode, message, err)
 		}
 	}
 }
@@ -65,6 +67,8 @@ var validatorHandler *validator.ValidatorHandler
 
 func main() {
 	var err error
+
+	// TODO: expect env file
 
 	// Initialize context cache
 	contextCache, err = query.NewContextCache(maxUserContext, 20*time.Second, 3*time.Minute)
@@ -124,9 +128,9 @@ func main() {
 }
 
 /*
+TODO: make it so I could see the errors (personal discord channel maybe)
 TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
 TODO: extract setup steps to separate functions
-TODO: make it so I could see the errors (personal discord channel maybe)
 */
 
 func GetProblems(c *gin.Context) {
@@ -189,4 +193,33 @@ func ValidateCode(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, validatorResponse)
+}
+
+func sendDiscordMessage(message string) {
+	discordToken := os.Getenv("DISCORD_TOKEN")
+	channelId := os.Getenv("DISCORD_CHANNEL_ID")
+	discordApiUrl := fmt.Sprintf("https://discord.com/api/channels/%s/messages", channelId)
+	body := map[string]string{"content": message}
+	bodyAsBytes, err := json.Marshal(body)
+	if err != nil {
+		// printing this to standard output because this function is supposed to send errors to discord normally
+		log.Printf("error marshaling discord message body: %v", err)
+	}
+	req, err := http.NewRequest("POST", discordApiUrl, bytes.NewBuffer(bodyAsBytes))
+	if err != nil {
+		log.Printf("could not create new discord request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", discordToken)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("error while sending request to discord: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Printf("got response status code %d, when expected %d", resp.StatusCode, http.StatusOK)
+	}
 }
