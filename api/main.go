@@ -128,7 +128,6 @@ func main() {
 }
 
 /*
-TODO: make it so I could see the errors (personal discord channel maybe)
 TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
 TODO: extract setup steps to separate functions
 */
