@@ -58,59 +58,25 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 	}
 }
 
-var db *sql.DB
-var contextCache *query.ContextCache
-var maxUserContext = 5
 var problemHandler *problem.ProblemDBHandler
 var queryHandler *query.QueryHandler
 var validatorHandler *validator.ValidatorHandler
 
 func main() {
-	var err error
+	sessionContextSize := 5
+	cacheCleanupInterval := 20 * time.Second
+	sessionTimeoutInCache := 3 * time.Minute
 
-	// TODO: expect env file
+	checkEnvVariablesOrFail()
+	cache := initializeContextCacheOrFail(sessionContextSize, cacheCleanupInterval, sessionTimeoutInCache)
+	database := connectToDatabaseOrFail("database.db")
+	defer database.Close()
+	aiHandlers := createAIAgentClientsOrFail(openai.GPT3Dot5Turbo, "gemini-2.5-flash", cache)
 
-	// Initialize context cache
-	contextCache, err = query.NewContextCache(maxUserContext, 20*time.Second, 3*time.Minute)
-	if err != nil {
-		log.Fatalf("Error creating context cache: %v", err)
-	}
+	problemHandler = problem.NewProblemHandler(database)
+	queryHandler = query.NewQueryHandler(*aiHandlers)
+	validatorHandler = validator.NewValidatorHandler(database)
 
-	// Connection to database
-	databaseName := "database.db"
-	db, err = sql.Open("sqlite3", fmt.Sprintf("./%s", databaseName))
-	if err != nil {
-		log.Fatalf("Error while opening database: %v", err)
-	}
-	err = db.Ping()
-	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
-	}
-	log.Println("Successfully connected to database")
-	defer db.Close()
-
-	// Connect to AI agents
-	ctx := context.Background()
-	chatGPTClient := openai.NewClient(os.Getenv("CHATGPT_KEY"))
-	chatgptCLientWrapper := query.NewChatgptClientWrapper(chatGPTClient, openai.GPT3Dot5Turbo, contextCache, ctx)
-	geminiClient, err := gemini.NewClient(ctx, &gemini.ClientConfig{
-		APIKey:  os.Getenv("GEMINI_KEY"),
-		Backend: gemini.BackendGeminiAPI,
-	})
-	if err != nil {
-		log.Fatalf("Error creating gemini client: %v", err)
-	}
-	geminiAgent := query.NewGeminiAgentWrapper(geminiClient, "gemini-2.5-flash", contextCache, ctx)
-
-	// Create handlers
-	problemHandler = problem.NewProblemHandler(db)
-	queryHandler = query.NewQueryHandler(query.AIAgents{
-		Chatgpt: chatgptCLientWrapper,
-		Gemini:  geminiAgent,
-	})
-	validatorHandler = validator.NewValidatorHandler(db)
-
-	// Initializing router
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:5173"},
@@ -126,11 +92,6 @@ func main() {
 
 	router.Run("localhost:8080")
 }
-
-/*
-TODO: make authentication so not everyone could use the query endpoint to access AIs. Consider implementing a safety protocol
-TODO: extract setup steps to separate functions
-*/
 
 func GetProblems(c *gin.Context) {
 	problems, err := problemHandler.GetProblems()
@@ -220,5 +181,59 @@ func sendDiscordMessage(message string) {
 
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("got response status code %d, when expected %d", resp.StatusCode, http.StatusOK)
+	}
+}
+
+func initializeContextCacheOrFail(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration) *query.ContextCache {
+	contextCache, err := query.NewContextCache(maxSize, cleanupInterval, sessionTimeout)
+	if err != nil {
+		log.Fatalf("Error creating context cache: %v", err)
+	}
+	return contextCache
+}
+
+func connectToDatabaseOrFail(dbFilePath string) *sql.DB {
+	db, err := sql.Open("sqlite3", fmt.Sprintf("./%s", dbFilePath))
+	if err != nil {
+		log.Fatalf("Error while opening database: %v", err)
+	}
+	err = db.Ping()
+	if err != nil {
+		log.Fatalf("Error connecting to database: %v", err)
+	}
+	return db
+}
+
+func checkEnvVariablesOrFail() {
+	if envVar := os.Getenv("CHATGPT_KEY"); envVar == "" {
+		log.Fatal("CHATGPT_KEY environment variable is not set")
+	}
+	if envVar := os.Getenv("GEMINI_KEY"); envVar == "" {
+		log.Fatal("GEMINI_KEY environment variable is not set")
+	}
+	if envVar := os.Getenv("DISCORD_TOKEN"); envVar == "" {
+		log.Fatal("DISCORD_TOKEN environment variable is not set")
+	}
+	if envVar := os.Getenv("DISCORD_CHANNEL_ID"); envVar == "" {
+		log.Fatal("DISCORD_CHANNEL_ID environment variable is not set")
+	}
+}
+
+func createAIAgentClientsOrFail(chatgptModel string, geminiModel string, cache *query.ContextCache) *query.AIAgents {
+	ctx := context.Background()
+	chatGPTClient := openai.NewClient(os.Getenv("CHATGPT_KEY"))
+	chatgptAgent := query.NewChatgptClientWrapper(chatGPTClient, chatgptModel, cache, ctx)
+
+	geminiClient, err := gemini.NewClient(ctx, &gemini.ClientConfig{
+		APIKey:  os.Getenv("GEMINI_KEY"),
+		Backend: gemini.BackendGeminiAPI,
+	})
+	if err != nil {
+		log.Fatalf("Error creating gemini client: %v", err)
+	}
+	geminiAgent := query.NewGeminiAgentWrapper(geminiClient, geminiModel, cache, ctx)
+	return &query.AIAgents{
+		Chatgpt: chatgptAgent,
+		Gemini:  geminiAgent,
 	}
 }
