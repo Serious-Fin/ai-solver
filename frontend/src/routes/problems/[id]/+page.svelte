@@ -160,9 +160,21 @@
 	</article>
 </section>
 
-<!-- TODO: add images instead of status numbers -->
-<!-- TODO: add fail reason explanaition -->
 <!-- TODO: extract code for different components to different files -->
+<!-- TODO: fix code template pulling -->
+<!-- TODO: remove language changing -->
+<!-- TODO: make model dropdown actually work -->
+<!-- TODO: add loading for "send" button while waiting for response -->
+<!-- TODO: add error pop-out for when something fails -->
+<!-- TODO: make test design in figma -->
+<!-- TODO: add images instead of status numbers for tests -->
+<!-- TODO: add fail reason explanation -->
+<!-- TODO: modernize front-end design in figma for mobile -->
+<!-- TODO: implement front-end design in code for mobile -->
+<!-- TODO: add front-end design for tablets in figma -->
+<!-- TODO: implement front-end design for tablets in code -->
+<!-- TODO: add front-end design for PCs in figma -->
+<!-- TODO: implement front-end design for PCs in code -->
 
 <style>
 	#main-area {
