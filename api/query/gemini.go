@@ -47,14 +47,14 @@ func (wrapper *GeminiAgentWrapper) QueryWithContext(sessionId, userQuery, system
 	for _, context := range previousContext {
 		role, err := getGeminiRole(context.Role)
 		if err != nil {
-			return "", err
+			return "", fmt.Errorf("error building previous context for gemini request: %v", err)
 		}
 		history = append(history, gemini.NewContentFromText(context.Content, role))
 	}
 
 	output, err := wrapper.Agent.Query(config, history, userQuery)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not query gemini agent: %v", err)
 	}
 	wrapper.Cache.Add(sessionId, userQuery, output)
 	return output, nil

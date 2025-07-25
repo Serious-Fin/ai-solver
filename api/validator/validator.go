@@ -68,27 +68,27 @@ func NewValidatorHandler(db common.DBInterface) *ValidatorHandler {
 func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	testParams, err := vh.fetchTestCreationParams(body.ProblemId)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not fetch test creation params: %v", err)
 	}
 
 	dirPath, err := os.MkdirTemp(".", "test_run_")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error making temporary directory: %v", err)
 	}
 
 	err = createTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, *testParams)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error creating test file: %v", err)
 	}
 
 	testOutput, err := runTests(dirPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error running tests in docker: %v", err)
 	}
 
 	testStates, err := parseCommandOutput(testOutput)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing command output %s: %v", testOutput, err)
 	}
 
 	err = os.RemoveAll(dirPath)
@@ -103,19 +103,19 @@ func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreatio
 	row := vh.DB.QueryRow("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?", problemId)
 	err := row.Scan(&testParams.singleTestTemplate, &testParams.additionalHelpers)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error scanning templates and helpers from db (problem id %d): %v", problemId, err)
 	}
 
 	var testCasesString string
 	row = vh.DB.QueryRow("SELECT testCases FROM problems WHERE id = ?", problemId)
 	err = row.Scan(&testCasesString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error scanning test cases from db (problem id %d): %v", problemId, err)
 	}
 
 	err = json.Unmarshal([]byte(testCasesString), &testParams.problemTestCases)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal test cases from string \"%s\" (problem id %d): %v", testCasesString, problemId, err)
 	}
 	return &testParams, nil
 }
@@ -123,13 +123,13 @@ func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreatio
 func createTestFile(filename, testableCode string, testParams testCreationParams) error {
 	file, err := os.Create(filename)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create file with name \"%s\", error: %v", filename, err)
 	}
 	defer file.Close()
 
-	_, err = file.WriteString(fmt.Sprintf("%s\n%s\n", fileStartTemplate, testableCode))
+	_, err = fmt.Fprintf(file, "%s\n%s\n", fileStartTemplate, testableCode)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not write start template and user code to file: %v", err)
 	}
 
 	var newTestCase string
@@ -140,15 +140,15 @@ func createTestFile(filename, testableCode string, testParams testCreationParams
 		for inputIndex, input := range testCaseData.Inputs {
 			newTestCase = strings.Replace(newTestCase, fmt.Sprintf("{{INPUT%d}}", inputIndex), input, 1)
 		}
-		_, err = file.WriteString(fmt.Sprintf("%s\n", newTestCase))
+		_, err = fmt.Fprintf(file, "%s\n", newTestCase)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not write test case to file: %v", err)
 		}
 	}
 
 	_, err = file.WriteString(testParams.additionalHelpers)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not write additional helper functions to file: %v", err)
 	}
 	return nil
 }
@@ -203,20 +203,20 @@ func parseCommandOutput(cmdOutput string) (*Response, error) {
 		case "output":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not get test id from output event: %v", err)
 			}
 			testOutputs[testId] = append(testOutputs[testId], testLog.Output)
 		case "pass":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not get test id from pass event: %v", err)
 			}
 			delete(testOutputs, testId)
 			response.SucceededTests = append(response.SucceededTests, testId)
 		case "fail":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not get test id from fail event: %v", err)
 			}
 
 			foundGotAndWant := false

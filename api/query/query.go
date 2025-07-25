@@ -57,7 +57,7 @@ func (handler *QueryHandler) QueryAgent(sessionId string, requestBody Request) (
 	userQuery := fmt.Sprintf(userPromptTemplate, requestBody.Input, requestBody.Language, requestBody.Code)
 	response, err := handler.dispatchToAgent(requestBody.Agent, sessionId, userQuery)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error querying agent: %v", err)
 	}
 	return postProcessResponse(response), nil
 }

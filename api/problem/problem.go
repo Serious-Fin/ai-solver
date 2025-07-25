@@ -2,6 +2,7 @@ package problem
 
 import (
 	"encoding/json"
+	"fmt"
 	"serious-fin/api/common"
 )
 
@@ -25,7 +26,7 @@ func NewProblemHandler(db common.DBInterface) *ProblemDBHandler {
 func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
 	rows, err := handler.DB.Query("SELECT id, title FROM problems")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not query problems data from db: %v", err)
 	}
 	defer rows.Close()
 
@@ -34,13 +35,13 @@ func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
 		var problem Problem
 		err = rows.Scan(&problem.Id, &problem.Title)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not scan problems db output: %v", err)
 		}
 		problems = append(problems, problem)
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error reading db output: %v", err)
 	}
 	return problems, nil
 }
@@ -52,12 +53,12 @@ func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
 	var testCaseString string
 	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not scan single problem db output (problem id %s): %v", id, err)
 	}
 
 	err = json.Unmarshal([]byte(testCaseString), &problem.TestCases)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal test cases into object (problem id %s): %v", id, err)
 	}
 	problem.TestIds = extractTestIds(problem.TestCases)
 	return &problem, nil
@@ -69,7 +70,7 @@ func (handler *ProblemDBHandler) GetMainFuncGo(problemId string) (string, error)
 	var mainFunction string
 	err := row.Scan(&mainFunction)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not scan problem template db output (problem id %s): %v", problemId, err)
 	}
 
 	return mainFunction, nil

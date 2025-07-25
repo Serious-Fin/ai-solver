@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/sashabaranov/go-openai"
 )
@@ -56,7 +57,7 @@ func (wrapper *ChatgptAgentWrapper) QueryWithContext(sessionId, userQuery, syste
 
 	output, err := wrapper.Agent.Query(messages)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not query chatgpt agent: %v", err)
 	}
 
 	wrapper.Cache.Add(sessionId, userQuery, output)
@@ -72,9 +73,7 @@ func (wrapper *Chatgpt) Query(messages []openai.ChatCompletionMessage) (string, 
 		},
 	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not make API call to chatgpt: %v", err)
 	}
 	return resp.Choices[0].Message.Content, nil
 }
-
-// TODO: expand errors to better explain what is wrong eg. could not query agent: %v, err

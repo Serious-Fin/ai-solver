@@ -1,7 +1,6 @@
 package query
 
 import (
-	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -49,13 +48,13 @@ func NewContextCache(maxSize int, cleanupInterval time.Duration, sessionTimeout 
 // nowFunc - function which gets current time. time.Now() by default but can be overwritten for tests
 func NewContextCacheWithTimeFunc(maxSize int, cleanupInterval time.Duration, sessionTimeout time.Duration, nowFunc func() time.Time) (*ContextCache, error) {
 	if maxSize < 0 {
-		return nil, errors.New("cache size can not be negative")
+		return nil, fmt.Errorf("cache size can not be negative. provided value: %d", maxSize)
 	}
 	if cleanupInterval <= 0 {
-		return nil, errors.New("cleanup interval has to be positive")
+		return nil, fmt.Errorf("cleanup interval has to be positive. provided value: %v", cleanupInterval)
 	}
 	if sessionTimeout <= 0 {
-		return nil, errors.New("session timeout has to be positive")
+		return nil, fmt.Errorf("cleanup interval has to be positive. provided value: %v", sessionTimeout)
 	}
 
 	return &ContextCache{
