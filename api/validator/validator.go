@@ -98,7 +98,6 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	return testStates, nil
 }
 
-// TODO: Write tests for API
 func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreationParams, error) {
 	var testParams testCreationParams
 	row := vh.DB.QueryRow("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?", problemId)

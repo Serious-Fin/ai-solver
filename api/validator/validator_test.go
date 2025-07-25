@@ -1,8 +1,17 @@
 package validator
 
 import (
+	"database/sql/driver"
+	"errors"
+	"fmt"
+	"math/rand"
+	"os"
 	"reflect"
+	"serious-fin/api/common"
+	"strings"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
 )
 
 func TestValidationOutputParsing(t *testing.T) {
@@ -216,4 +225,257 @@ func TestSuccessAndFailureWithArrays(t *testing.T) {
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)
 	}
+}
+
+func TestFetchingCreationParamsBadFirstQuery(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	problemId := 1
+
+	var mockHandler = NewValidatorHandler(db)
+
+	mock.ExpectQuery("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?").WithArgs(problemId).WillReturnError(errors.New("error querying data"))
+
+	if _, err = mockHandler.fetchTestCreationParams(problemId); err == nil {
+		t.Error("expected error when query fails")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFetchingCreationParamsBadSecondQuery(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	problemId := 1
+
+	var mockHandler = NewValidatorHandler(db)
+
+	mock.ExpectQuery("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"testTemplate", "testTemplate",
+	}).AddRows([]driver.Value{"foo", "bar"}))
+	mock.ExpectQuery("SELECT testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnError(errors.New("error querying data"))
+
+	if _, err = mockHandler.fetchTestCreationParams(problemId); err == nil {
+		t.Error("expected error when query fails")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFetchingCreationParamsSecondQueryWrongFormat(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	problemId := 1
+
+	var mockHandler = NewValidatorHandler(db)
+
+	mock.ExpectQuery("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"testTemplate", "testTemplate",
+	}).AddRows([]driver.Value{"foo", "bar"}))
+	mock.ExpectQuery("SELECT testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"testCases",
+	}).AddRows([]driver.Value{"bad format"}))
+
+	if _, err = mockHandler.fetchTestCreationParams(problemId); err == nil {
+		t.Error("expected error when query fails")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestFetchingCreationParamsSecondQueryCorrectFormat(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	problemId := 1
+
+	var mockHandler = NewValidatorHandler(db)
+
+	mock.ExpectQuery("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"testTemplate", "testTemplate",
+	}).AddRows([]driver.Value{"foo", "bar"}))
+	mock.ExpectQuery("SELECT testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"testCases",
+	}).AddRows([]driver.Value{`[{"id": 0,"inputs":  ["[]int{2, 7, 11, 15}","9"],"output": "[]int{0, 1}"}]`}))
+
+	if _, err = mockHandler.fetchTestCreationParams(problemId); err != nil {
+		t.Errorf("Unexpected error: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCreateTestFileNonExistentPath(t *testing.T) {
+	dirPath := "/NON/EXISTENT/PATH/code.go"
+	err := createTestFile(dirPath, "code", testCreationParams{})
+	if err == nil {
+		t.Errorf("expected error when path \"%s\"does not exist", dirPath)
+	}
+
+	if _, ok := err.(*os.PathError); !ok {
+		t.Error("expected error to be PathError")
+
+		// delete file because it was created when it shouldn't have been
+		err := os.RemoveAll(dirPath)
+		if err != nil {
+			t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
+		}
+	}
+}
+
+func TestCreateTestFileIsStartTemplateAdded(t *testing.T) {
+	dirPath := fmt.Sprintf("./test_file_%s", randSeq(4))
+	err := createTestFile(dirPath, "code", testCreationParams{})
+	if err != nil {
+		t.Errorf("unexpected error when creating file \"%s\": %v", dirPath, err)
+	}
+
+	content, err := os.ReadFile(dirPath)
+	if err != nil {
+		t.Errorf("failed to read created file: %v", err)
+	}
+	fileContents := string(content)
+	if !strings.HasPrefix(fileContents, fileStartTemplate) {
+		t.Errorf("File content does not start with expected template.\nExpected to find:\n%s\nFile contents:\n%s", fileStartTemplate, fileContents)
+	}
+
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
+	}
+}
+
+func TestCreateTestFileIsUserCodeAdded(t *testing.T) {
+	dirPath := fmt.Sprintf("./test_file_%s", randSeq(4))
+	userCode := "foo bar baz"
+	err := createTestFile(dirPath, userCode, testCreationParams{})
+	if err != nil {
+		t.Errorf("unexpected error when creating file \"%s\": %v", dirPath, err)
+	}
+
+	content, err := os.ReadFile(dirPath)
+	if err != nil {
+		t.Errorf("failed to read created file: %v", err)
+	}
+	fileContents := string(content)
+	if !strings.Contains(fileContents, userCode) {
+		t.Errorf("File content does not start with expected template.\nExpected to find:\n%s\nFile contents:\n%s", userCode, fileContents)
+	}
+
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
+	}
+}
+
+func TestCreateTestFileIsTestCodeAdded(t *testing.T) {
+	dirPath := fmt.Sprintf("./test_file_%s", randSeq(4))
+	testCases := []common.TestCase{
+		{
+			Id:             0,
+			Inputs:         []string{"[]string{1, 2, 3}", "\"foo bar baz\""},
+			ExpectedOutput: "15.5",
+		},
+		{
+			Id:             1,
+			Inputs:         []string{"[]string{4, 5, 6}", "\"what is this\""},
+			ExpectedOutput: "88.8",
+		},
+	}
+	testTemplate := `func testing{{ID}}(t * testing.T) {
+	want := {{OUTPUT}}
+	got := runFunc({{INPUT0}}, {{INPUT1}})
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}`
+	want := `func testing_0(t * testing.T) {
+	want := 15.5
+	got := runFunc([]string{1, 2, 3}, "foo bar baz")
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+func testing_1(t * testing.T) {
+	want := 88.8
+	got := runFunc([]string{4, 5, 6}, "what is this")
+	if got != want {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}`
+	err := createTestFile(dirPath, "code", testCreationParams{
+		singleTestTemplate: testTemplate,
+		problemTestCases:   testCases,
+	})
+	if err != nil {
+		t.Errorf("unexpected error when creating file \"%s\": %v", dirPath, err)
+	}
+
+	content, err := os.ReadFile(dirPath)
+	if err != nil {
+		t.Errorf("failed to read created file: %v", err)
+	}
+	fileContents := string(content)
+	if !strings.Contains(fileContents, want) {
+		t.Errorf("File content does not start with expected template.\nExpected to find:\n%s\nFile contents:\n%s", want, fileContents)
+	}
+
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
+	}
+}
+
+func TestCreateTestFileIsHelperCodeAdded(t *testing.T) {
+	dirPath := fmt.Sprintf("./test_file_%s", randSeq(4))
+	helpers := "helper functions"
+	err := createTestFile(dirPath, "code", testCreationParams{
+		additionalHelpers: helpers,
+	})
+	if err != nil {
+		t.Errorf("unexpected error when creating file \"%s\": %v", dirPath, err)
+	}
+
+	content, err := os.ReadFile(dirPath)
+	if err != nil {
+		t.Errorf("failed to read created file: %v", err)
+	}
+	fileContents := string(content)
+	if !strings.Contains(fileContents, helpers) {
+		t.Errorf("File content does not start with expected template.\nExpected to find:\n%s\nFile contents:\n%s", helpers, fileContents)
+	}
+
+	err = os.RemoveAll(dirPath)
+	if err != nil {
+		t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
+	}
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSeq(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
 }
