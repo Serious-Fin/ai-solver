@@ -37,6 +37,13 @@ export async function getProblemById(id: string): Promise<Problem> {
             throw new Error(`Error fetching problem with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
         }
         const problem: Problem = await response.json()
+
+        const codeTemplate = await fetch(`${BASE_URL}/problems/${id}/go`)
+        if (!codeTemplate.ok) {
+            const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+            throw new Error(`Error fetching problem template with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
+        }
+        problem.goPlaceholder = await codeTemplate.json()
         return problem
     } catch (error) {
         console.log(`Error fetching problem with id '${id}'`, error)

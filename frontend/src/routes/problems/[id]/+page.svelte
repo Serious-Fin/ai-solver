@@ -161,7 +161,6 @@
 </section>
 
 <!-- TODO: extract code for different components to different files -->
-<!-- TODO: fix code template pulling -->
 <!-- TODO: remove language changing -->
 <!-- TODO: make model dropdown actually work -->
 <!-- TODO: add loading for "send" button while waiting for response -->
