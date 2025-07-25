@@ -19,7 +19,6 @@
 	});
 
 	let code = $state(data.problem.goPlaceholder ?? '');
-	let currentLanguage = $state('go');
 	let isLoading = $state(false);
 	let codeElement: HTMLElement;
 	let testStatusReporter = new TestStatusReporter(data.problem.testCaseIds ?? []);
@@ -29,17 +28,6 @@
 		codeElement.innerHTML = code;
 		Prism.highlightElement(codeElement);
 	});
-
-	const changeCodeTemplate = () => {
-		switch (currentLanguage) {
-			case 'go':
-				code = data.problem.goPlaceholder ?? '';
-				break;
-			case 'cpp':
-				code = data.problem.goPlaceholder ?? '';
-				break;
-		}
-	};
 
 	const handleReturnedCode = () => {
 		return async ({ result }) => {
@@ -61,7 +49,7 @@
 				body: JSON.stringify({
 					problemId: data.problem.id,
 					code,
-					language: currentLanguage
+					language: 'go'
 				})
 			});
 			if (!testRunOutput.ok) {
@@ -99,19 +87,8 @@
 	<article class="block">
 		<header class="block_header">
 			<h2 class="block_header_text inter-700">Code</h2>
-
-			<select
-				name="programming-language"
-				id="programming-language"
-				bind:value={currentLanguage}
-				onchange={changeCodeTemplate}
-			>
-				<option value="go">Go</option>
-				<option value="cpp">C++</option>
-			</select>
 		</header>
-		<pre class="code"><code class="language-{currentLanguage}" bind:this={codeElement}>{code}</code
-			></pre>
+		<pre class="code"><code class="language-go" bind:this={codeElement}>{code}</code></pre>
 	</article>
 
 	<article class="block">
@@ -122,7 +99,7 @@
 			<textarea class="chat_box_input inter-400" name="input" id="input"></textarea>
 
 			<input type="hidden" name="code" value={code} />
-			<input type="hidden" name="language" value={currentLanguage} />
+			<input type="hidden" name="language" value="go" />
 			<input type="hidden" name="sessionId" value={sessionId} />
 
 			<footer class="block_footer send_box_footer">
@@ -161,7 +138,6 @@
 </section>
 
 <!-- TODO: extract code for different components to different files -->
-<!-- TODO: remove language changing -->
 <!-- TODO: make model dropdown actually work -->
 <!-- TODO: add loading for "send" button while waiting for response -->
 <!-- TODO: add error pop-out for when something fails -->
