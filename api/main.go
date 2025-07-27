@@ -29,7 +29,7 @@ type APIError struct {
 }
 
 func sendError(c *gin.Context, statusCode int, message string, err error) {
-	sendDiscordMessage(err.Error())
+	sendToDiscord(err.Error())
 
 	apiError := APIError{Message: message}
 	if gin.IsDebugging() {
@@ -155,6 +155,16 @@ func ValidateCode(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, validatorResponse)
 }
 
+func sendToDiscord(message string) {
+	runes := []rune(message)
+	sentChars := 0
+	for sentChars < len(runes) {
+		end := min(sentChars+2000, len(runes))
+		sendDiscordMessage(string(runes[sentChars:end]))
+		sentChars = end
+	}
+}
+
 func sendDiscordMessage(message string) {
 	discordToken := os.Getenv("DISCORD_TOKEN")
 	channelId := os.Getenv("DISCORD_CHANNEL_ID")
@@ -163,11 +173,11 @@ func sendDiscordMessage(message string) {
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		// printing this to standard output because this function is supposed to send errors to discord normally
-		log.Printf("error marshaling discord message body: %v", err)
+		fmt.Printf("error marshaling discord message body: %v", err)
 	}
 	req, err := http.NewRequest("POST", discordApiUrl, bytes.NewBuffer(bodyAsBytes))
 	if err != nil {
-		log.Printf("could not create new discord request: %v", err)
+		fmt.Printf("could not create new discord request: %v", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", discordToken)
@@ -175,12 +185,12 @@ func sendDiscordMessage(message string) {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Printf("error while sending request to discord: %v", err)
+		fmt.Printf("error while sending request to discord: %v", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		log.Printf("got response status code %d, when expected %d", resp.StatusCode, http.StatusOK)
+		fmt.Printf("got response status code %d, when expected %d", resp.StatusCode, http.StatusOK)
 	}
 }
 
