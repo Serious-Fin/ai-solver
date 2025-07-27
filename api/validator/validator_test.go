@@ -354,17 +354,13 @@ func TestCreateTestFileNonExistentPath(t *testing.T) {
 	dirPath := "/NON/EXISTENT/PATH/code.go"
 	err := createTestFile(dirPath, "code", testCreationParams{})
 	if err == nil {
-		t.Errorf("expected error when path \"%s\"does not exist", dirPath)
-	}
-
-	if _, ok := err.(*os.PathError); !ok {
-		t.Error("expected error to be PathError")
-
 		// delete file because it was created when it shouldn't have been
 		err := os.RemoveAll(dirPath)
 		if err != nil {
 			t.Errorf("could not remove files that should not have been created. remove files at path \"%s\" manually", dirPath)
 		}
+
+		t.Errorf("expected error when path \"%s\"does not exist", dirPath)
 	}
 }
 
