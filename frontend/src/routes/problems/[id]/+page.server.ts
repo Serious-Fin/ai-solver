@@ -18,6 +18,6 @@ export const actions = {
             agent: data.get("agent") as string,
             sessionId: data.get("sessionId") as string
         }
-        return { success: true, response: await query(params) }
+        return { response: await query(params) }
     }
 } satisfies Actions
