@@ -18,12 +18,16 @@ export async function validate(req: ValidateRequest): Promise<TestRunOutput> {
             body: JSON.stringify(req)
         });
         if (!resp.ok) {
-            throw new Error(`HTTP error with status ${resp.status}`);
+            const errorBody = await resp.json().catch(() => ({ message: resp.statusText }))
+            throw new Error(`Error running tests ${resp.status} - ${errorBody.message || "Unknown error"}`);
         }
         const testRunOutput: TestRunOutput = await resp.json();
         return testRunOutput
     } catch (err) {
-        throw Error(`Could not call validate endpoint: ${JSON.stringify(err)}`)
+        if (err instanceof Error) {
+            throw Error(`Could not call validate endpoint: ${JSON.stringify(err.message)}`)
+        }
+        throw err
     }
 
 }
