@@ -1,16 +1,28 @@
 <script lang="ts">
 	import { v4 as uuidv4 } from 'uuid';
 	import { enhance } from '$app/forms';
+	import type { SubmitFunction } from '@sveltejs/kit';
+	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte';
 
-	let { code }: { code: string } = $props();
+	let { code, updateCode }: { code: string; updateCode: (newCode: string) => void } = $props();
 
 	let sessionId: string = uuidv4();
+	let isLoading = $state(false);
 
-	const handleReturnedCode = () => {
-		return async ({ result }) => {
-			console.log(result);
-			if (result.type === 'success') {
-				code = result.data.response;
+	const handleQueryAgent: SubmitFunction = () => {
+		isLoading = true;
+		return async ({ update, result }) => {
+			try {
+				await update();
+				isLoading = false;
+				if (result.type === 'success' && result.data?.response) {
+					code = result.data.response;
+					updateCode(code);
+				} else {
+					throw Error('could not query agent');
+				}
+			} catch (err) {
+				// TODO: error table here
 			}
 		};
 	};
@@ -20,7 +32,7 @@
 	<header>
 		<h2>Chat box</h2>
 	</header>
-	<form method="POST" action="?/query" use:enhance={handleReturnedCode}>
+	<form method="POST" action="?/query" use:enhance={handleQueryAgent}>
 		<textarea class="chat_box_input inter-400" name="input" id="input"></textarea>
 
 		<input type="hidden" name="code" value={code} />
@@ -30,17 +42,19 @@
 		<footer class="block_footer send_box_footer">
 			<select name="agent" id="agent">
 				<option value="chatgpt">ChatGPT</option>
-				<option value="gpt-4_1">GPT-4.1</option>
-				<option value="gpt-4_1_mini">GPT-4.1 Mini</option>
-				<option value="gemini_2_5_flash">Gemini 2.5 Flash</option>
+				<option value="gemini">Gemini</option>
 			</select>
 
-			<button class="send btn">
-				<img
-					class="img_icon"
-					src="/send-symbol.svg"
-					alt="a paper plane icon symbolizing send action"
-				/>
+			<button class="query_btn" disabled={isLoading}>
+				{#if isLoading}
+					<LoadingSpinner />
+				{:else}
+					<img
+						class="img_icon"
+						src="/send-symbol.svg"
+						alt="a paper plane icon symbolizing send action"
+					/>
+				{/if}
 			</button>
 		</footer>
 	</form>
@@ -98,11 +112,7 @@
 		align-items: start;
 	}
 
-	.send {
-		background-color: black;
-	}
-
-	.btn {
+	.query_btn {
 		width: 50px;
 		height: 50px;
 		border-radius: 10px;
@@ -110,6 +120,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		background-color: black;
 	}
 
 	.img_icon {

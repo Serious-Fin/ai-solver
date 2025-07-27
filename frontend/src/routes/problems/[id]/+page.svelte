@@ -12,6 +12,10 @@
 	let description: string = data.problem.description ?? '';
 	let testCaseIds: number[] = data.problem.testCaseIds ?? [];
 	let code: string = $state(data.problem.goPlaceholder ?? '');
+
+	function updateCode(newCode: string) {
+		code = newCode;
+	}
 </script>
 
 <section>
@@ -27,14 +31,11 @@
 
 	<CodeBox {code}></CodeBox>
 
-	<ChatBox {code}></ChatBox>
+	<ChatBox {code} {updateCode}></ChatBox>
 
 	<TestBox {problemId} {testCaseIds} {code}></TestBox>
 </section>
 
-<!-- TODO: extract code for different components to different files -->
-<!-- TODO: make model dropdown actually work -->
-<!-- TODO: add loading for "send" button while waiting for response -->
 <!-- TODO: add error pop-out for when something fails -->
 <!-- TODO: make test design in figma -->
 <!-- TODO: add images instead of status numbers for tests -->

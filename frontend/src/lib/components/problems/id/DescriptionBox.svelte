@@ -8,7 +8,7 @@
 	<header>
 		<h2>Description</h2>
 	</header>
-	<div class="classy-font">
+	<div>
 		{@html marked.parse(description)}
 	</div>
 </article>
@@ -32,9 +32,8 @@
 
 	header h2 {
 		color: rgba(0, 0, 0, 0.7);
-		font-weight: 700;
-		font-size: 14pt;
 
+		font-size: 14pt;
 		font-family: 'Inter', sans-serif;
 		font-optical-sizing: auto;
 		font-weight: 700;
