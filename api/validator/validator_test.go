@@ -227,6 +227,32 @@ func TestSuccessAndFailureWithArrays(t *testing.T) {
 	}
 }
 
+func TestTextBeforeOutput(t *testing.T) {
+	cmdOutput := `
+	go: creating new go.mod: module test_proj
+	go: to add module requirements and sums:
+    go mod tidy
+	{"Time":"2025-07-27T18:04:10.225107394Z","Action":"start","Package":"test_proj"}
+	{"Time":"2025-07-27T18:04:10.226345745Z","Action":"run","Package":"test_proj","Test":"TestTwoSum_0"}
+	{"Time":"2025-07-27T18:04:10.226368636Z","Action":"output","Package":"test_proj","Test":"TestTwoSum_0","Output":"=== RUN   TestTwoSum_0\n"}
+	{"Time":"2025-07-27T18:04:10.2263954Z","Action":"output","Package":"test_proj","Test":"TestTwoSum_0","Output":"--- PASS: TestTwoSum_0 (0.00s)\n"}
+	{"Time":"2025-07-27T18:04:10.226398054Z","Action":"pass","Package":"test_proj","Test":"TestTwoSum_0","Elapsed":0}`
+
+	want := &Response{
+		SucceededTests: []int{0},
+		FailedTests:    []FailInfo{},
+	}
+
+	got, err := parseCommandOutput(cmdOutput)
+	if err != nil {
+		t.Errorf("error while parsing: %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
 func TestFetchingCreationParamsBadFirstQuery(t *testing.T) {
 	db, mock, err := sqlmock.New()
 	if err != nil {
