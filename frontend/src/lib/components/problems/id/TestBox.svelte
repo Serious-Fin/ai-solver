@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { validate } from '$lib/api/validate';
-	import { TestStatusReporter, type TestRunOutput } from '$lib/TestStatusReporter';
+	import { TestStatusReporter } from '$lib/TestStatusReporter';
+	import { handleError } from '$lib/helpers';
 
 	let { problemId, testCaseIds, code }: { problemId: string; testCaseIds: number[]; code: string } =
 		$props();
@@ -20,7 +21,10 @@
 			testStatusReporter.UpdateTestStatuses(testRunOutput);
 			testStates = testStatusReporter.GetTestStatuses();
 		} catch (err) {
-			// TODO: show error table here
+			if (err instanceof Error) {
+				handleError('Error running tests, try again later', err);
+				return;
+			}
 		} finally {
 			isLoading = false;
 		}

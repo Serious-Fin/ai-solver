@@ -28,11 +28,14 @@ export async function query(params: QueryRequest): Promise<string> {
         })
         if (!response.ok) {
             const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-            throw new Error(`Error querying agent ${response.status} - ${errorBody || "Unknown error"}`)
+            throw new Error(`Error querying agent ${response.status} - ${errorBody.message || "Unknown error"}`)
         }
         const parsedResp: QueryResponse = await response.json()
         return parsedResp.response
     } catch (err) {
-        throw Error(`Could not call query endpoint: ${JSON.stringify(err)}`)
+        if (err instanceof Error) {
+            throw Error(`Could not call query endpoint: ${JSON.stringify(err.message)}`)
+        }
+        throw err
     }
 }

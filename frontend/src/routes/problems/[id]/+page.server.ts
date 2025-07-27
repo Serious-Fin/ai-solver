@@ -1,6 +1,7 @@
 import type { PageServerLoad, Actions } from './$types'
 import { getProblemById } from '$lib/api/problems'
 import { query, type QueryRequest } from '$lib/api/query'
+import { fail } from '@sveltejs/kit'
 
 export const load: PageServerLoad = async ({ params }) => {
     return {
@@ -18,6 +19,13 @@ export const actions = {
             agent: data.get("agent") as string,
             sessionId: data.get("sessionId") as string
         }
-        return { response: await query(params) }
+        try {
+            const response = await query(params)
+            return { response }
+        } catch (err) {
+            return fail(500, {
+                message: err instanceof Error ? err.message : 'Unknown error'
+            })
+        }
     }
 } satisfies Actions

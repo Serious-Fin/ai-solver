@@ -3,6 +3,7 @@
 	import { enhance } from '$app/forms';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte';
+	import { handleError } from '$lib/helpers';
 
 	let { code, updateCode }: { code: string; updateCode: (newCode: string) => void } = $props();
 
@@ -17,11 +18,16 @@
 				if (result.type === 'success' && result.data?.response) {
 					code = result.data.response;
 					updateCode(code);
+				} else if (result.type === 'failure') {
+					throw Error(result.data?.message || 'Unknown server error occurred');
 				} else {
-					throw Error('could not query agent');
+					throw Error('Could not query agent');
 				}
 			} catch (err) {
-				// TODO: error table here
+				if (err instanceof Error) {
+					handleError('Error sending message, try again later', err);
+					return;
+				}
 			} finally {
 				isLoading = false;
 			}
