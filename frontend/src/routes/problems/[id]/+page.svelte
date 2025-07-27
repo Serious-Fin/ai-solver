@@ -36,7 +36,7 @@
 	<TestBox {problemId} {testCaseIds} {code}></TestBox>
 </section>
 
-<!-- TODO: add error pop-out for when something fails -->
+<!-- TODO: add error pop-out for when something fails and also send to DC -->
 <!-- TODO: make test design in figma -->
 <!-- TODO: add images instead of status numbers for tests -->
 <!-- TODO: add fail reason explanation -->
