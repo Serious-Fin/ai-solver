@@ -32,7 +32,7 @@ export async function query(params: QueryRequest): Promise<string> {
         }
         const parsedResp: QueryResponse = await response.json()
         return parsedResp.response
-    } catch (error) {
-        throw error
+    } catch (err) {
+        throw Error(`Could not call query endpoint: ${JSON.stringify(err)}`)
     }
 }

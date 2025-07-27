@@ -14,7 +14,6 @@
 		return async ({ update, result }) => {
 			try {
 				await update();
-				isLoading = false;
 				if (result.type === 'success' && result.data?.response) {
 					code = result.data.response;
 					updateCode(code);
@@ -23,6 +22,8 @@
 				}
 			} catch (err) {
 				// TODO: error table here
+			} finally {
+				isLoading = false;
 			}
 		};
 	};
