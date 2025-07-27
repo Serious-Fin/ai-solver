@@ -75,6 +75,7 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error making temporary directory: %v", err)
 	}
+	defer os.RemoveAll(dirPath)
 
 	err = createTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, *testParams)
 	if err != nil {
@@ -91,10 +92,6 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 		return nil, fmt.Errorf("error parsing command output %s: %v", testOutput, err)
 	}
 
-	err = os.RemoveAll(dirPath)
-	if err != nil {
-		return nil, fmt.Errorf("error removing test dir \"%s\": %v", dirPath, err)
-	}
 	return testStates, nil
 }
 
@@ -183,16 +180,12 @@ func parseCommandOutput(cmdOutput string) (*Response, error) {
 
 	cmdOutput = strings.TrimSpace(cmdOutput)
 	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
-	var err error
 	var line string
 	for scanner.Scan() {
 		line = scanner.Text()
 
 		var testLog testEvent
-		err = json.Unmarshal([]byte(line), &testLog)
-		if err != nil {
-			return nil, fmt.Errorf("could not unmarshal test output \"%s\" to testEvent: %v", line, err)
-		}
+		_ = json.Unmarshal([]byte(line), &testLog)
 
 		if testLog.Test == "" {
 			// test event log is not associated with any specific test so we skip this log
