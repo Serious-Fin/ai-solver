@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { validate } from '$lib/api/validate';
 	import { TestStatusReporter, type TestRunOutput } from '$lib/TestStatusReporter';
 
 	let { problemId, testCaseIds, code }: { problemId: string; testCaseIds: number[]; code: string } =
@@ -8,28 +9,18 @@
 	let testStates = $state(testStatusReporter.GetTestStatuses());
 	let isLoading = $state(false);
 
-	const runTests = async () => {
+	const handleRunTests = async () => {
 		isLoading = true;
 		try {
-			const testRunOutput = await fetch('http://localhost:8080/validate', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json'
-				},
-				body: JSON.stringify({
-					problemId,
-					code,
-					language: 'go'
-				})
+			const testRunOutput = await validate({
+				problemId,
+				code,
+				language: 'go'
 			});
-			if (!testRunOutput.ok) {
-				throw new Error(`HTTP error with status ${testRunOutput.status}`);
-			}
-			const response: TestRunOutput = await testRunOutput.json();
-			testStatusReporter.UpdateTestStatuses(response);
+			testStatusReporter.UpdateTestStatuses(testRunOutput);
 			testStates = testStatusReporter.GetTestStatuses();
 		} catch (err) {
-			console.log(err);
+			// TODO: show error table here
 		} finally {
 			isLoading = false;
 		}
@@ -47,7 +38,7 @@
 		</div>
 	{/each}
 	<footer>
-		<button onclick={runTests}> Run tests </button>
+		<button onclick={handleRunTests}> Run tests </button>
 	</footer>
 </article>
 
