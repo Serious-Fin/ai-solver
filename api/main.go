@@ -169,7 +169,7 @@ func sendDiscordMessage(message string) {
 	discordToken := os.Getenv("DISCORD_TOKEN")
 	channelId := os.Getenv("DISCORD_CHANNEL_ID")
 	discordApiUrl := fmt.Sprintf("https://discord.com/api/channels/%s/messages", channelId)
-	body := map[string]string{"content": message}
+	body := map[string]string{"content": fmt.Sprintf("backend-msg: %s", message)}
 	bodyAsBytes, err := json.Marshal(body)
 	if err != nil {
 		// printing this to standard output because this function is supposed to send errors to discord normally
