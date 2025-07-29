@@ -8,3 +8,5 @@
 		<li><a href="problems/{problem.id}">{problem.title}</a></li>
 	{/each}
 </ul>
+
+<!-- each problem should have name, difficulty, completed or not -->
