@@ -4,21 +4,13 @@
 	import { handleError } from '$lib/helpers';
 	import SingleTestCase from './SingleTestCase.svelte';
 	import type { TestCase } from '$lib/api/problems';
+	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte';
 
 	let { problemId, testCases, code }: { problemId: string; testCases: TestCase[]; code: string } =
 		$props();
 
-	const testCaseIds = testCases.map((testCase) => testCase.id);
-	let testStatusReporter = new TestStatusReporter(testCaseIds);
+	let testStatusReporter = new TestStatusReporter(testCases);
 	let testStates = $state(testStatusReporter.GetTestStatuses());
-	testStatusReporter.UpdateTestStatuses({
-		succeededTests: [0, 1, 2],
-		failedTests: [
-			{ id: 3, want: '[1, 2, 3]', got: '[3, 2, 1]', message: 'wrong output' },
-			{ id: 4, want: '[7, 8]', got: '[]', message: 'wrong output' },
-			{ id: 5, want: '"foo"', got: '"bar"', message: 'wrong output' }
-		]
-	});
 	let isLoading = $state(false);
 
 	const handleRunTests = async () => {
@@ -29,6 +21,7 @@
 				code,
 				language: 'go'
 			});
+			console.log(testRunOutput);
 			testStatusReporter.UpdateTestStatuses(testRunOutput);
 			testStates = testStatusReporter.GetTestStatuses();
 		} catch (err) {
@@ -50,7 +43,13 @@
 		<SingleTestCase {test}></SingleTestCase>
 	{/each}
 	<footer>
-		<button onclick={handleRunTests}> Run tests </button>
+		<button class="inter_700" onclick={handleRunTests} disabled={isLoading}>
+			{#if isLoading}
+				<LoadingSpinner></LoadingSpinner>
+			{:else}
+				Run tests
+			{/if}
+		</button>
 	</footer>
 </article>
 
@@ -72,6 +71,24 @@
 	header h2 {
 		color: rgba(0, 0, 0, 0.7);
 		font-size: 18pt;
+	}
+
+	button {
+		background-color: black;
+		border: none;
+		width: 100px;
+		height: 40px;
+		color: white;
+		font-size: 14pt;
+		border-radius: 5px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	footer {
+		display: flex;
+		justify-content: end;
 	}
 
 	.inter_700 {

@@ -8,7 +8,7 @@ export interface Problem {
 
 export interface TestCase {
     id: number
-    inputs: string;
+    inputs: string[];
     output: string;
 }
 

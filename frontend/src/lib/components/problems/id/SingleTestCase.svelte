@@ -3,6 +3,11 @@
 	import { TestStatus } from '$lib/TestStatusReporter';
 
 	let { test }: { test: SingleTestStatus } = $props();
+	let isExpanded = $state(false);
+
+	function toggleDropdown() {
+		isExpanded = !isExpanded;
+	}
 </script>
 
 <div
@@ -35,15 +40,19 @@
 				/>
 			{/if}
 		</div>
-		<button class="drop-down-arrow"><img src="/arrow_drop_down.png" alt="drop down arror" /></button
+		<button class="drop-down-arrow" onclick={toggleDropdown}
+			><img src="/arrow_drop_down.png" alt="drop down arror" /></button
 		>
 	</header>
-	{#if test.status === TestStatus.FAIL}
-		<div class="body">
+	<div class="body {isExpanded ? '' : 'invisible'}">
+		{#each test.inputs as input, index}
+			<p>Input {index + 1}: {input}</p>
+		{/each}
+		<p>Expect: {test.output}</p>
+		{#if test.status === TestStatus.FAIL}
 			<p>Got: {test.got}</p>
-			<p>Want: {test.want}</p>
-		</div>
-	{/if}
+		{/if}
+	</div>
 </div>
 
 <style>
@@ -76,6 +85,18 @@
 		background-color: #d7cccb;
 	}
 
+	.body p {
+		font-family: 'Inter', sans-serif;
+		font-optical-sizing: auto;
+		font-weight: 400;
+		font-style: normal;
+		line-height: 1.6;
+	}
+
+	.invisible {
+		display: none;
+	}
+
 	.test-box_header {
 		color: #292929;
 		font-size: 14pt;
@@ -89,6 +110,7 @@
 	.drop-down-arrow {
 		border: none;
 		background: none;
+		width: 90px;
 	}
 
 	.inter_700 {

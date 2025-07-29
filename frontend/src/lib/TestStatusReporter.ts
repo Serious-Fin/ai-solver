@@ -1,3 +1,5 @@
+import type { TestCase } from "./api/problems";
+
 export enum TestStatus {
     UNKNOWN, PASS, FAIL
 }
@@ -5,7 +7,8 @@ export enum TestStatus {
 export interface SingleTestStatus {
     id: number;
     status: TestStatus;
-    want?: string;
+    inputs: string[]
+    output: string;
     got?: string;
 }
 
@@ -16,7 +19,6 @@ export interface TestRunOutput {
 
 interface FailReason {
     id: number
-    want: string;
     got: string;
     message: string;
 }
@@ -28,11 +30,13 @@ export class TestStatusReporter {
         return this.statuses
     }
 
-    public constructor(testCaseIds: number[]) {
-        testCaseIds.forEach(id => {
-            this.statuses[id] = {
-                id,
-                status: TestStatus.UNKNOWN
+    public constructor(testCases: TestCase[]) {
+        testCases.forEach(testCase => {
+            this.statuses[testCase.id] = {
+                id: testCase.id,
+                status: TestStatus.UNKNOWN,
+                inputs: testCase.inputs,
+                output: testCase.output
             }
         });
     }
@@ -44,7 +48,6 @@ export class TestStatusReporter {
 
         output.failedTests.forEach(failReason => {
             this.statuses[failReason.id].status = TestStatus.FAIL
-            this.statuses[failReason.id].want = failReason.want
             this.statuses[failReason.id].got = failReason.got
         })
     }
@@ -59,4 +62,3 @@ export class TestStatusReporter {
 }
 
 // TODO: lint the project
-// sort the tests?
