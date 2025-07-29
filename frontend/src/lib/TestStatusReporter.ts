@@ -1,8 +1,8 @@
-enum TestStatus {
+export enum TestStatus {
     UNKNOWN, PASS, FAIL
 }
 
-interface SingleTestStatus {
+export interface SingleTestStatus {
     id: number;
     status: TestStatus;
     want?: string;
