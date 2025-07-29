@@ -37,9 +37,6 @@
 	<TestBox {problemId} {testCases} {code}></TestBox>
 </section>
 
-<!-- TODO: make test design in figma -->
-<!-- TODO: add images instead of status numbers for tests -->
-<!-- TODO: add fail reason explanation -->
 <!-- TODO: modernize front-end design in figma for mobile -->
 <!-- TODO: implement front-end design in code for mobile -->
 <!-- TODO: add front-end design for tablets in figma -->
