@@ -91,6 +91,7 @@
 		font-weight: 400;
 		font-style: normal;
 		line-height: 1.6;
+		font-size: 11pt;
 	}
 
 	.invisible {
@@ -99,18 +100,18 @@
 
 	.test-box_header {
 		color: #292929;
-		font-size: 14pt;
+		font-size: 12pt;
 	}
 
 	.test-box_status-img {
-		width: 20px;
-		height: 20px;
+		width: 16px;
+		height: 16px;
 	}
 
 	.drop-down-arrow {
 		border: none;
 		background: none;
-		width: 90px;
+		width: 70px;
 	}
 
 	.inter_700 {

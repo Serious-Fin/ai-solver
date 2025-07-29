@@ -73,21 +73,20 @@
 		border: 1px solid rgba(0, 0, 0, 0.8);
 		border-radius: 10px;
 		margin-top: 16px;
-		padding: 8px 16px;
+		padding: 32px 16px;
 		box-sizing: border-box;
 		max-width: 100%;
 	}
 
 	header {
-		margin-bottom: 8px;
+		margin-bottom: 24px;
 		display: flex;
 		justify-content: space-between;
 	}
 
 	header h2 {
 		color: rgba(0, 0, 0, 0.7);
-		font-weight: 700;
-		font-size: 14pt;
+		font-size: 18pt;
 
 		font-family: 'Inter', sans-serif;
 		font-optical-sizing: auto;
@@ -98,8 +97,15 @@
 	.chat_box_input {
 		width: 100%;
 		max-width: 100%;
-		min-height: 90px;
-		font-size: 10pt;
+		min-height: 130px;
+		font-size: 12pt;
+		box-sizing: border-box;
+	}
+
+	#agent {
+		width: 110px;
+		height: 40px;
+		font-size: 12pt;
 	}
 
 	.inter-400 {

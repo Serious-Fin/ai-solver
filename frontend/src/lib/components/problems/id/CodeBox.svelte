@@ -25,21 +25,19 @@
 		border: 1px solid rgba(0, 0, 0, 0.8);
 		border-radius: 10px;
 		margin-top: 16px;
-		padding: 8px 16px;
+		padding: 32px 16px;
 		box-sizing: border-box;
 		max-width: 100%;
 	}
 
 	header {
-		margin-bottom: 8px;
-		display: flex;
-		justify-content: space-between;
+		margin-bottom: 24px;
 	}
 
 	header h2 {
 		color: rgba(0, 0, 0, 0.7);
 		font-weight: 700;
-		font-size: 14pt;
+		font-size: 18pt;
 
 		font-family: 'Inter', sans-serif;
 		font-optical-sizing: auto;

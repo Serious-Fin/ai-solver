@@ -38,6 +38,11 @@
 </section>
 
 <!-- TODO: modernize front-end design in figma for mobile -->
+<!-- fix header of the page (color/done tag/back arrow/long titles) -->
+<!-- make array printing in tests look fancy -->
+<!-- clicking on status message shows "not run yet" etc -->
+<!-- change question mark with minus -->
+<!-- use a different markdown parser because this one skips empty lines -->
 <!-- TODO: implement front-end design in code for mobile -->
 <!-- TODO: add front-end design for tablets in figma -->
 <!-- TODO: implement front-end design for tablets in code -->
@@ -46,7 +51,7 @@
 
 <style>
 	section {
-		background-color: #3b2645;
+		background-color: #161c2e;
 		width: 100vw;
 		height: auto;
 		min-height: 100vh;

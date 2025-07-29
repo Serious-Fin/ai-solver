@@ -59,13 +59,13 @@
 		border: 1px solid rgba(0, 0, 0, 0.8);
 		border-radius: 5px;
 		margin-top: 16px;
-		padding: 24px 32px;
+		padding: 32px 24px;
 		box-sizing: border-box;
 		max-width: 100%;
 	}
 
 	header {
-		margin-bottom: 16px;
+		margin-bottom: 24px;
 	}
 
 	header h2 {
@@ -79,7 +79,7 @@
 		width: 100px;
 		height: 40px;
 		color: white;
-		font-size: 14pt;
+		font-size: 12pt;
 		border-radius: 5px;
 		display: flex;
 		align-items: center;
