@@ -82,8 +82,16 @@ func postProcessResponse(aiOutput string) string {
 		aiOutput, _ = strings.CutPrefix(aiOutput, "```cpp")
 		aiOutput, _ = strings.CutSuffix(aiOutput, "```")
 	}
+	if isCodeXML(aiOutput) {
+		aiOutput, _ = strings.CutPrefix(aiOutput, "<code>")
+		aiOutput, _ = strings.CutSuffix(aiOutput, "</code>")
+	}
 	aiOutput = strings.TrimSpace(aiOutput)
 	return aiOutput
+}
+
+func isCodeXML(str string) bool {
+	return strings.HasPrefix(str, "<code>") && strings.HasSuffix(str, "</code>")
 }
 
 func isGoMarkdownFormat(str string) bool {

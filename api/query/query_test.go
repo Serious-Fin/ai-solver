@@ -87,6 +87,14 @@ func TestShouldRemoveCppMarkdown(t *testing.T) {
 	ExecuteAndExpectText(t, aiOutput, want)
 }
 
+func TestShouldRemoveCodeXML(t *testing.T) {
+	aiOutput := `<code>
+test func
+</code>`
+	want := "test func"
+	ExecuteAndExpectText(t, aiOutput, want)
+}
+
 func TestShouldTrimSpace(t *testing.T) {
 	aiOutput := "\n\n\t test func\t "
 	want := "test func"
