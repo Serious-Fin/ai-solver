@@ -1,12 +1,14 @@
 <script lang="ts">
 	import { validate } from '$lib/api/validate';
-	import { TestStatus, TestStatusReporter } from '$lib/TestStatusReporter';
+	import { TestStatusReporter } from '$lib/TestStatusReporter';
 	import { handleError } from '$lib/helpers';
 	import SingleTestCase from './SingleTestCase.svelte';
+	import type { TestCase } from '$lib/api/problems';
 
-	let { problemId, testCaseIds, code }: { problemId: string; testCaseIds: number[]; code: string } =
+	let { problemId, testCases, code }: { problemId: string; testCases: TestCase[]; code: string } =
 		$props();
 
+	const testCaseIds = testCases.map((testCase) => testCase.id);
 	let testStatusReporter = new TestStatusReporter(testCaseIds);
 	let testStates = $state(testStatusReporter.GetTestStatuses());
 	testStatusReporter.UpdateTestStatuses({

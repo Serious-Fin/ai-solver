@@ -12,7 +12,6 @@ type Problem struct {
 	Description   string            `json:"description,omitempty"`
 	TestCases     []common.TestCase `json:"testCases,omitempty"`
 	GoPlaceholder string            `json:"goPlaceholder,omitempty"`
-	TestIds       []int             `json:"testCaseIds,omitempty"`
 }
 
 type ProblemDBHandler struct {
@@ -60,7 +59,6 @@ func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshal test cases into object (problem id %s): %v", id, err)
 	}
-	problem.TestIds = extractTestIds(problem.TestCases)
 	return &problem, nil
 }
 
@@ -74,12 +72,4 @@ func (handler *ProblemDBHandler) GetMainFuncGo(problemId string) (string, error)
 	}
 
 	return mainFunction, nil
-}
-
-func extractTestIds(testCases []common.TestCase) []int {
-	testCaseIds := make([]int, 0)
-	for _, testCase := range testCases {
-		testCaseIds = append(testCaseIds, testCase.Id)
-	}
-	return testCaseIds
 }

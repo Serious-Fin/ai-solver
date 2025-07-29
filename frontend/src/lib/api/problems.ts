@@ -4,11 +4,11 @@ export interface Problem {
     description?: string;
     testCases?: TestCase[];
     goPlaceholder?: string;
-    testCaseIds?: number[];
 }
 
 export interface TestCase {
-    input: string;
+    id: number
+    inputs: string;
     output: string;
 }
 

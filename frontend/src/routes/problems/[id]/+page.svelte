@@ -5,12 +5,13 @@
 	import TestBox from '$lib/components/problems/id/TestBox.svelte';
 
 	import type { PageProps } from './$types';
+	import type { TestCase } from '$lib/api/problems';
 	let { data }: PageProps = $props();
 
 	let problemId: string = data.problem.id;
 	let title: string = data.problem.title;
 	let description: string = data.problem.description ?? '';
-	let testCaseIds: number[] = data.problem.testCaseIds ?? [];
+	let testCases: TestCase[] = data.problem.testCases ?? [];
 	let code: string = $state(data.problem.goPlaceholder ?? '');
 
 	function updateCode(newCode: string) {
@@ -33,7 +34,7 @@
 
 	<ChatBox {code} {updateCode}></ChatBox>
 
-	<TestBox {problemId} {testCaseIds} {code}></TestBox>
+	<TestBox {problemId} {testCases} {code}></TestBox>
 </section>
 
 <!-- TODO: make test design in figma -->

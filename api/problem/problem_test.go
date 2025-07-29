@@ -99,7 +99,6 @@ func TestGetProblemById(t *testing.T) {
 				ExpectedOutput: "[]int{0, 1}",
 			},
 		},
-		TestIds: []int{0},
 	}
 
 	values := [][]driver.Value{
