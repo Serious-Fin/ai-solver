@@ -55,7 +55,7 @@
 		width: 100vw;
 		height: auto;
 		min-height: 100vh;
-		padding: 16px;
+		padding: 32px 0;
 		box-sizing: border-box;
 	}
 
