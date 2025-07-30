@@ -40,9 +40,13 @@
 				/>
 			{/if}
 		</div>
-		<button class="drop-down-arrow" onclick={toggleDropdown}
-			><img src="/arrow_drop_down.png" alt="drop down arror" /></button
-		>
+		<button class="drop-down-arrow" onclick={toggleDropdown}>
+			{#if isExpanded}
+				<img src="/arrow_drop_up.png" alt="up arrow" />
+			{:else}
+				<img src="/arrow_drop_down.png" alt="drop down arrow" />
+			{/if}
+		</button>
 	</header>
 	<div class="body {isExpanded ? '' : 'invisible'}">
 		{#each test.inputs as input, index}

@@ -21,8 +21,8 @@
 
 <section>
 	<article>
-		<a class="back btn" href="/problems">
-			<img class="img_icon" src="/back-arrow.svg" alt="return back arrow" />
+		<a class="btn" href="/problems">
+			<img class="img_icon" src="/arrow_back.svg" alt="return back arrow" />
 		</a>
 		<h1 class="inter-600">{title}</h1>
 		<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
@@ -38,7 +38,6 @@
 </section>
 
 <!-- TODO: modernize front-end design in figma for mobile -->
-<!-- fix header of the page (color/done tag/back arrow/long titles) -->
 <!-- make array printing in tests look fancy -->
 <!-- clicking on status message shows "not run yet" etc -->
 <!-- change question mark with minus -->
@@ -60,9 +59,11 @@
 	}
 
 	article {
-		display: flex;
+		display: grid;
+		grid-template-columns: 50px auto 50px;
 		align-items: center;
-		gap: 8px;
+		gap: 10px;
+		padding-left: 10px;
 	}
 
 	h1 {
@@ -71,10 +72,8 @@
 	}
 
 	.btn {
-		width: 50px;
-		height: 50px;
-		border-radius: 10px;
-		border: 2px solid black;
+		width: 40px;
+		height: 40px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -83,10 +82,6 @@
 	.img_icon {
 		width: 80%;
 		height: 80%;
-	}
-
-	.back {
-		background-color: white;
 	}
 
 	.inter-600 {
