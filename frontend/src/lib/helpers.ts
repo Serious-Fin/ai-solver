@@ -17,3 +17,10 @@ export function handleError(msgToUser: string, err: Error) {
     }
 }
 
+const arrayStartRegex = /\[\][a-zA-Z0-9_]*{/g
+const arrayEndRegex = /}/g
+export function printHumanReadable(input: string): string {
+    input = input.replaceAll(arrayStartRegex, "[")
+    input = input.replaceAll(arrayEndRegex, "]")
+    return input
+}

@@ -38,7 +38,6 @@
 </section>
 
 <!-- TODO: modernize front-end design in figma for mobile -->
-<!-- make array printing in tests look fancy -->
 <!-- clicking on status message shows "not run yet" etc -->
 <!-- change question mark with minus -->
 <!-- use a different markdown parser because this one skips empty lines -->

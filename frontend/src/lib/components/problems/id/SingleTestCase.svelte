@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { SingleTestStatus } from '$lib/TestStatusReporter';
 	import { TestStatus } from '$lib/TestStatusReporter';
+	import { printHumanReadable } from '$lib/helpers';
 
 	let { test }: { test: SingleTestStatus } = $props();
 	let isExpanded = $state(false);
@@ -50,11 +51,11 @@
 	</header>
 	<div class="body {isExpanded ? '' : 'invisible'}">
 		{#each test.inputs as input, index}
-			<p>Input {index + 1}: {input}</p>
+			<p><b>Input {index + 1}:</b> {printHumanReadable(input)}</p>
 		{/each}
-		<p>Expect: {test.output}</p>
+		<p><b>Expect:</b> {printHumanReadable(test.output)}</p>
 		{#if test.status === TestStatus.FAIL}
-			<p>Got: {test.got}</p>
+			<p><b>Got:</b> {printHumanReadable(test.got)}</p>
 		{/if}
 	</div>
 </div>
