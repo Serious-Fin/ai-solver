@@ -37,9 +37,6 @@
 	<TestBox {problemId} {testCases} {code}></TestBox>
 </section>
 
-<!-- TODO: add front-end design for PCs in figma -->
-<!-- TODO: implement front-end design for PCs in code -->
-
 <style>
 	section {
 		background-color: #161c2e;
@@ -96,8 +93,8 @@
 	}
 
 	@media (min-width: 1024px) {
-		section {
-			background-color: pink;
+		h1 {
+			font-size: 22pt;
 		}
 	}
 </style>

@@ -57,4 +57,10 @@
 			padding: 36px 32px;
 		}
 	}
+
+	@media (min-width: 1024px) {
+		article {
+			padding: 42px 38px;
+		}
+	}
 </style>

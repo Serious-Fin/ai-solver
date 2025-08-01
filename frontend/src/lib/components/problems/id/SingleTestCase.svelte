@@ -144,4 +144,10 @@
 			font-size: 13pt;
 		}
 	}
+
+	@media (min-width: 1024px) {
+		.test-box {
+			margin-bottom: 26px;
+		}
+	}
 </style>

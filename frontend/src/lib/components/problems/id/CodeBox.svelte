@@ -59,4 +59,11 @@
 			font-size: 12pt;
 		}
 	}
+
+	@media (min-width: 1024px) {
+		article {
+			padding: 42px 38px;
+			margin-top: 46px;
+		}
+	}
 </style>
