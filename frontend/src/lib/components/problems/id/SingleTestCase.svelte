@@ -50,11 +50,19 @@
 		</button>
 	</header>
 	<div class="body {isExpanded ? '' : 'invisible'}">
+		<p>
+			<b>Status:</b>
+			{test.status === TestStatus.UNKNOWN
+				? 'not run yet'
+				: test.status === TestStatus.PASS
+					? 'passed'
+					: 'failed'}
+		</p>
 		{#each test.inputs as input, index}
 			<p><b>Input {index + 1}:</b> {printHumanReadable(input)}</p>
 		{/each}
 		<p><b>Expect:</b> {printHumanReadable(test.output)}</p>
-		{#if test.status === TestStatus.FAIL}
+		{#if test.status === TestStatus.FAIL && test.got}
 			<p><b>Got:</b> {printHumanReadable(test.got)}</p>
 		{/if}
 	</div>
@@ -95,7 +103,7 @@
 		font-optical-sizing: auto;
 		font-weight: 400;
 		font-style: normal;
-		line-height: 1.6;
+		line-height: 1.8;
 		font-size: 11pt;
 	}
 
