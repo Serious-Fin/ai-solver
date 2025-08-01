@@ -49,4 +49,14 @@
 		font-size: 11pt;
 		border-radius: 7px;
 	}
+
+	@media (min-width: 768px) {
+		article {
+			padding: 36px 32px;
+		}
+
+		code {
+			font-size: 12pt;
+		}
+	}
 </style>

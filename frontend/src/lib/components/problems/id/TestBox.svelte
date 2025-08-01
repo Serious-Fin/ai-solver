@@ -21,7 +21,6 @@
 				code,
 				language: 'go'
 			});
-			console.log(testRunOutput);
 			testStatusReporter.UpdateTestStatuses(testRunOutput);
 			testStates = testStatusReporter.GetTestStatuses();
 		} catch (err) {
@@ -94,5 +93,11 @@
 		font-optical-sizing: auto;
 		font-weight: 700;
 		font-style: normal;
+	}
+
+	@media (min-width: 768px) {
+		article {
+			padding: 36px 32px;
+		}
 	}
 </style>

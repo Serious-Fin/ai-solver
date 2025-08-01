@@ -142,4 +142,19 @@
 		width: 80%;
 		height: 80%;
 	}
+
+	@media (min-width: 768px) {
+		article {
+			padding: 36px 32px;
+		}
+
+		#agent {
+			font-size: 13pt;
+		}
+
+		.query_btn {
+			width: 60px;
+			height: 60px;
+		}
+	}
 </style>

@@ -51,4 +51,10 @@
 		line-height: 1.5;
 		font-size: 12pt;
 	}
+
+	@media (min-width: 768px) {
+		article {
+			padding: 36px 32px;
+		}
+	}
 </style>

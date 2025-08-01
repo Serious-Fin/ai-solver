@@ -37,8 +37,6 @@
 	<TestBox {problemId} {testCases} {code}></TestBox>
 </section>
 
-<!-- TODO: add front-end design for tablets in figma -->
-<!-- TODO: implement front-end design for tablets in code -->
 <!-- TODO: add front-end design for PCs in figma -->
 <!-- TODO: implement front-end design for PCs in code -->
 
@@ -86,14 +84,20 @@
 	}
 
 	.completed_icon {
-		width: 13px;
-		height: 13px;
+		width: 16px;
+		height: 16px;
 		opacity: 80%;
 	}
 
-	@media (min-width: 760px) {
+	@media (min-width: 768px) {
+		h1 {
+			font-size: 20pt;
+		}
+	}
+
+	@media (min-width: 1024px) {
 		section {
-			background-color: green;
+			background-color: pink;
 		}
 	}
 </style>

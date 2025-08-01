@@ -133,4 +133,15 @@
 		font-weight: 700;
 		font-style: normal;
 	}
+
+	@media (min-width: 768px) {
+		.test-box_status-img {
+			width: 20px;
+			height: 20px;
+		}
+
+		.test-box_header {
+			font-size: 13pt;
+		}
+	}
 </style>
