@@ -40,7 +40,6 @@
 <!-- TODO: modernize front-end design in figma for mobile -->
 <!-- clicking on status message shows "not run yet" etc -->
 <!-- change question mark with minus -->
-<!-- use a different markdown parser because this one skips empty lines -->
 <!-- TODO: implement front-end design in code for mobile -->
 <!-- TODO: add front-end design for tablets in figma -->
 <!-- TODO: implement front-end design for tablets in code -->

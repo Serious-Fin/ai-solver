@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { marked } from 'marked';
-
 	let { description }: { description: string } = $props();
 </script>
 
@@ -9,7 +8,7 @@
 		<h2>Description</h2>
 	</header>
 	<div>
-		{@html marked.parse(description)}
+		{@html marked.parse(description, { breaks: true })}
 	</div>
 </article>
 
