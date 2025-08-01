@@ -79,9 +79,9 @@ func main() {
 
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"http://localhost:5173"},
-		AllowMethods: []string{"POST", "GET", "OPTIONS"},
-		AllowHeaders: []string{"Content-Type"},
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"*"},
+		AllowHeaders: []string{"*"},
 	}))
 	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", GetProblems)
