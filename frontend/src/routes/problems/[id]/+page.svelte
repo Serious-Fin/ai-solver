@@ -81,9 +81,8 @@
 	}
 
 	.completed_icon {
-		width: 16px;
-		height: 16px;
-		opacity: 80%;
+		width: 20px;
+		height: 20px;
 	}
 
 	@media (min-width: 768px) {
