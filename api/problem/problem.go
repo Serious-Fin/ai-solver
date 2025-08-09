@@ -9,6 +9,7 @@ import (
 type Problem struct {
 	Id            int               `json:"id"`
 	Title         string            `json:"title"`
+	Difficulty    int               `json:"difficulty"`
 	Description   string            `json:"description,omitempty"`
 	TestCases     []common.TestCase `json:"testCases,omitempty"`
 	GoPlaceholder string            `json:"goPlaceholder,omitempty"`
@@ -23,7 +24,7 @@ func NewProblemHandler(db common.DBInterface) *ProblemDBHandler {
 }
 
 func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
-	rows, err := handler.DB.Query("SELECT id, title FROM problems")
+	rows, err := handler.DB.Query("SELECT id, title, difficulty FROM problems")
 	if err != nil {
 		return nil, fmt.Errorf("could not query problems data from db: %v", err)
 	}
@@ -32,7 +33,7 @@ func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
 	problems := make([]Problem, 0)
 	for rows.Next() {
 		var problem Problem
-		err = rows.Scan(&problem.Id, &problem.Title)
+		err = rows.Scan(&problem.Id, &problem.Title, &problem.Difficulty)
 		if err != nil {
 			return nil, fmt.Errorf("could not scan problems db output: %v", err)
 		}
@@ -46,11 +47,11 @@ func (handler *ProblemDBHandler) GetProblems() ([]Problem, error) {
 }
 
 func (handler *ProblemDBHandler) GetProblemById(id string) (*Problem, error) {
-	row := handler.DB.QueryRow("SELECT id, title, description, testCases FROM problems WHERE id = ?", id)
+	row := handler.DB.QueryRow("SELECT id, title, difficulty, description, testCases FROM problems WHERE id = ?", id)
 
 	var problem Problem
 	var testCaseString string
-	err := row.Scan(&problem.Id, &problem.Title, &problem.Description, &testCaseString)
+	err := row.Scan(&problem.Id, &problem.Title, &problem.Difficulty, &problem.Description, &testCaseString)
 	if err != nil {
 		return nil, fmt.Errorf("could not scan single problem db output (problem id %s): %v", id, err)
 	}

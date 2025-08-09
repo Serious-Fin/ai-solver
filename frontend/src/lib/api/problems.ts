@@ -1,6 +1,7 @@
 export interface Problem {
     id: string;
     title: string;
+    difficulty: number;
     description?: string;
     testCases?: TestCase[];
     goPlaceholder?: string;

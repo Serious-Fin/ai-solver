@@ -20,7 +20,7 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 
 	var mockDb = NewProblemHandler(db)
 
-	mock.ExpectQuery("SELECT id, title FROM problems").WillReturnError(errors.New("error querying data"))
+	mock.ExpectQuery("SELECT id, title, difficulty FROM problems").WillReturnError(errors.New("error querying data"))
 
 	if _, err = mockDb.GetProblems(); err == nil {
 		t.Error("expected error when query fails")
@@ -41,26 +41,28 @@ func TestGetProblems(t *testing.T) {
 	var mockDb = NewProblemHandler(db)
 	want := []Problem{
 		{
-			Id:    1,
-			Title: "one",
+			Id:         1,
+			Title:      "one",
+			Difficulty: 1,
 		},
 		{
-			Id:    2,
-			Title: "two",
+			Id:         2,
+			Title:      "two",
+			Difficulty: 2,
 		},
 	}
 
 	values := [][]driver.Value{
 		{
-			want[0].Id, want[0].Title,
+			want[0].Id, want[0].Title, want[0].Difficulty,
 		},
 		{
-			want[1].Id, want[1].Title,
+			want[1].Id, want[1].Title, want[1].Difficulty,
 		},
 	}
 
-	mock.ExpectQuery("SELECT id, title FROM problems").WillReturnRows(sqlmock.NewRows([]string{
-		"id", "title",
+	mock.ExpectQuery("SELECT id, title, difficulty FROM problems").WillReturnRows(sqlmock.NewRows([]string{
+		"id", "title", "difficulty",
 	}).AddRows(values...))
 
 	got, err := mockDb.GetProblems()
@@ -90,6 +92,7 @@ func TestGetProblemById(t *testing.T) {
 		Id:          1,
 		Title:       "foo",
 		Description: "bar",
+		Difficulty:  3,
 		TestCases: []common.TestCase{
 			{
 				Id: 0,
@@ -103,12 +106,12 @@ func TestGetProblemById(t *testing.T) {
 
 	values := [][]driver.Value{
 		{
-			want.Id, want.Title, want.Description, `[{"id": 0,"inputs":  ["[]int{2, 7, 11, 15}","9"],"output": "[]int{0, 1}"}]`,
+			want.Id, want.Title, want.Difficulty, want.Description, `[{"id": 0,"inputs":  ["[]int{2, 7, 11, 15}","9"],"output": "[]int{0, 1}"}]`,
 		},
 	}
 
-	mock.ExpectQuery("SELECT id, title, description, testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "title", "description", "testCases",
+	mock.ExpectQuery("SELECT id, title, difficulty, description, testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "title", "difficulty", "description", "testCases",
 	}).AddRows(values...))
 
 	got, err := mockDb.GetProblemById(fmt.Sprint(want.Id))
