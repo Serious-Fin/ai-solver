@@ -94,7 +94,8 @@ func main() {
 }
 
 func GetProblems(c *gin.Context) {
-	problems, err := problemHandler.GetProblems()
+	userId := c.DefaultQuery("user", "0")
+	problems, err := problemHandler.GetProblems(userId)
 	if err != nil {
 		c.Error(err)
 		return
@@ -103,8 +104,9 @@ func GetProblems(c *gin.Context) {
 }
 
 func GetProblemById(c *gin.Context) {
-	id := c.Param("id")
-	problem, err := problemHandler.GetProblemById(id)
+	problemId := c.Param("id")
+	userId := c.DefaultQuery("user", "0")
+	problem, err := problemHandler.GetProblemById(userId, problemId)
 	if err != nil {
 		c.Error(err)
 		return

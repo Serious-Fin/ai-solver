@@ -5,6 +5,7 @@ export interface Problem {
     description?: string;
     testCases?: TestCase[];
     goPlaceholder?: string;
+    isCompleted: boolean
 }
 
 export interface TestCase {
@@ -17,7 +18,7 @@ const BASE_URL = "http://127.0.0.1:8080"
 
 export async function getProblems(): Promise<Problem[]> {
     try {
-        const response = await fetch(`${BASE_URL}/problems`)
+        const response = await fetch(`${BASE_URL}/problems?user=1`)
         if (!response.ok) {
             const errorBody = await response.json().catch(() => ({ message: response.statusText }))
             throw new Error(`Error fetching problems ${response.status} - ${errorBody || "Unknown error"}`)
@@ -32,7 +33,7 @@ export async function getProblems(): Promise<Problem[]> {
 
 export async function getProblemById(id: string): Promise<Problem> {
     try {
-        const response = await fetch(`${BASE_URL}/problems/${id}`)
+        const response = await fetch(`${BASE_URL}/problems/${id}?user=1`)
         if (!response.ok) {
             const errorBody = await response.json().catch(() => ({ message: response.statusText }))
             throw new Error(`Error fetching problem with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)

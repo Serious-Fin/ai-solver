@@ -26,7 +26,7 @@ export function printHumanReadable(input: string): string {
 }
 
 export function getDifficultyName(difficulty: number): string {
-    switch(difficulty) {
+    switch (difficulty) {
         case 1:
             return "easy"
         case 2:

@@ -13,6 +13,7 @@
 	let description: string = data.problem.description ?? '';
 	let testCases: TestCase[] = data.problem.testCases ?? [];
 	let code: string = $state(data.problem.goPlaceholder ?? '');
+	let isCompleted: boolean = data.problem.isCompleted;
 
 	function updateCode(newCode: string) {
 		code = newCode;
@@ -25,7 +26,9 @@
 			<img class="img_icon" src="/arrow_back.svg" alt="return back arrow" />
 		</a>
 		<h1 class="inter-600">{title}</h1>
-		<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
+		{#if isCompleted}
+			<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
+		{/if}
 	</article>
 
 	<DescriptionBox {description}></DescriptionBox>

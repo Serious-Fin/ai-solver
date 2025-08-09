@@ -22,7 +22,7 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 
 	mock.ExpectQuery("SELECT id, title, difficulty FROM problems").WillReturnError(errors.New("error querying data"))
 
-	if _, err = mockDb.GetProblems(); err == nil {
+	if _, err = mockDb.GetProblems("1"); err == nil {
 		t.Error("expected error when query fails")
 	}
 
@@ -65,7 +65,7 @@ func TestGetProblems(t *testing.T) {
 		"id", "title", "difficulty",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetProblems()
+	got, err := mockDb.GetProblems("1")
 	if err != nil {
 		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
@@ -114,7 +114,7 @@ func TestGetProblemById(t *testing.T) {
 		"id", "title", "difficulty", "description", "testCases",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetProblemById(fmt.Sprint(want.Id))
+	got, err := mockDb.GetProblemById("1", fmt.Sprint(want.Id))
 	if err != nil {
 		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
@@ -158,3 +158,5 @@ func TestGetMainFuncGo(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+// TODO: fix tests after userId was added
