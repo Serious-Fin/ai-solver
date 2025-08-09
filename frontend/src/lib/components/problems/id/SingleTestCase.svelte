@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { SingleTestStatus } from '$lib/TestStatusReporter';
-	import { TestStatus } from '$lib/TestStatusReporter';
-	import { printHumanReadable } from '$lib/helpers';
+	import type { SingleTestStatus } from '$lib/TestStatusReporter'
+	import { TestStatus } from '$lib/TestStatusReporter'
+	import { printHumanReadable } from '$lib/helpers'
 
-	let { test }: { test: SingleTestStatus } = $props();
-	let isExpanded = $state(false);
+	let { test }: { test: SingleTestStatus } = $props()
+	let isExpanded = $state(false)
 
 	function toggleDropdown() {
-		isExpanded = !isExpanded;
+		isExpanded = !isExpanded
 	}
 </script>
 

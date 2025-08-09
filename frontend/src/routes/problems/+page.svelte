@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { getDifficultyName } from '$lib/helpers';
-	import type { PageProps } from './$types';
-	let { data }: PageProps = $props();
+	import { getDifficultyName } from '$lib/helpers'
+	import type { PageProps } from './$types'
+	let { data }: PageProps = $props()
 </script>
 
 <section>

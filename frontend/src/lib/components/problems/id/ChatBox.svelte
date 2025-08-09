@@ -1,38 +1,38 @@
 <script lang="ts">
-	import { v4 as uuidv4 } from 'uuid';
-	import { enhance } from '$app/forms';
-	import type { SubmitFunction } from '@sveltejs/kit';
-	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte';
-	import { handleError } from '$lib/helpers';
+	import { v4 as uuidv4 } from 'uuid'
+	import { enhance } from '$app/forms'
+	import type { SubmitFunction } from '@sveltejs/kit'
+	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
+	import { handleError } from '$lib/helpers'
 
-	let { code, updateCode }: { code: string; updateCode: (newCode: string) => void } = $props();
+	let { code, updateCode }: { code: string; updateCode: (newCode: string) => void } = $props()
 
-	let sessionId: string = uuidv4();
-	let isLoading = $state(false);
+	let sessionId: string = uuidv4()
+	let isLoading = $state(false)
 
 	const handleQueryAgent: SubmitFunction = () => {
-		isLoading = true;
+		isLoading = true
 		return async ({ update, result }) => {
 			try {
-				await update();
+				await update()
 				if (result.type === 'success' && result.data?.response) {
-					code = result.data.response;
-					updateCode(code);
+					code = result.data.response
+					updateCode(code)
 				} else if (result.type === 'failure') {
-					throw Error(result.data?.message || 'Unknown server error occurred');
+					throw Error(result.data?.message || 'Unknown server error occurred')
 				} else {
-					throw Error('Could not query agent');
+					throw Error('Could not query agent')
 				}
 			} catch (err) {
 				if (err instanceof Error) {
-					handleError('Error sending message, try again later', err);
-					return;
+					handleError('Error sending message, try again later', err)
+					return
 				}
 			} finally {
-				isLoading = false;
+				isLoading = false
 			}
-		};
-	};
+		}
+	}
 </script>
 
 <article class="problem_article_box">

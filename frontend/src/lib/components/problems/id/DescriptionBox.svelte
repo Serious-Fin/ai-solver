@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { marked } from 'marked';
-	let { description }: { description: string } = $props();
+	import { marked } from 'marked'
+	let { description }: { description: string } = $props()
 </script>
 
 <article class="problem_article_box">

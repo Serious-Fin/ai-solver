@@ -1,15 +1,15 @@
 <script lang="ts">
-	import Prism from 'prismjs';
-	import 'prismjs/components/prism-go';
+	import Prism from 'prismjs'
+	import 'prismjs/components/prism-go'
 
-	let { code }: { code: string } = $props();
+	let { code }: { code: string } = $props()
 
-	let codeElement: HTMLElement;
+	let codeElement: HTMLElement
 
 	$effect(() => {
-		codeElement.innerHTML = code;
-		Prism.highlightElement(codeElement);
-	});
+		codeElement.innerHTML = code
+		Prism.highlightElement(codeElement)
+	})
 </script>
 
 <article class="problem_article_box">

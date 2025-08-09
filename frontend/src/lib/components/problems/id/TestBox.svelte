@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { validate } from '$lib/api/validate';
-	import { TestStatusReporter } from '$lib/TestStatusReporter';
-	import { handleError } from '$lib/helpers';
-	import SingleTestCase from './SingleTestCase.svelte';
-	import type { TestCase } from '$lib/api/problems';
-	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte';
+	import { validate } from '$lib/api/validate'
+	import { TestStatusReporter } from '$lib/TestStatusReporter'
+	import { handleError } from '$lib/helpers'
+	import SingleTestCase from './SingleTestCase.svelte'
+	import type { TestCase } from '$lib/api/problems'
+	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
 
 	let { problemId, testCases, code }: { problemId: string; testCases: TestCase[]; code: string } =
-		$props();
+		$props()
 
-	let testStatusReporter = new TestStatusReporter(testCases);
-	let testStates = $state(testStatusReporter.GetTestStatuses());
-	let isLoading = $state(false);
+	let testStatusReporter = new TestStatusReporter(testCases)
+	let testStates = $state(testStatusReporter.GetTestStatuses())
+	let isLoading = $state(false)
 
 	const handleRunTests = async () => {
-		isLoading = true;
+		isLoading = true
 		try {
 			const testRunOutput = await validate({
 				problemId,
 				code,
 				language: 'go'
-			});
-			testStatusReporter.UpdateTestStatuses(testRunOutput);
-			testStates = testStatusReporter.GetTestStatuses();
+			})
+			testStatusReporter.UpdateTestStatuses(testRunOutput)
+			testStates = testStatusReporter.GetTestStatuses()
 		} catch (err) {
 			if (err instanceof Error) {
-				handleError('Error running tests, try again later', err);
-				return;
+				handleError('Error running tests, try again later', err)
+				return
 			}
 		} finally {
-			isLoading = false;
+			isLoading = false
 		}
-	};
+	}
 </script>
 
 <article class="problem_article_box">

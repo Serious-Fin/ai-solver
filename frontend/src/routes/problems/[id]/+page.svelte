@@ -1,22 +1,22 @@
 <script lang="ts">
-	import DescriptionBox from '$lib/components/problems/id/DescriptionBox.svelte';
-	import CodeBox from '$lib/components/problems/id/CodeBox.svelte';
-	import ChatBox from '$lib/components/problems/id/ChatBox.svelte';
-	import TestBox from '$lib/components/problems/id/TestBox.svelte';
+	import DescriptionBox from '$lib/components/problems/id/DescriptionBox.svelte'
+	import CodeBox from '$lib/components/problems/id/CodeBox.svelte'
+	import ChatBox from '$lib/components/problems/id/ChatBox.svelte'
+	import TestBox from '$lib/components/problems/id/TestBox.svelte'
 
-	import type { PageProps } from './$types';
-	import type { TestCase } from '$lib/api/problems';
-	let { data }: PageProps = $props();
+	import type { PageProps } from './$types'
+	import type { TestCase } from '$lib/api/problems'
+	let { data }: PageProps = $props()
 
-	let problemId: string = data.problem.id;
-	let title: string = data.problem.title;
-	let description: string = data.problem.description ?? '';
-	let testCases: TestCase[] = data.problem.testCases ?? [];
-	let code: string = $state(data.problem.goPlaceholder ?? '');
-	let isCompleted: boolean = data.problem.isCompleted;
+	let problemId: string = data.problem.id
+	let title: string = data.problem.title
+	let description: string = data.problem.description ?? ''
+	let testCases: TestCase[] = data.problem.testCases ?? []
+	let code: string = $state(data.problem.goPlaceholder ?? '')
+	let isCompleted: boolean = data.problem.isCompleted
 
 	function updateCode(newCode: string) {
-		code = newCode;
+		code = newCode
 	}
 </script>
 

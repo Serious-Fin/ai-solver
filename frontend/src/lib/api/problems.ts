@@ -1,56 +1,62 @@
 export interface Problem {
-    id: string;
-    title: string;
-    difficulty: number;
-    description?: string;
-    testCases?: TestCase[];
-    goPlaceholder?: string;
-    isCompleted: boolean
+	id: string
+	title: string
+	difficulty: number
+	description?: string
+	testCases?: TestCase[]
+	goPlaceholder?: string
+	isCompleted: boolean
 }
 
 export interface TestCase {
-    id: number
-    inputs: string[];
-    output: string;
+	id: number
+	inputs: string[]
+	output: string
 }
 
-const BASE_URL = "http://127.0.0.1:8080"
+const BASE_URL = 'http://127.0.0.1:8080'
 
 export async function getProblems(): Promise<Problem[]> {
-    try {
-        const response = await fetch(`${BASE_URL}/problems?user=1`)
-        if (!response.ok) {
-            const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-            throw new Error(`Error fetching problems ${response.status} - ${errorBody || "Unknown error"}`)
-        }
-        const problems: Problem[] = await response.json()
-        return problems
-    } catch (error) {
-        console.log("Error fetching problems", error)
-        throw error
-    }
+	try {
+		const response = await fetch(`${BASE_URL}/problems?user=1`)
+		if (!response.ok) {
+			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+			throw new Error(
+				`Error fetching problems ${response.status} - ${errorBody || 'Unknown error'}`
+			)
+		}
+		const problems: Problem[] = await response.json()
+		return problems
+	} catch (error) {
+		console.log('Error fetching problems', error)
+		throw error
+	}
 }
 
 export async function getProblemById(id: string): Promise<Problem> {
-    try {
-        const response = await fetch(`${BASE_URL}/problems/${id}?user=1`)
-        if (!response.ok) {
-            const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-            throw new Error(`Error fetching problem with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
-        }
-        const problem: Problem = await response.json()
+	try {
+		const response = await fetch(`${BASE_URL}/problems/${id}?user=1`)
+		if (!response.ok) {
+			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+			throw new Error(
+				`Error fetching problem with id '${id}' ${response.status} - ${errorBody || 'Unknown error'}`
+			)
+		}
+		const problem: Problem = await response.json()
 
-        const codeTemplate = await fetch(`${BASE_URL}/problems/${id}/go`)
-        if (!codeTemplate.ok) {
-            const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-            throw new Error(`Error fetching problem template with id '${id}' ${response.status} - ${errorBody || "Unknown error"}`)
-        }
-        problem.goPlaceholder = await codeTemplate.json()
-        return problem
-    } catch (error) {
-        console.log(`Error fetching problem with id '${id}'`, error)
-        throw error
-    }
+		const codeTemplate = await fetch(`${BASE_URL}/problems/${id}/go`)
+		if (!codeTemplate.ok) {
+			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+			throw new Error(
+				`Error fetching problem template with id '${id}' ${response.status} - ${errorBody || 'Unknown error'}`
+			)
+		}
+		problem.goPlaceholder = await codeTemplate.json()
+		return problem
+	} catch (error) {
+		console.log(`Error fetching problem with id '${id}'`, error)
+		throw error
+	}
 }
 
 // TODO: passing all tests should mark the task as complete if user is signed in
