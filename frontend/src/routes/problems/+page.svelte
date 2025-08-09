@@ -6,15 +6,15 @@
 
 <section>
 	<article>
-		<h1 class="inter-600">All problems</h1>
+		<h1 class="inter">All problems</h1>
 	</article>
 	<article>
 		<ul>
 			{#each data.problems as problem}
 				<a href="problems/{problem.id}">
 					<li>
-						<p class="inter-400">{problem.title}</p>
-						<p class="inter-600 difficulty {getDifficultyName(problem.difficulty)}">
+						<p class="inter title">{problem.title}</p>
+						<p class="inter difficulty {getDifficultyName(problem.difficulty)}">
 							{getDifficultyName(problem.difficulty)}
 						</p>
 						{#if problem.isCompleted}
@@ -46,24 +46,22 @@
 		font-size: 18pt;
 		margin-bottom: 20px;
 		margin-left: 20px;
-	}
-
-	.inter-600 {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
 		font-weight: 600;
+	}
+
+	.inter {
+		font-family: 'Inter', sans-serif;
+		font-optical-sizing: auto;
 		font-style: normal;
 	}
 
-	.inter-400 {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
+	.title {
 		font-weight: 400;
-		font-style: normal;
 	}
 
 	.difficulty {
 		font-size: 10pt;
+		font-weight: 600;
 	}
 
 	.easy {

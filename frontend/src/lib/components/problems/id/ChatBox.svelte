@@ -40,7 +40,7 @@
 		<h2>Chat box</h2>
 	</header>
 	<form method="POST" action="?/query" use:enhance={handleQueryAgent}>
-		<textarea class="chat_box_input inter-400" name="input" id="input"></textarea>
+		<textarea class="chat_box_input inter" name="input" id="input"></textarea>
 
 		<input type="hidden" name="code" value={code} />
 		<input type="hidden" name="language" value="go" />
@@ -100,6 +100,7 @@
 		box-sizing: border-box;
 		border-radius: 7px;
 		padding: 12px 12px;
+		font-weight: 400;
 	}
 
 	#agent {
@@ -110,10 +111,9 @@
 		padding: 0 4px;
 	}
 
-	.inter-400 {
+	.inter {
 		font-family: 'Inter', sans-serif;
 		font-optical-sizing: auto;
-		font-weight: 400;
 		font-style: normal;
 	}
 

@@ -25,7 +25,7 @@
 		<a class="btn" href="/problems">
 			<img class="img_icon" src="/arrow_back.svg" alt="return back arrow" />
 		</a>
-		<h1 class="inter-600">{title}</h1>
+		<h1 class="inter">{title}</h1>
 		{#if isCompleted}
 			<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
 		{/if}
@@ -61,6 +61,7 @@
 	h1 {
 		color: #ffffff;
 		font-size: 18pt;
+		font-weight: 600;
 	}
 
 	.btn {
@@ -76,10 +77,9 @@
 		height: 80%;
 	}
 
-	.inter-600 {
+	.inter {
 		font-family: 'Inter', sans-serif;
 		font-optical-sizing: auto;
-		font-weight: 600;
 		font-style: normal;
 	}
 
