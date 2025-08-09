@@ -33,7 +33,7 @@
 
 <style>
 	section {
-		background-color: #161c2e;
+		background-color: var(--background);
 		width: 100vw;
 		height: auto;
 		min-height: 100vh;
@@ -47,12 +47,6 @@
 		margin-bottom: 20px;
 		margin-left: 20px;
 		font-weight: 600;
-	}
-
-	.inter {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-style: normal;
 	}
 
 	.title {
@@ -83,7 +77,7 @@
 	}
 
 	li {
-		background-color: #e9e9e9;
+		background-color: var(--foreground);
 		padding: 20px 20px;
 		margin-bottom: 30px;
 		box-sizing: border-box;

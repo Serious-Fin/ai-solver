@@ -12,37 +12,14 @@
 	});
 </script>
 
-<article>
-	<header>
-		<h2>Code</h2>
+<article class="problem_article_box">
+	<header class="problem_article_header">
+		<h2 class="inter problem_article_header_text">Code</h2>
 	</header>
 	<pre class="code"><code class="language-go" bind:this={codeElement}>{code}</code></pre>
 </article>
 
 <style>
-	article {
-		background-color: #e9e9e9;
-		margin-top: 32px;
-		padding: 32px 16px;
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
-	header {
-		margin-bottom: 24px;
-	}
-
-	header h2 {
-		color: rgba(0, 0, 0, 0.7);
-		font-weight: 700;
-		font-size: 20pt;
-
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-weight: 700;
-		font-style: normal;
-	}
-
 	.code {
 		border: 1px solid rgba(0, 0, 0, 0.2);
 		box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.15);
@@ -51,19 +28,8 @@
 	}
 
 	@media (min-width: 768px) {
-		article {
-			padding: 36px 32px;
-		}
-
 		code {
 			font-size: 12pt;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		article {
-			padding: 42px 38px;
-			margin-top: 46px;
 		}
 	}
 </style>

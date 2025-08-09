@@ -42,7 +42,7 @@
 
 <style>
 	section {
-		background-color: #161c2e;
+		background-color: var(--background);
 		width: 100vw;
 		height: auto;
 		min-height: 100vh;
@@ -75,12 +75,6 @@
 	.img_icon {
 		width: 80%;
 		height: 80%;
-	}
-
-	.inter {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-style: normal;
 	}
 
 	.completed_icon {

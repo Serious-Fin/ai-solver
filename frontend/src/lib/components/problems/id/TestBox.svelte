@@ -34,15 +34,15 @@
 	};
 </script>
 
-<article>
-	<header>
-		<h2 class="inter_700">Tests</h2>
+<article class="problem_article_box">
+	<header class="problem_article_header">
+		<h2 class="inter problem_article_header_text">Tests</h2>
 	</header>
 	{#each testStates as test}
 		<SingleTestCase {test}></SingleTestCase>
 	{/each}
 	<footer>
-		<button class="inter_700" onclick={handleRunTests} disabled={isLoading}>
+		<button class="inter" onclick={handleRunTests} disabled={isLoading}>
 			{#if isLoading}
 				<LoadingSpinner></LoadingSpinner>
 			{:else}
@@ -53,23 +53,6 @@
 </article>
 
 <style>
-	article {
-		background-color: #e9e9e9;
-		margin-top: 32px;
-		padding: 32px 24px;
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
-	header {
-		margin-bottom: 24px;
-	}
-
-	header h2 {
-		color: rgba(0, 0, 0, 0.7);
-		font-size: 18pt;
-	}
-
 	button {
 		background-color: black;
 		border: none;
@@ -81,30 +64,11 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		font-weight: 700;
 	}
 
 	footer {
 		display: flex;
 		justify-content: end;
-	}
-
-	.inter_700 {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-weight: 700;
-		font-style: normal;
-	}
-
-	@media (min-width: 768px) {
-		article {
-			padding: 36px 32px;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		article {
-			padding: 42px 38px;
-			margin-top: 46px;
-		}
 	}
 </style>

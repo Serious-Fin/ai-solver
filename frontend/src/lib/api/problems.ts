@@ -53,7 +53,6 @@ export async function getProblemById(id: string): Promise<Problem> {
     }
 }
 
-// TODO: export main colors to root css file
 // TODO: make the all-problems page cards centered floating when screen grows bigger (tablets)
 // TODO: make cards and font appropriate for all-problems PC screens
 // TODO: passing all tests should mark the task as complete if user is signed in

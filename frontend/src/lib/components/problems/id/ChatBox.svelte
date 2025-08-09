@@ -35,9 +35,9 @@
 	};
 </script>
 
-<article>
-	<header>
-		<h2>Chat box</h2>
+<article class="problem_article_box">
+	<header class="problem_article_header">
+		<h2 class="inter problem_article_header_text">Chat box</h2>
 	</header>
 	<form method="POST" action="?/query" use:enhance={handleQueryAgent}>
 		<textarea class="chat_box_input inter" name="input" id="input"></textarea>
@@ -68,28 +68,9 @@
 </article>
 
 <style>
-	article {
-		background-color: #e9e9e9;
-		margin-top: 32px;
-		padding: 32px 16px;
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
 	header {
-		margin-bottom: 24px;
 		display: flex;
 		justify-content: space-between;
-	}
-
-	header h2 {
-		color: rgba(0, 0, 0, 0.7);
-		font-size: 20pt;
-
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-weight: 700;
-		font-style: normal;
 	}
 
 	.chat_box_input {
@@ -109,12 +90,6 @@
 		font-size: 12pt;
 		border-radius: 7px;
 		padding: 0 4px;
-	}
-
-	.inter {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-style: normal;
 	}
 
 	.block_footer {
@@ -144,10 +119,6 @@
 	}
 
 	@media (min-width: 768px) {
-		article {
-			padding: 36px 32px;
-		}
-
 		#agent {
 			font-size: 13pt;
 		}
@@ -155,13 +126,6 @@
 		.query_btn {
 			width: 60px;
 			height: 60px;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		article {
-			padding: 42px 38px;
-			margin-top: 46px;
 		}
 	}
 </style>

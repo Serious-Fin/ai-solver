@@ -20,7 +20,7 @@
 >
 	<header>
 		<div class="title">
-			<p class="test-box_header inter_700">Test {test.id}</p>
+			<p class="test-box_header inter">Test {test.id}</p>
 			{#if test.status === TestStatus.UNKNOWN}
 				<img
 					src="/test-not-run-icon.png"
@@ -114,6 +114,7 @@
 	.test-box_header {
 		color: #292929;
 		font-size: 12pt;
+		font-weight: 700;
 	}
 
 	.test-box_status-img {
@@ -125,13 +126,6 @@
 		border: none;
 		background: none;
 		width: 70px;
-	}
-
-	.inter_700 {
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-weight: 700;
-		font-style: normal;
 	}
 
 	@media (min-width: 768px) {

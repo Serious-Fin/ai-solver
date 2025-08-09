@@ -3,9 +3,9 @@
 	let { description }: { description: string } = $props();
 </script>
 
-<article>
-	<header>
-		<h2>Description</h2>
+<article class="problem_article_box">
+	<header class="problem_article_header">
+		<h2 class="inter problem_article_header_text">Description</h2>
 	</header>
 	<div>
 		{@html marked.parse(description, { breaks: true })}
@@ -13,28 +13,9 @@
 </article>
 
 <style>
-	article {
-		background-color: #e9e9e9;
-		margin-top: 32px;
-		padding: 32px 24px;
-		box-sizing: border-box;
-		max-width: 100%;
-	}
-
 	header {
-		margin-bottom: 24px;
 		display: flex;
 		justify-content: space-between;
-	}
-
-	header h2 {
-		color: rgba(0, 0, 0, 0.7);
-
-		font-size: 20pt;
-		font-family: 'Inter', sans-serif;
-		font-optical-sizing: auto;
-		font-weight: 700;
-		font-style: normal;
 	}
 
 	div {
@@ -50,17 +31,5 @@
 
 		line-height: 1.5;
 		font-size: 12pt;
-	}
-
-	@media (min-width: 768px) {
-		article {
-			padding: 36px 32px;
-		}
-	}
-
-	@media (min-width: 1024px) {
-		article {
-			padding: 42px 38px;
-		}
 	}
 </style>
