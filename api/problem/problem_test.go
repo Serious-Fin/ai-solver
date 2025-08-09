@@ -12,6 +12,7 @@ import (
 )
 
 func TestGetProblemsQueryThrowsError(t *testing.T) {
+	userId := "1"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -20,9 +21,9 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 
 	var mockDb = NewProblemHandler(db)
 
-	mock.ExpectQuery("SELECT id, title, difficulty FROM problems").WillReturnError(errors.New("error querying data"))
+	mock.ExpectQuery(`SELECT\s+id,\s+title,\s+difficulty,`).WithArgs(userId).WillReturnError(errors.New("error querying data"))
 
-	if _, err = mockDb.GetProblems("1"); err == nil {
+	if _, err = mockDb.GetProblems(userId); err == nil {
 		t.Error("expected error when query fails")
 	}
 
@@ -32,6 +33,7 @@ func TestGetProblemsQueryThrowsError(t *testing.T) {
 }
 
 func TestGetProblems(t *testing.T) {
+	userId := "1"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -41,31 +43,33 @@ func TestGetProblems(t *testing.T) {
 	var mockDb = NewProblemHandler(db)
 	want := []Problem{
 		{
-			Id:         1,
-			Title:      "one",
-			Difficulty: 1,
+			Id:          1,
+			Title:       "one",
+			Difficulty:  1,
+			IsCompleted: true,
 		},
 		{
-			Id:         2,
-			Title:      "two",
-			Difficulty: 2,
+			Id:          2,
+			Title:       "two",
+			Difficulty:  2,
+			IsCompleted: false,
 		},
 	}
 
 	values := [][]driver.Value{
 		{
-			want[0].Id, want[0].Title, want[0].Difficulty,
+			want[0].Id, want[0].Title, want[0].Difficulty, want[0].IsCompleted,
 		},
 		{
-			want[1].Id, want[1].Title, want[1].Difficulty,
+			want[1].Id, want[1].Title, want[1].Difficulty, want[1].IsCompleted,
 		},
 	}
 
-	mock.ExpectQuery("SELECT id, title, difficulty FROM problems").WillReturnRows(sqlmock.NewRows([]string{
-		"id", "title", "difficulty",
+	mock.ExpectQuery(`SELECT\s+id,\s+title,\s+difficulty,`).WithArgs(userId).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "title", "difficulty", "isCompleted",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetProblems("1")
+	got, err := mockDb.GetProblems(userId)
 	if err != nil {
 		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
@@ -80,6 +84,7 @@ func TestGetProblems(t *testing.T) {
 }
 
 func TestGetProblemById(t *testing.T) {
+	userId := "1"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -93,6 +98,7 @@ func TestGetProblemById(t *testing.T) {
 		Title:       "foo",
 		Description: "bar",
 		Difficulty:  3,
+		IsCompleted: true,
 		TestCases: []common.TestCase{
 			{
 				Id: 0,
@@ -106,15 +112,15 @@ func TestGetProblemById(t *testing.T) {
 
 	values := [][]driver.Value{
 		{
-			want.Id, want.Title, want.Difficulty, want.Description, `[{"id": 0,"inputs":  ["[]int{2, 7, 11, 15}","9"],"output": "[]int{0, 1}"}]`,
+			want.Id, want.Title, want.Difficulty, want.Description, `[{"id": 0,"inputs":  ["[]int{2, 7, 11, 15}","9"],"output": "[]int{0, 1}"}]`, want.IsCompleted,
 		},
 	}
 
-	mock.ExpectQuery("SELECT id, title, difficulty, description, testCases FROM problems WHERE id = ?").WithArgs(problemId).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "title", "difficulty", "description", "testCases",
+	mock.ExpectQuery(`SELECT\s+id,\s+title,\s+difficulty,\s+description,\s+testCases,`).WithArgs(userId, problemId, problemId).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "title", "difficulty", "description", "testCases", "isCompleted",
 	}).AddRows(values...))
 
-	got, err := mockDb.GetProblemById("1", fmt.Sprint(want.Id))
+	got, err := mockDb.GetProblemById(userId, fmt.Sprint(want.Id))
 	if err != nil {
 		t.Errorf("unexpected error when returned rows are in a correct format: %v", err)
 	}
@@ -158,5 +164,3 @@ func TestGetMainFuncGo(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
-
-// TODO: fix tests after userId was added

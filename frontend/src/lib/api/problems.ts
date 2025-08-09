@@ -52,3 +52,10 @@ export async function getProblemById(id: string): Promise<Problem> {
         throw error
     }
 }
+
+// TODO: fix up the styling of inter. Make font generic class and set weight individually
+// TODO: export main colors to root css file
+// TODO: make the all-problems page cards centered floating when screen grows bigger (tablets)
+// TODO: make cards and font appropriate for all-problems PC screens
+// TODO: passing all tests should mark the task as complete if user is signed in
+// TODO: sign-in/log-in screen
