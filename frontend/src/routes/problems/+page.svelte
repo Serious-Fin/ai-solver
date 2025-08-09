@@ -44,7 +44,7 @@
 	h1 {
 		color: #ffffff;
 		font-size: 18pt;
-		margin-bottom: 20px;
+		margin-bottom: 32px;
 		margin-left: 20px;
 		font-weight: 600;
 	}
@@ -72,8 +72,8 @@
 
 	ul {
 		list-style-type: none;
-		margin: 0;
 		padding: 0;
+		margin: 0;
 	}
 
 	li {
@@ -81,6 +81,7 @@
 		padding: 20px 20px;
 		margin-bottom: 30px;
 		box-sizing: border-box;
+		max-width: 768px;
 
 		font-size: 12pt;
 		color: black;
@@ -93,5 +94,11 @@
 
 	a {
 		text-decoration: none;
+	}
+
+	@media (min-width: 768px) {
+		li {
+			margin-left: 30px;
+		}
 	}
 </style>
