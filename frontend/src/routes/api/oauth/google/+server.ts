@@ -33,6 +33,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return new Response('Could not get email from OAuth response', { status: 401 })
 	}
 
+	// TODO:
 	// try and find a user with provided email in DB (return id or -1)
 	// if none exists, create a user with provided email (return id)
 

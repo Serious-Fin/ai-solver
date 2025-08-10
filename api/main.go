@@ -249,3 +249,5 @@ func createAIAgentClientsOrFail(chatgptModel string, geminiModel string, cache *
 		Gemini:  geminiAgent,
 	}
 }
+
+// TODO: expose user and session endpoints
