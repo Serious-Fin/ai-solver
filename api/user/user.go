@@ -44,12 +44,6 @@ func (handler *UserDBHandler) GetUser(email string) (*User, error) {
 	return &user, nil
 }
 
-/*
-	TODO: to test (IGNORE THIS TODO ITEM)
-
-- if inserting returns error, throw error
-- if insert good -> no err
-*/
 func (handler *UserDBHandler) CreateUser(email string) (*User, error) {
 	row := handler.DB.QueryRow("INSERT INTO users (email) VALUES (?) RETURNING id, email", email)
 	var newUser User

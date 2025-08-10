@@ -88,3 +88,55 @@ func TestGetUserReturnsUser(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestCreateUserErrorThrowsError(t *testing.T) {
+	userEmail := "example@abc.com"
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(userEmail).WillReturnError(errors.New("something happened"))
+
+	if _, err := mockDb.CreateUser(userEmail); err == nil {
+		t.Error("expected error when executing from db throws error")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCreateUserReturnsNewUser(t *testing.T) {
+	want := &User{
+		Id:    1,
+		Email: "example.abc.com",
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(want.Email).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "email",
+	}).AddRow([]driver.Value{want.Id, want.Email}...))
+
+	got, err := mockDb.CreateUser(want.Email)
+	if err != nil {
+		t.Errorf("unexpected error when reading from db does not throw: %v", err)
+	}
+
+	if res := reflect.DeepEqual(got, want); res == false {
+		t.Errorf("want: %v, got: %v", want, got)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
