@@ -298,3 +298,78 @@ func TestIsSessionExpiredActiveSession(t *testing.T) {
 		t.Errorf("expected session to be considered still active, but it was not")
 	}
 }
+
+func TestUpdateSessionNoSessionByIdError(t *testing.T) {
+	sessionId := "sessionId"
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("UPDATE sessions SET .* WHERE .* RETURNING id, userId, expiresAt").WillReturnRows(sqlmock.NewRows([]string{
+		"id", "userId", "expiresAt",
+	}))
+
+	if _, err := mockDb.UpdateSession(sessionId); err == nil {
+		t.Error("expected error when no session found, but got none")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUpdateSessionErrorThrowsError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("UPDATE sessions SET .* WHERE .* RETURNING id, userId, expiresAt").WillReturnError(errors.New("something happened"))
+
+	if _, err := mockDb.UpdateSession("sessionId"); err == nil {
+		t.Error("expected error when executing from db throws error")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestUpdateSessionReturnsSession(t *testing.T) {
+	want := &Session{
+		Id:        "1",
+		UserId:    1,
+		ExpiresAt: "2006-01-02T15:04:05Z07:00",
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("UPDATE sessions SET .* WHERE .* RETURNING id, userId, expiresAt").WillReturnRows(sqlmock.NewRows([]string{
+		"id", "userId", "expiresAt",
+	}).AddRow([]driver.Value{want.Id, want.UserId, want.ExpiresAt}...))
+
+	got, err := mockDb.UpdateSession(want.Id)
+	if err != nil {
+		t.Errorf("unexpected error when reading from db does not throw: %v", err)
+	}
+
+	if res := reflect.DeepEqual(got, want); res == false {
+		t.Errorf("want: %v, got: %v", want, got)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}

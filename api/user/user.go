@@ -85,38 +85,26 @@ func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
 	return &session, nil
 }
 
-/*
-TODO: test
-- if no session with userID found -> error
-- if some error while updating -> error
-- if all good return -> good
-*/
-func (handler *UserDBHandler) UpdateSession(userId int) (*Session, error) {
+func (handler *UserDBHandler) UpdateSession(sessionId string) (*Session, error) {
 	expiresAt := time.Now().Add(sessionExpireDuration)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
 
 	row := handler.DB.QueryRow(
-		"UPDATE sessions SET expiresAt = ? WHERE userId = ? RETURNING id, userId, expiresAt",
-		expiresAtStr, userId,
+		"UPDATE sessions SET expiresAt = ? WHERE id = ? RETURNING id, userId, expiresAt",
+		expiresAtStr, sessionId,
 	)
 
 	var session Session
 	err := row.Scan(&session.Id, &session.UserId, &session.ExpiresAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("no session found for userId %d", userId)
+			return nil, fmt.Errorf("no session found (session id %s)", sessionId)
 		}
-		return nil, fmt.Errorf("could not update session (userId %d): %w", userId, err)
+		return nil, fmt.Errorf("could not update session (session id %s): %w", sessionId, err)
 	}
 	return &session, nil
 }
 
-/*
-TODO: test
-- if bad format -> true
-- if good format but more than limit -> expired
-- if format bad and less than limit -> good
-*/
 func IsSessionExpired(session *Session) bool {
 	expiresAt, err := time.Parse(time.RFC3339, session.ExpiresAt)
 	if err != nil {
