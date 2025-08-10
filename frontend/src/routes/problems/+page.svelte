@@ -2,11 +2,13 @@
 	import { getDifficultyName } from '$lib/helpers'
 	import type { PageProps } from './$types'
 	let { data }: PageProps = $props()
+	console.log(data.sessionId)
 </script>
 
 <section>
 	<article>
 		<h1 class="inter">All problems</h1>
+		<h1>{data.sessionId}</h1>
 	</article>
 	<article>
 		<ul>

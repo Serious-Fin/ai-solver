@@ -2,6 +2,8 @@ import type { RequestHandler } from './$types'
 import { OAuth2Client } from 'google-auth-library'
 import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
 import { GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private'
+import { login, startSession } from '$lib/api/users'
+import { redirect } from '@sveltejs/kit'
 
 const client = new OAuth2Client({
 	client_id: PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
@@ -33,27 +35,20 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		return new Response('Could not get email from OAuth response', { status: 401 })
 	}
 
-	// TODO:
-	// try and find a user with provided email in DB (return id or -1)
-	// if none exists, create a user with provided email (return id)
+	let sessionId: string
+	try {
+		const userId = await login(email)
+		sessionId = await startSession(userId)
+	} catch (err) {
+		return new Response(`Could not sign user in: ${JSON.stringify(err)}`, { status: 401 })
+	}
 
-	// try and get sessionId from session table by userId where it is not yet expired
-	// if found, add one week ot expire (UPDATE) and set sessionId
-	// if not found, delete all sessionIds where userID is set (clean up expired)
-	// create new session id
-	// set sessionId
-	// redirect
+	cookies.set('session', sessionId, {
+		httpOnly: true,
+		sameSite: 'lax',
+		path: '/',
+		maxAge: 60 * 60 * 24 * 7 // 1 week
+	})
 
-	return new Response(null, { status: 200 })
+	throw redirect(302, '/problems')
 }
-
-/*
-Needed operations:
-GET /user/get?email=EMAIL
-POST /user/create body: {email: EMAIL}
-
-GET /session?userId=USERID
-UPDATE /session body: {expireAt: NOW + 1 WEEK}
-DELETE /session?userId=USERID
-POST /session {userId: USERID}
-*/

@@ -10,6 +10,22 @@ import (
 	"github.com/google/uuid"
 )
 
+type LoginRequest struct {
+	Email string `json:"email"`
+}
+
+type LoginResponse struct {
+	UserId int `json:"userId"`
+}
+
+type SessionRequest struct {
+	UserId int `json:"userId"`
+}
+
+type SessionResponse struct {
+	SessionId string `json:"sessionId"`
+}
+
 type User struct {
 	Id    int    `json:"id"`
 	Email string `json:"email"`

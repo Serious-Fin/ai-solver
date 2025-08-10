@@ -12,6 +12,7 @@ import (
 	"os"
 	"serious-fin/api/problem"
 	"serious-fin/api/query"
+	"serious-fin/api/user"
 	"serious-fin/api/validator"
 	"time"
 
@@ -61,6 +62,7 @@ func ErrorHandlerMiddleware() gin.HandlerFunc {
 var problemHandler *problem.ProblemDBHandler
 var queryHandler *query.QueryHandler
 var validatorHandler *validator.ValidatorHandler
+var userHandler *user.UserDBHandler
 
 func main() {
 	sessionContextSize := 5
@@ -76,6 +78,7 @@ func main() {
 	problemHandler = problem.NewProblemHandler(database)
 	queryHandler = query.NewQueryHandler(*aiHandlers)
 	validatorHandler = validator.NewValidatorHandler(database)
+	userHandler = user.NewUserHandler(database)
 
 	router := gin.Default()
 	router.Use(cors.New(cors.Config{
@@ -89,6 +92,8 @@ func main() {
 	router.GET("/problems/:id/go", GetProblemTemplateGo)
 	router.POST("/query/:sessionId", QueryAgent)
 	router.POST("/validate", ValidateCode)
+	router.POST("/login", Login)
+	router.POST("/session", StartSession)
 
 	router.Run("localhost:8080")
 }
@@ -155,6 +160,78 @@ func ValidateCode(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, validatorResponse)
+}
+
+func Login(c *gin.Context) {
+	var body user.LoginRequest
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	existingUser, err := userHandler.GetUser(body.Email)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if existingUser != nil {
+		c.IndentedJSON(http.StatusOK, user.LoginResponse{
+			UserId: existingUser.Id,
+		})
+		return
+	}
+
+	newUser, err := userHandler.CreateUser(body.Email)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	c.IndentedJSON(http.StatusCreated, user.LoginResponse{
+		UserId: newUser.Id,
+	})
+}
+
+func StartSession(c *gin.Context) {
+	var body user.SessionRequest
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	existingSession, err := userHandler.GetSession(body.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if existingSession != nil && !user.IsSessionExpired(existingSession) {
+		extendedSession, err := userHandler.UpdateSession(existingSession.Id)
+		if err != nil {
+			c.Error(err)
+			return
+		}
+		c.IndentedJSON(http.StatusOK, user.SessionResponse{
+			SessionId: extendedSession.Id,
+		})
+		return
+	}
+
+	err = userHandler.CleanupExpiredSessions(body.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	newSession, err := userHandler.CreateSession(body.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusCreated, user.SessionResponse{
+		SessionId: newSession.Id,
+	})
 }
 
 func sendToDiscord(message string) {
@@ -249,5 +326,3 @@ func createAIAgentClientsOrFail(chatgptModel string, geminiModel string, cache *
 		Gemini:  geminiAgent,
 	}
 }
-
-// TODO: expose user and session endpoints
