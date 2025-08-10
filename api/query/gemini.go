@@ -47,14 +47,14 @@ func (wrapper *GeminiAgentWrapper) QueryWithContext(sessionId, userQuery, system
 	for _, context := range previousContext {
 		role, err := getGeminiRole(context.Role)
 		if err != nil {
-			return "", fmt.Errorf("error building previous context for gemini request: %v", err)
+			return "", fmt.Errorf("error building previous context for gemini request: %w", err)
 		}
 		history = append(history, gemini.NewContentFromText(context.Content, role))
 	}
 
 	output, err := wrapper.Agent.Query(config, history, userQuery)
 	if err != nil {
-		return "", fmt.Errorf("could not query gemini agent: %v", err)
+		return "", fmt.Errorf("could not query gemini agent: %w", err)
 	}
 	wrapper.Cache.Add(sessionId, userQuery, output)
 	return output, nil
@@ -63,11 +63,11 @@ func (wrapper *GeminiAgentWrapper) QueryWithContext(sessionId, userQuery, system
 func (agent *Gemini) Query(config *gemini.GenerateContentConfig, history []*gemini.Content, userQuery string) (string, error) {
 	chat, err := agent.Client.Chats.Create(agent.Ctx, agent.Model, config, history)
 	if err != nil {
-		return "", fmt.Errorf("failed to initialize new gemini chat session: %v", err)
+		return "", fmt.Errorf("failed to initialize new gemini chat session: %w", err)
 	}
 	res, err := chat.SendMessage(agent.Ctx, gemini.Part{Text: userQuery})
 	if err != nil {
-		return "", fmt.Errorf("failed to send new message to gemini: %v", err)
+		return "", fmt.Errorf("failed to send new message to gemini: %w", err)
 	}
 
 	if len(res.Candidates) == 0 {

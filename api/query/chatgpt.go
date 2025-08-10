@@ -57,7 +57,7 @@ func (wrapper *ChatgptAgentWrapper) QueryWithContext(sessionId, userQuery, syste
 
 	output, err := wrapper.Agent.Query(messages)
 	if err != nil {
-		return "", fmt.Errorf("could not query chatgpt agent: %v", err)
+		return "", fmt.Errorf("could not query chatgpt agent: %w", err)
 	}
 
 	wrapper.Cache.Add(sessionId, userQuery, output)
@@ -73,7 +73,7 @@ func (wrapper *Chatgpt) Query(messages []openai.ChatCompletionMessage) (string, 
 		},
 	)
 	if err != nil {
-		return "", fmt.Errorf("could not make API call to chatgpt: %v", err)
+		return "", fmt.Errorf("could not make API call to chatgpt: %w", err)
 	}
 	return resp.Choices[0].Message.Content, nil
 }

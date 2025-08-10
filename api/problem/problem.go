@@ -45,7 +45,7 @@ func (handler *ProblemDBHandler) GetProblems(userId string) ([]Problem, error) {
 
 	rows, err := handler.DB.Query(query, userId)
 	if err != nil {
-		return nil, fmt.Errorf("could not query problems data from db: %v", err)
+		return nil, fmt.Errorf("could not query problems data from db: %w", err)
 	}
 	defer rows.Close()
 
@@ -54,13 +54,13 @@ func (handler *ProblemDBHandler) GetProblems(userId string) ([]Problem, error) {
 		var problem Problem
 		err = rows.Scan(&problem.Id, &problem.Title, &problem.Difficulty, &problem.IsCompleted)
 		if err != nil {
-			return nil, fmt.Errorf("could not scan problems db output: %v", err)
+			return nil, fmt.Errorf("could not scan problems db output: %w", err)
 		}
 		problems = append(problems, problem)
 	}
 	err = rows.Err()
 	if err != nil {
-		return nil, fmt.Errorf("error reading db output: %v", err)
+		return nil, fmt.Errorf("error reading db output: %w", err)
 	}
 	return problems, nil
 }
@@ -93,12 +93,12 @@ func (handler *ProblemDBHandler) GetProblemById(userId, problemId string) (*Prob
 	var testCaseString string
 	err := row.Scan(&problem.Id, &problem.Title, &problem.Difficulty, &problem.Description, &testCaseString, &problem.IsCompleted)
 	if err != nil {
-		return nil, fmt.Errorf("could not scan single problem db output (problem id %s): %v", problemId, err)
+		return nil, fmt.Errorf("could not scan single problem db output (problem id %s): %w", problemId, err)
 	}
 
 	err = json.Unmarshal([]byte(testCaseString), &problem.TestCases)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal test cases into object (problem id %s): %v", problemId, err)
+		return nil, fmt.Errorf("could not unmarshal test cases into object (problem id %s): %w", problemId, err)
 	}
 	return &problem, nil
 }
@@ -109,7 +109,7 @@ func (handler *ProblemDBHandler) GetMainFuncGo(problemId string) (string, error)
 	var mainFunction string
 	err := row.Scan(&mainFunction)
 	if err != nil {
-		return "", fmt.Errorf("could not scan problem template db output (problem id %s): %v", problemId, err)
+		return "", fmt.Errorf("could not scan problem template db output (problem id %s): %w", problemId, err)
 	}
 
 	return mainFunction, nil

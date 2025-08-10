@@ -165,5 +165,4 @@ func (handler *UserDBHandler) CleanupExpiredSessions(userId int) error {
 	return nil
 }
 
-// TODO: change error wrapping to use %w (IGNORE THIS TODO ITEM)
 // TODO: write tests for new endpoints (IGNORE THIS TODO ITEM)

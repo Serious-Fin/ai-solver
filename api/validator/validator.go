@@ -68,28 +68,28 @@ func NewValidatorHandler(db common.DBInterface) *ValidatorHandler {
 func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	testParams, err := vh.fetchTestCreationParams(body.ProblemId)
 	if err != nil {
-		return nil, fmt.Errorf("could not fetch test creation params: %v", err)
+		return nil, fmt.Errorf("could not fetch test creation params: %w", err)
 	}
 
 	dirPath, err := os.MkdirTemp(".", "test_run_")
 	if err != nil {
-		return nil, fmt.Errorf("error making temporary directory: %v", err)
+		return nil, fmt.Errorf("error making temporary directory: %w", err)
 	}
 	defer os.RemoveAll(dirPath)
 
 	err = createTestFile(fmt.Sprintf("%s/code_test.go", dirPath), body.Code, *testParams)
 	if err != nil {
-		return nil, fmt.Errorf("error creating test file: %v", err)
+		return nil, fmt.Errorf("error creating test file: %w", err)
 	}
 
 	testOutput, err := runTests(dirPath)
 	if err != nil {
-		return nil, fmt.Errorf("error running tests in docker: %v", err)
+		return nil, fmt.Errorf("error running tests in docker: %w", err)
 	}
 
 	testStates, err := parseCommandOutput(testOutput)
 	if err != nil {
-		return nil, fmt.Errorf("error parsing command output %s: %v", testOutput, err)
+		return nil, fmt.Errorf("error parsing command output %s: %w", testOutput, err)
 	}
 
 	return testStates, nil
@@ -100,19 +100,19 @@ func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreatio
 	row := vh.DB.QueryRow("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?", problemId)
 	err := row.Scan(&testParams.singleTestTemplate, &testParams.additionalHelpers)
 	if err != nil {
-		return nil, fmt.Errorf("error scanning templates and helpers from db (problem id %d): %v", problemId, err)
+		return nil, fmt.Errorf("error scanning templates and helpers from db (problem id %d): %w", problemId, err)
 	}
 
 	var testCasesString string
 	row = vh.DB.QueryRow("SELECT testCases FROM problems WHERE id = ?", problemId)
 	err = row.Scan(&testCasesString)
 	if err != nil {
-		return nil, fmt.Errorf("error scanning test cases from db (problem id %d): %v", problemId, err)
+		return nil, fmt.Errorf("error scanning test cases from db (problem id %d): %w", problemId, err)
 	}
 
 	err = json.Unmarshal([]byte(testCasesString), &testParams.problemTestCases)
 	if err != nil {
-		return nil, fmt.Errorf("could not unmarshal test cases from string \"%s\" (problem id %d): %v", testCasesString, problemId, err)
+		return nil, fmt.Errorf("could not unmarshal test cases from string \"%s\" (problem id %d): %w", testCasesString, problemId, err)
 	}
 	return &testParams, nil
 }
@@ -120,13 +120,13 @@ func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreatio
 func createTestFile(filename, testableCode string, testParams testCreationParams) error {
 	file, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("could not create file with name \"%s\", error: %v", filename, err)
+		return fmt.Errorf("could not create file with name \"%s\", error: %w", filename, err)
 	}
 	defer file.Close()
 
 	_, err = fmt.Fprintf(file, "%s\n%s\n", fileStartTemplate, testableCode)
 	if err != nil {
-		return fmt.Errorf("could not write start template and user code to file: %v", err)
+		return fmt.Errorf("could not write start template and user code to file: %w", err)
 	}
 
 	var newTestCase string
@@ -139,13 +139,13 @@ func createTestFile(filename, testableCode string, testParams testCreationParams
 		}
 		_, err = fmt.Fprintf(file, "%s\n", newTestCase)
 		if err != nil {
-			return fmt.Errorf("could not write test case to file: %v", err)
+			return fmt.Errorf("could not write test case to file: %w", err)
 		}
 	}
 
 	_, err = file.WriteString(testParams.additionalHelpers)
 	if err != nil {
-		return fmt.Errorf("could not write additional helper functions to file: %v", err)
+		return fmt.Errorf("could not write additional helper functions to file: %w", err)
 	}
 	return nil
 }
@@ -162,10 +162,10 @@ func runTests(testFilePath string) (string, error) {
 		// return error only if it's status code is other than 1, because failing go tests return exit code 1
 		exitError, ok := err.(*exec.ExitError)
 		if !ok {
-			return output, fmt.Errorf("command execution returned error not of type ExitError: %v", err)
+			return output, fmt.Errorf("command execution returned error not of type ExitError: %w", err)
 		}
 		if exitError.ExitCode() != 1 {
-			return output, fmt.Errorf("command execution returned error: %v", err)
+			return output, fmt.Errorf("command execution returned error: %w", err)
 		}
 	}
 	return output, nil
@@ -196,20 +196,20 @@ func parseCommandOutput(cmdOutput string) (*Response, error) {
 		case "output":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, fmt.Errorf("could not get test id from output event: %v", err)
+				return nil, fmt.Errorf("could not get test id from output event: %w", err)
 			}
 			testOutputs[testId] = append(testOutputs[testId], testLog.Output)
 		case "pass":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, fmt.Errorf("could not get test id from pass event: %v", err)
+				return nil, fmt.Errorf("could not get test id from pass event: %w", err)
 			}
 			delete(testOutputs, testId)
 			response.SucceededTests = append(response.SucceededTests, testId)
 		case "fail":
 			testId, err := getTestId(testLog.Test)
 			if err != nil {
-				return nil, fmt.Errorf("could not get test id from fail event: %v", err)
+				return nil, fmt.Errorf("could not get test id from fail event: %w", err)
 			}
 
 			foundGotAndWant := false
