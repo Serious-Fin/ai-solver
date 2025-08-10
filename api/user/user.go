@@ -54,13 +54,6 @@ func (handler *UserDBHandler) CreateUser(email string) (*User, error) {
 	return &newUser, nil
 }
 
-/*
-	TODO: to test (IGNORE THIS TODO ITEM)
-
-- If no rows error, -1 with NO error
-- If other error, -1 with error
-- If return id, that id gets returned with NO error
-*/
 func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {
 	row := handler.DB.QueryRow("SELECT id, userId, expiresAt FROM sessions WHERE userId = ?", userId)
 	var session Session
