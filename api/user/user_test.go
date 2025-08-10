@@ -5,6 +5,7 @@ import (
 	"errors"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 )
@@ -271,5 +272,29 @@ func TestCreateSessionReturnsNewSession(t *testing.T) {
 
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestIsSessionExpiredBadFormat(t *testing.T) {
+	if expired := IsSessionExpired(&Session{
+		ExpiresAt: "bad format",
+	}); expired == false {
+		t.Errorf("expected session with bad time format to be considered expired, but it was not")
+	}
+}
+
+func TestIsSessionExpiredOldSession(t *testing.T) {
+	if expired := IsSessionExpired(&Session{
+		ExpiresAt: time.Now().Add(time.Hour).Format(time.RFC3339),
+	}); expired == true {
+		t.Errorf("expected session to be considered expired, but it was not")
+	}
+}
+
+func TestIsSessionExpiredActiveSession(t *testing.T) {
+	if expired := IsSessionExpired(&Session{
+		ExpiresAt: time.Now().Add(-time.Hour).Format(time.RFC3339),
+	}); expired == false {
+		t.Errorf("expected session to be considered still active, but it was not")
 	}
 }

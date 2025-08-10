@@ -117,7 +117,7 @@ TODO: test
 - if good format but more than limit -> expired
 - if format bad and less than limit -> good
 */
-func (handler *UserDBHandler) IsSessionExpired(session *Session) bool {
+func IsSessionExpired(session *Session) bool {
 	expiresAt, err := time.Parse(time.RFC3339, session.ExpiresAt)
 	if err != nil {
 		return true
