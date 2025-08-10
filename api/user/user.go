@@ -31,13 +31,6 @@ func NewUserHandler(db common.DBInterface) *UserDBHandler {
 
 const sessionExpireDuration time.Duration = 7 * 24 * time.Hour
 
-/*
-	TODO: to test (IGNORE THIS TODO ITEM)
-
-- If no rows error, -1 with NO error
-- If other error, -1 with error
-- If return id, that id gets returned with NO error
-*/
 func (handler *UserDBHandler) GetUser(email string) (*User, error) {
 	row := handler.DB.QueryRow("SELECT id, email FROM users WHERE email = ?", email)
 	var user User
