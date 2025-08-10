@@ -1,16 +1,20 @@
+<script lang="ts">
+	import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
+</script>
+
 <section>
 	<article class="login_box">
 		<article class="problem_article_header">
 			<h1 class="inter problem_article_header_text">Login</h1>
 			<p class="inter login_box_p">via any of these accounts</p>
 		</article>
-		<article>
+		<article class="login_buttons">
 			<div>
 				<div
 					id="g_id_onload"
-					data-client_id="YOUR_GOOGLE_CLIENT_ID"
-					data-login_uri="https://your.domain/your_login_endpoint"
-					data-auto_prompt="false"
+					data-client_id={PUBLIC_GOOGLE_OAUTH_CLIENT_ID}
+					data-context="signin"
+					data-login_uri="http://localhost:5173/api/oauth/google"
 				></div>
 				<div
 					class="g_id_signin"
@@ -37,11 +41,17 @@
 
 	.login_box {
 		background-color: var(--foreground);
-		max-width: 350px;
+		max-width: 400px;
 		margin: 0 auto;
 		box-sizing: border-box;
-		padding: 30px 40px;
+		padding: 40px 60px;
 		border-radius: 7px;
+	}
+
+	.login_buttons {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
 	}
 
 	.login_box_p {
