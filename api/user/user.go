@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"serious-fin/api/common"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type User struct {
@@ -27,17 +29,7 @@ func NewUserHandler(db common.DBInterface) *UserDBHandler {
 	return &UserDBHandler{DB: db}
 }
 
-/*
-NEEDED OPERATIONS:
-(BOTH EXPOSED AS A SINGLE ENDPOINT TO GET A USER, WE CREATE OT INTERNALLY)
-GET /user/get?email=EMAIL [NEED TESTING]
-POST /user/create body: {email: EMAIL} [NEED TESTING]
-
-GET /session?userId=USERID [MISSING]
-UPDATE /session body: {expireAt: NOW + 1 WEEK} [MISSING]
-DELETE /session?userId=USERID [MISSING]
-POST /session {userId: USERID} [MISSING]
-*/
+const sessionExpireDuration time.Duration = 7 * 24 * time.Hour
 
 /*
 	TODO: to test (IGNORE THIS TODO ITEM)
@@ -95,19 +87,19 @@ func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {
 	return &session, nil
 }
 
-// -----------------------------------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
+/*
+	TODO: to test (IGNORE THIS TODO ITEM)
 
-// CreateSession creates a new session for a user
-// POST /session {userId: USERID}
+- if inserting returns error, throw error
+- if insert good -> no err
+*/
 func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
 	sessionId := uuid.New().String()
-	expiresAt := time.Now().Add(7 * 24 * time.Hour) // 1 week from now
+	expiresAt := time.Now().Add(sessionExpireDuration)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
 
 	row := handler.DB.QueryRow(
-		"INSERT INTO sessions (id, user_id, expires_at) VALUES (?, ?, ?) RETURNING id, user_id, expires_at",
+		"INSERT INTO sessions (id, userId, expiresAt) VALUES (?, ?, ?) RETURNING id, userId, expiresAt",
 		sessionId, userId, expiresAtStr,
 	)
 
@@ -119,14 +111,18 @@ func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
 	return &session, nil
 }
 
-// UpdateSession updates the expiration time of a session
-// UPDATE /session body: {expireAt: NOW + 1 WEEK}
+/*
+TODO: test
+- if no session with userID found -> error
+- if some error while updating -> error
+- if all good return -> good
+*/
 func (handler *UserDBHandler) UpdateSession(userId int) (*Session, error) {
-	expiresAt := time.Now().Add(7 * 24 * time.Hour) // 1 week from now
+	expiresAt := time.Now().Add(sessionExpireDuration)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
 
 	row := handler.DB.QueryRow(
-		"UPDATE sessions SET expires_at = ? WHERE user_id = ? RETURNING id, user_id, expires_at",
+		"UPDATE sessions SET expiresAt = ? WHERE userId = ? RETURNING id, userId, expiresAt",
 		expiresAtStr, userId,
 	)
 
@@ -141,55 +137,33 @@ func (handler *UserDBHandler) UpdateSession(userId int) (*Session, error) {
 	return &session, nil
 }
 
-// DeleteSession removes a session by userId
-// DELETE /session?userId=USERID
-func (handler *UserDBHandler) DeleteSession(userId int) error {
-	result, err := handler.DB.Exec("DELETE FROM sessions WHERE user_id = ?", userId)
-	if err != nil {
-		return fmt.Errorf("could not delete session (userId %d): %w", userId, err)
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("could not get rows affected for delete session (userId %d): %w", userId, err)
-	}
-
-	if rowsAffected == 0 {
-		return fmt.Errorf("no session found to delete for userId %d", userId)
-	}
-
-	return nil
-}
-
-// Helper method to check if a session is expired
+/*
+TODO: test
+- if bad format -> true
+- if good format but more than limit -> expired
+- if format bad and less than limit -> good
+*/
 func (handler *UserDBHandler) IsSessionExpired(session *Session) bool {
 	expiresAt, err := time.Parse(time.RFC3339, session.ExpiresAt)
 	if err != nil {
-		return true // If we can't parse the time, consider it expired
+		return true
 	}
 	return time.Now().After(expiresAt)
 }
 
-// CleanupExpiredSessions removes all expired sessions from the database
-func (handler *UserDBHandler) CleanupExpiredSessions() (int64, error) {
+/*
+TODO: test:
+- if deleting throws -> error
+- if nothing -> good
+*/
+func (handler *UserDBHandler) CleanupExpiredSessions(userId int) error {
 	now := time.Now().Format(time.RFC3339)
-	result, err := handler.DB.Exec("DELETE FROM sessions WHERE expires_at < ?", now)
+	_, err := handler.DB.Exec("DELETE FROM sessions WHERE userId = ? AND expiresAt < ?", userId, now)
 	if err != nil {
-		return 0, fmt.Errorf("could not cleanup expired sessions: %w", err)
+		return fmt.Errorf("could not cleanup expired sessions: %w", err)
 	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return 0, fmt.Errorf("could not get rows affected for cleanup: %w", err)
-	}
-
-	return rowsAffected, nil
+	return nil
 }
 
-// -----------------------------------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------------------------------
-
-// TODO: write endpoints for users and sessions (IGNORE THIS TODO ITEM)
 // TODO: change error wrapping to use %w (IGNORE THIS TODO ITEM)
 // TODO: write tests for new endpoints (IGNORE THIS TODO ITEM)
