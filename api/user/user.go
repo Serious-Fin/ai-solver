@@ -67,12 +67,6 @@ func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {
 	return &session, nil
 }
 
-/*
-	TODO: to test (IGNORE THIS TODO ITEM)
-
-- if inserting returns error, throw error
-- if insert good -> no err
-*/
 func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
 	sessionId := uuid.New().String()
 	expiresAt := time.Now().Add(sessionExpireDuration)

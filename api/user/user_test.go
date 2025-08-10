@@ -221,3 +221,55 @@ func TestGetSessionReturnsSession(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestCreateSessionErrorThrowsError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("INSERT INTO sessions .* VALUES .* RETURNING id, userId, expiresAt").WillReturnError(errors.New("something happened"))
+
+	if _, err := mockDb.CreateSession(1); err == nil {
+		t.Error("expected error when executing from db throws error")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCreateSessionReturnsNewSession(t *testing.T) {
+	want := &Session{
+		Id:        "1",
+		UserId:    1,
+		ExpiresAt: "2006-01-02T15:04:05Z07:00",
+	}
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectQuery("INSERT INTO sessions .* VALUES .* RETURNING id, userId, expiresAt").WillReturnRows(sqlmock.NewRows([]string{
+		"id", "userId", "expiresAt",
+	}).AddRow([]driver.Value{want.Id, want.UserId, want.ExpiresAt}...))
+
+	got, err := mockDb.CreateSession(want.UserId)
+	if err != nil {
+		t.Errorf("unexpected error when reading from db does not throw: %v", err)
+	}
+
+	if res := reflect.DeepEqual(got, want); res == false {
+		t.Errorf("want: %v, got: %v", want, got)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
