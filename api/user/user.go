@@ -113,11 +113,6 @@ func IsSessionExpired(session *Session) bool {
 	return time.Now().After(expiresAt)
 }
 
-/*
-TODO: test:
-- if deleting throws -> error
-- if nothing -> good
-*/
 func (handler *UserDBHandler) CleanupExpiredSessions(userId int) error {
 	now := time.Now().Format(time.RFC3339)
 	_, err := handler.DB.Exec("DELETE FROM sessions WHERE userId = ? AND expiresAt < ?", userId, now)
@@ -126,5 +121,3 @@ func (handler *UserDBHandler) CleanupExpiredSessions(userId int) error {
 	}
 	return nil
 }
-
-// TODO: write tests for new endpoints (IGNORE THIS TODO ITEM)

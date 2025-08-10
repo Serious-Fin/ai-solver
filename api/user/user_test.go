@@ -373,3 +373,43 @@ func TestUpdateSessionReturnsSession(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+func TestCleanupExpiredSessionsErrorThrowsError(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectExec("DELETE FROM sessions WHERE .* AND .*").WillReturnError(errors.New("something happened"))
+
+	if err := mockDb.CleanupExpiredSessions(1); err == nil {
+		t.Error("expected error when executing from db throws error")
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
+func TestCleanupExpiredSessionsSuccessReturnsNil(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+
+	var mockDb = NewUserHandler(db)
+
+	mock.ExpectExec("DELETE FROM sessions WHERE .* AND .*").WillReturnResult(sqlmock.NewResult(0, 1))
+
+	if err := mockDb.CleanupExpiredSessions(1); err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
