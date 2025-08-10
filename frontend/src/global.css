@@ -1,6 +1,6 @@
 :root {
 	--background: #161c2e;
-	--foreground: #e9e9e9;
+	--foreground: #f0f0f0;
 }
 
 blockquote {
@@ -31,8 +31,8 @@ blockquote {
 }
 
 .problem_article_header_text {
-	color: rgba(0, 0, 0, 0.7);
-	font-size: 20pt;
+	color: rgba(0, 0, 0, 0.8);
+	font-size: 18pt;
 	font-weight: 700;
 }
 
