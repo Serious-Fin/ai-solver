@@ -57,10 +57,10 @@
 
 	article {
 		display: grid;
-		grid-template-columns: 50px auto 50px 300px;
+		grid-template-columns: 50px auto 50px min-content;
 		align-items: center;
 		gap: 10px;
-		padding-left: 10px;
+		padding: 0 20px;
 	}
 
 	h1 {

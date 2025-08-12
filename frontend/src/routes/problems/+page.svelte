@@ -36,8 +36,6 @@
 </section>
 
 <!--
-TODO: fix header display with login (small screens go out of bounds, larger screen don't look good
-then logged out)
 TODO: redirect to the same page after login as was before pressing "log in"
 TODO: add login via github as well
 -->

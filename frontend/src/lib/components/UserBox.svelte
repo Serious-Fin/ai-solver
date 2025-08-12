@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { User } from '$lib/api/users'
-	import { handleError } from '$lib/helpers'
+	import { getUsernameFromEmail, handleError } from '$lib/helpers'
 
 	let { user }: { user?: User } = $props()
 
@@ -27,7 +27,8 @@
 	</article>
 {:else}
 	<article class="inter">
-		<p class="logout_text">{user.email}</p>
+		<p class="part_email">{getUsernameFromEmail(user.email)}</p>
+		<p class="full_email">{user.email}</p>
 		<button onclick={logout} class="logout"><img src="/logout.svg" alt="logout" /></button>
 	</article>
 {/if}
@@ -54,17 +55,44 @@
 		padding: 4px;
 	}
 
-	.logout_text {
-		font-size: 11pt;
-	}
-
 	.login {
 		font-size: 12pt;
 		padding: 4px 8px;
+		width: 64px;
 	}
 
 	img {
 		width: 30px;
 		height: 30px;
+	}
+
+	.part_email {
+		display: none;
+		font-size: 11pt;
+	}
+
+	.full_email {
+		display: none;
+		font-size: 11pt;
+	}
+
+	@media (min-width: 768px) {
+		.part_email {
+			display: block;
+		}
+
+		.full_email {
+			display: none;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.part_email {
+			display: none;
+		}
+
+		.full_email {
+			display: block;
+		}
 	}
 </style>
