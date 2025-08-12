@@ -36,7 +36,6 @@
 </section>
 
 <!--
-TODO: redirect to the same page after login as was before pressing "log in"
 TODO: add login via github as well
 -->
 

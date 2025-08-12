@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state'
 	import type { User } from '$lib/api/users'
 	import { getUsernameFromEmail, handleError } from '$lib/helpers'
 
@@ -17,7 +18,7 @@
 	}
 
 	async function login() {
-		window.location.href = '/login'
+		window.location.href = `/login?redirectTo=${encodeURIComponent(page.url.pathname)}`
 	}
 </script>
 

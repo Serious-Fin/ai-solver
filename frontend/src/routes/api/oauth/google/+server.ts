@@ -22,7 +22,7 @@ async function getEmail(token: string): Promise<string> {
 	return payload.email
 }
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
+export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	const formData = await request.formData()
 	const credential = formData.get('credential')
 	if (!credential) {
@@ -50,5 +50,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		maxAge: 60 * 60 * 24 * 7
 	})
 
-	throw redirect(302, '/problems')
+	const redirectTo = url.searchParams.get('redirectTo')
+	const decodedRedirectTo = redirectTo ? decodeURIComponent(redirectTo) : '/'
+	throw redirect(302, `${decodedRedirectTo}`)
 }
