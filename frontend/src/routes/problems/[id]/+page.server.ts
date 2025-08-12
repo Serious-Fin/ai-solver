@@ -3,9 +3,10 @@ import { getProblemById } from '$lib/api/problems'
 import { query, type QueryRequest } from '$lib/api/query'
 import { fail } from '@sveltejs/kit'
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
 	return {
-		problem: await getProblemById(params.id)
+		problem: await getProblemById(params.id, locals.user?.id ?? -1),
+		user: locals.user
 	}
 }
 

@@ -26,6 +26,10 @@ type SessionResponse struct {
 	SessionId string `json:"sessionId"`
 }
 
+type SessionInfoResponse struct {
+	User User `json:"user"`
+}
+
 type User struct {
 	Id    int    `json:"id"`
 	Email string `json:"email"`
@@ -68,6 +72,19 @@ func (handler *UserDBHandler) CreateUser(email string) (*User, error) {
 		return nil, fmt.Errorf("could not insert user (email %s): %w", email, err)
 	}
 	return &newUser, nil
+}
+
+func (handler *UserDBHandler) GetUserFromSession(sessionId string) (*User, error) {
+	row := handler.DB.QueryRow("SELECT u.id, u.email FROM sessions AS s LEFT JOIN users AS u ON s.userId = u.id WHERE s.id = ?", sessionId)
+	var user User
+	err := row.Scan(&user.Id, &user.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("could not find user (sessionId %s): %w", sessionId, err)
+	}
+	return &user, nil
 }
 
 func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {

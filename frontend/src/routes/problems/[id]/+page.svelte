@@ -6,6 +6,7 @@
 
 	import type { PageProps } from './$types'
 	import type { TestCase } from '$lib/api/problems'
+	import UserBox from '$lib/components/UserBox.svelte'
 	let { data }: PageProps = $props()
 
 	let problemId: string = data.problem.id
@@ -14,6 +15,7 @@
 	let testCases: TestCase[] = data.problem.testCases ?? []
 	let code: string = $state(data.problem.goPlaceholder ?? '')
 	let isCompleted: boolean = data.problem.isCompleted
+	const user = data.user
 
 	function updateCode(newCode: string) {
 		code = newCode
@@ -28,7 +30,10 @@
 		<h1 class="inter">{title}</h1>
 		{#if isCompleted}
 			<img class="completed_icon" src="/done-symbol.svg" alt="exercise already completed check" />
+		{:else}
+			<p></p>
 		{/if}
+		<UserBox {user}></UserBox>
 	</article>
 
 	<DescriptionBox {description}></DescriptionBox>
@@ -52,7 +57,7 @@
 
 	article {
 		display: grid;
-		grid-template-columns: 50px auto 50px;
+		grid-template-columns: 50px auto 50px 300px;
 		align-items: center;
 		gap: 10px;
 		padding-left: 10px;

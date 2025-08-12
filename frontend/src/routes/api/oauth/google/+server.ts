@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		httpOnly: true,
 		sameSite: 'lax',
 		path: '/',
-		maxAge: 60 * 60 * 24 * 7 // 1 week
+		maxAge: 60 * 60 * 24 * 7
 	})
 
 	throw redirect(302, '/problems')

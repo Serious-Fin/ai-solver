@@ -94,6 +94,7 @@ func main() {
 	router.POST("/validate", ValidateCode)
 	router.POST("/login", Login)
 	router.POST("/session", StartSession)
+	router.GET("/session/:sessionId", GetSession)
 
 	router.Run("localhost:8080")
 }
@@ -160,6 +161,27 @@ func ValidateCode(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, validatorResponse)
+}
+
+func GetSession(c *gin.Context) {
+	sessionId := c.Param("sessionId")
+	foundUser, err := userHandler.GetUserFromSession(sessionId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if foundUser != nil {
+		c.IndentedJSON(http.StatusOK, user.SessionInfoResponse{
+			User: user.User{
+				Id:    foundUser.Id,
+				Email: foundUser.Email,
+			},
+		})
+		return
+	}
+
+	c.IndentedJSON(http.StatusNotFound, nil)
 }
 
 func Login(c *gin.Context) {

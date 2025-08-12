@@ -1,14 +1,16 @@
 <script lang="ts">
+	import UserBox from '$lib/components/UserBox.svelte'
 	import { getDifficultyName } from '$lib/helpers'
 	import type { PageProps } from './$types'
 	let { data }: PageProps = $props()
-	console.log(data.sessionId)
+
+	const user = data.user
 </script>
 
 <section>
-	<article>
+	<article class="top_page">
 		<h1 class="inter">All problems</h1>
-		<h1>{data.sessionId}</h1>
+		<UserBox {user}></UserBox>
 	</article>
 	<article>
 		<ul>
@@ -33,6 +35,13 @@
 	</article>
 </section>
 
+<!--
+TODO: fix header display with login (small screens go out of bounds, larger screen don't look good
+then logged out)
+TODO: redirect to the same page after login as was before pressing "log in"
+TODO: add login via github as well
+-->
+
 <style>
 	section {
 		background-color: var(--background);
@@ -43,11 +52,17 @@
 		box-sizing: border-box;
 	}
 
+	.top_page {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 0 30px 20px 30px;
+		gap: 20px;
+	}
+
 	h1 {
 		color: #ffffff;
 		font-size: 18pt;
-		margin-bottom: 32px;
-		margin-left: 20px;
 		font-weight: 600;
 	}
 

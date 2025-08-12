@@ -16,9 +16,9 @@ export interface TestCase {
 
 const BASE_URL = 'http://127.0.0.1:8080'
 
-export async function getProblems(): Promise<Problem[]> {
+export async function getProblems(userId: number): Promise<Problem[]> {
 	try {
-		const response = await fetch(`${BASE_URL}/problems?user=1`)
+		const response = await fetch(`${BASE_URL}/problems?user=${userId}`)
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
@@ -33,31 +33,30 @@ export async function getProblems(): Promise<Problem[]> {
 	}
 }
 
-export async function getProblemById(id: string): Promise<Problem> {
+export async function getProblemById(problemId: string, userId: number): Promise<Problem> {
 	try {
-		const response = await fetch(`${BASE_URL}/problems/${id}?user=1`)
+		const response = await fetch(`${BASE_URL}/problems/${problemId}?user=${userId}`)
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching problem with id '${id}' ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error fetching problem with id '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody || 'Unknown error'}`
 			)
 		}
 		const problem: Problem = await response.json()
 
-		const codeTemplate = await fetch(`${BASE_URL}/problems/${id}/go`)
+		const codeTemplate = await fetch(`${BASE_URL}/problems/${problemId}/go`)
 		if (!codeTemplate.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching problem template with id '${id}' ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error fetching problem template with id '${problemId}' ${response.status} - ${errorBody || 'Unknown error'}`
 			)
 		}
 		problem.goPlaceholder = await codeTemplate.json()
 		return problem
 	} catch (error) {
-		console.log(`Error fetching problem with id '${id}'`, error)
+		console.log(`Error fetching problem with id '${problemId}' (userId: ${userId})`, error)
 		throw error
 	}
 }
 
 // TODO: passing all tests should mark the task as complete if user is signed in
-// TODO: sign-in/log-in screen
