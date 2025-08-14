@@ -20,6 +20,10 @@ type ProblemDBHandler struct {
 	DB common.DBInterface
 }
 
+type CompleteProblemRequest struct {
+	UserId string `json:"userId"`
+}
+
 func NewProblemHandler(db common.DBInterface) *ProblemDBHandler {
 	return &ProblemDBHandler{DB: db}
 }
@@ -113,4 +117,12 @@ func (handler *ProblemDBHandler) GetMainFuncGo(problemId string) (string, error)
 	}
 
 	return mainFunction, nil
+}
+
+func (handler *ProblemDBHandler) CompleteProblem(problemId, userId string) error {
+	_, err := handler.DB.Exec("INSERT INTO userCompletedProblems (userId, problemId) VALUES (?, ?)", userId, problemId)
+	if err != nil {
+		return fmt.Errorf("could not insert new record into userCompletedProblems: %w", err)
+	}
+	return nil
 }

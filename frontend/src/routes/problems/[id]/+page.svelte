@@ -5,8 +5,9 @@
 	import TestBox from '$lib/components/problems/id/TestBox.svelte'
 
 	import type { PageProps } from './$types'
-	import type { TestCase } from '$lib/api/problems'
+	import { markProblemCompleted, type TestCase } from '$lib/api/problems'
 	import UserBox from '$lib/components/UserBox.svelte'
+	import { handleFrontendError, showSuccess, showWarning } from '$lib/helpers'
 	let { data }: PageProps = $props()
 
 	let problemId: string = data.problem.id
@@ -19,6 +20,21 @@
 
 	function updateCode(newCode: string) {
 		code = newCode
+	}
+
+	const markProblemCompletedFunc = async () => {
+		if (user) {
+			try {
+				await markProblemCompleted(problemId, user.id)
+				showSuccess('Problem completed!')
+			} catch (err) {
+				if (err instanceof Error) {
+					handleFrontendError('Error saving progress, try again', err)
+				}
+			}
+		} else {
+			showWarning('Problem completed but log in to save progress')
+		}
 	}
 </script>
 
@@ -42,8 +58,10 @@
 
 	<ChatBox {code} {updateCode}></ChatBox>
 
-	<TestBox {problemId} {testCases} {code}></TestBox>
+	<TestBox {problemId} {testCases} {code} {markProblemCompletedFunc}></TestBox>
 </section>
+
+<!-- TODO: after completing the problem, display completed icon immediately-->
 
 <style>
 	section {

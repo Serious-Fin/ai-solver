@@ -61,4 +61,13 @@ export class TestStatusReporter {
 		}
 		return testResults
 	}
+
+	public AllTestsSuccessful(): boolean {
+		for (const key in this.statuses) {
+			if (this.statuses[key].status === TestStatus.FAIL) {
+				return false
+			}
+		}
+		return true
+	}
 }

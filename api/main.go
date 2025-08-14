@@ -89,6 +89,7 @@ func main() {
 	router.Use(ErrorHandlerMiddleware())
 	router.GET("/problems", GetProblems)
 	router.GET("/problems/:id", GetProblemById)
+	router.POST("/problems/:id", CompleteProblem)
 	router.GET("/problems/:id/go", GetProblemTemplateGo)
 	router.POST("/query/:sessionId", QueryAgent)
 	router.POST("/validate", ValidateCode)
@@ -119,6 +120,22 @@ func GetProblemById(c *gin.Context) {
 		return
 	}
 	c.IndentedJSON(http.StatusOK, problem)
+}
+
+func CompleteProblem(c *gin.Context) {
+	problemId := c.Param("id")
+	var body problem.CompleteProblemRequest
+	if err := c.ShouldBind(&body); err != nil {
+		c.Error(err)
+		return
+	}
+
+	err := problemHandler.CompleteProblem(problemId, body.UserId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+	c.IndentedJSON(http.StatusOK, nil)
 }
 
 func GetProblemTemplateGo(c *gin.Context) {

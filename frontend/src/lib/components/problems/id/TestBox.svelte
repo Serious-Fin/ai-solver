@@ -3,11 +3,20 @@
 	import { TestStatusReporter } from '$lib/TestStatusReporter'
 	import { handleFrontendError } from '$lib/helpers'
 	import SingleTestCase from './SingleTestCase.svelte'
-	import type { TestCase } from '$lib/api/problems'
+	import { type TestCase } from '$lib/api/problems'
 	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
 
-	let { problemId, testCases, code }: { problemId: string; testCases: TestCase[]; code: string } =
-		$props()
+	let {
+		problemId,
+		testCases,
+		code,
+		markProblemCompletedFunc
+	}: {
+		problemId: string
+		testCases: TestCase[]
+		code: string
+		markProblemCompletedFunc: () => Promise<void>
+	} = $props()
 
 	let testStatusReporter = new TestStatusReporter(testCases)
 	let testStates = $state(testStatusReporter.GetTestStatuses())
@@ -23,6 +32,9 @@
 			})
 			testStatusReporter.UpdateTestStatuses(testRunOutput)
 			testStates = testStatusReporter.GetTestStatuses()
+			if (testStatusReporter.AllTestsSuccessful()) {
+				await markProblemCompletedFunc()
+			}
 		} catch (err) {
 			if (err instanceof Error) {
 				handleFrontendError('Error running tests, try again later', err)

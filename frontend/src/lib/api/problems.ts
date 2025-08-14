@@ -16,7 +16,7 @@ export interface TestCase {
 	output: string
 }
 
-export async function getProblems(userId: number): Promise<Problem[]> {
+export async function getProblems(userId: string): Promise<Problem[]> {
 	try {
 		const response = await fetch(`${API_BASE_URL}/problems?user=${userId}`)
 		if (!response.ok) {
@@ -28,12 +28,11 @@ export async function getProblems(userId: number): Promise<Problem[]> {
 		const problems: Problem[] = await response.json()
 		return problems
 	} catch (error) {
-		console.log('Error fetching problems', error)
 		throw error
 	}
 }
 
-export async function getProblemById(problemId: string, userId: number): Promise<Problem> {
+export async function getProblemById(problemId: string, userId: string): Promise<Problem> {
 	try {
 		const response = await fetch(`${API_BASE_URL}/problems/${problemId}?user=${userId}`)
 		if (!response.ok) {
@@ -54,9 +53,28 @@ export async function getProblemById(problemId: string, userId: number): Promise
 		problem.goPlaceholder = await codeTemplate.json()
 		return problem
 	} catch (error) {
-		console.log(`Error fetching problem with id '${problemId}' (userId: ${userId})`, error)
 		throw error
 	}
 }
 
-// TODO: passing all tests should mark the task as complete if user is signed in
+export async function markProblemCompleted(problemId: string, userId: string): Promise<void> {
+	try {
+		const response = await fetch(`${API_BASE_URL}/problems/${problemId}`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({
+				userId
+			})
+		})
+		if (!response.ok) {
+			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
+			throw new Error(
+				`Error marking problem as completed '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody || 'Unknown error'}`
+			)
+		}
+	} catch (err) {
+		throw new Error(`Could not mark problem ${problemId} as completed: ${err}`)
+	}
+}

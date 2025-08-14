@@ -17,6 +17,14 @@ export function handleFrontendError(msgToUser: string, err: Error) {
 	}
 }
 
+export function showWarning(msg: string) {
+	toast.warning(msg)
+}
+
+export function showSuccess(msg: string) {
+	toast.success(msg)
+}
+
 const arrayStartRegex = /\[\][a-zA-Z0-9_]*{/g
 const arrayEndRegex = /}/g
 export function printHumanReadable(input: string): string {
