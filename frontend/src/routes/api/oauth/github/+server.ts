@@ -122,3 +122,7 @@ async function getUserEmail(accessToken: string): Promise<string> {
 		throw new Error(`could not get github user email: ${err}`)
 	}
 }
+
+// TODO: redo github auth to read username and id.
+// TODO: redo google auth to read username and id.
+// TODO: redo user info display: show username and manage sessions by id
