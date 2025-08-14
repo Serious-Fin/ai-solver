@@ -57,10 +57,10 @@
 
 	article {
 		display: grid;
-		grid-template-columns: 50px auto 50px min-content;
+		grid-template-columns: min-content auto 32px min-content;
 		align-items: center;
 		gap: 10px;
-		padding: 0 20px;
+		padding: 0 5px;
 	}
 
 	h1 {
@@ -70,16 +70,16 @@
 	}
 
 	.btn {
-		width: 40px;
-		height: 40px;
+		width: 32px;
+		height: 32px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
 
 	.img_icon {
-		width: 80%;
-		height: 80%;
+		width: 100%;
+		height: 100%;
 	}
 
 	.completed_icon {
@@ -90,6 +90,10 @@
 	@media (min-width: 768px) {
 		h1 {
 			font-size: 20pt;
+		}
+
+		article {
+			padding: 0 20px;
 		}
 	}
 

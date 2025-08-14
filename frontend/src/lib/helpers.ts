@@ -37,7 +37,3 @@ export function getDifficultyName(difficulty: number): string {
 			return 'legendary'
 	}
 }
-
-export function getUsernameFromEmail(email: string): string {
-	return email.slice(0, email.lastIndexOf('@'))
-}
