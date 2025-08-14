@@ -1,7 +1,17 @@
 <script lang="ts">
-	import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
+	import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID, PUBLIC_GITHUB_OAUTH_CLIENT_ID } from '$env/static/public'
 	import { page } from '$app/state'
-	const redirectTo = page.url.searchParams.get('redirectTo')
+	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
+
+	const loginViaGithub = () => {
+		const redirectUrl = `http://localhost:5173/api/oauth/github?redirectTo=${encodeURIComponent(redirectTo)}`
+		const scopes = 'read:user user:email'
+		window.location.href =
+			`https://github.com/login/oauth/authorize` +
+			`?client_id=${encodeURIComponent(PUBLIC_GITHUB_OAUTH_CLIENT_ID)}` +
+			`&redirect_uri=${encodeURIComponent(redirectUrl)}` +
+			`&scopes=${encodeURIComponent(scopes)}`
+	}
 </script>
 
 <section>
@@ -28,9 +38,9 @@
 					data-logo_alignment="center"
 				></div>
 			</div>
-			<div class="github_login">
+			<button class="github_login" onclick={loginViaGithub}>
 				<img src="/github-mark.svg" alt="github logo" />Sign in with GitHub
-			</div>
+			</button>
 		</article>
 	</article>
 </section>
@@ -65,19 +75,19 @@
 
 	.github_login {
 		background-color: white;
-		padding: 6px 8px;
+		padding: 6px 10px;
 		margin-top: 8px;
 		border-radius: 4px;
 		border: 0.6px solid rgb(218, 220, 224);
 		font-size: 14px;
 		letter-spacing: 0.25px;
 		font-family: 'Google Sans', arial, sans-serif;
-		font-weight: 510;
+		font-weight: 500;
 		color: #3c4043f2;
 
 		display: flex;
 		align-items: center;
-		gap: 6px;
+		gap: 10px;
 	}
 
 	.github_login img {
