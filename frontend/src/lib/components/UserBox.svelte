@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state'
 	import type { User } from '$lib/api/users'
-	import { handleError } from '$lib/helpers'
+	import { handleFrontendError } from '$lib/helpers'
 	import { onMount, onDestroy } from 'svelte'
 
 	let { user }: { user?: User } = $props()
@@ -28,7 +28,7 @@
 			window.location.reload()
 		} catch (err) {
 			if (err instanceof Error) {
-				handleError('Error logging out, try again', err)
+				handleFrontendError('Error logging out, try again', err)
 				return
 			}
 		}

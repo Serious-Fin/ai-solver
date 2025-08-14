@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { validate } from '$lib/api/validate'
 	import { TestStatusReporter } from '$lib/TestStatusReporter'
-	import { handleError } from '$lib/helpers'
+	import { handleFrontendError } from '$lib/helpers'
 	import SingleTestCase from './SingleTestCase.svelte'
 	import type { TestCase } from '$lib/api/problems'
 	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
@@ -25,7 +25,7 @@
 			testStates = testStatusReporter.GetTestStatuses()
 		} catch (err) {
 			if (err instanceof Error) {
-				handleError('Error running tests, try again later', err)
+				handleFrontendError('Error running tests, try again later', err)
 				return
 			}
 		} finally {

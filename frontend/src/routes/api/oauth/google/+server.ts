@@ -2,8 +2,9 @@ import type { RequestHandler } from './$types'
 import { OAuth2Client } from 'google-auth-library'
 import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
 import { GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private'
-import { redirect } from '@sveltejs/kit'
+import { error, redirect } from '@sveltejs/kit'
 import { createSessionForUser, type User } from '$lib/api/users'
+import { sendToDiscord } from '$lib/helpers'
 
 const client = new OAuth2Client({
 	client_id: PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
@@ -17,7 +18,7 @@ async function getUserInfo(token: string): Promise<User> {
 	})
 	const payload = ticket.getPayload()
 	if (!payload) {
-		throw new Error('oauth payload is empty or has no email')
+		throw new Error('oauth payload is empty')
 	}
 	return {
 		id: payload.sub,
@@ -31,20 +32,23 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	const formData = await request.formData()
 	const credential = formData.get('credential')
 	if (!credential) {
-		return new Response('No Google credential in OAuth response', { status: 401 })
+		sendToDiscord('Google credential was not on endpoint, which receives oauth callback')
+		error(401, { message: 'Error logging in, try again' })
 	}
 	let user: User
 	try {
 		user = await getUserInfo(credential as string)
 	} catch (err) {
-		return new Response('Could not get email from OAuth response', { status: 401 })
+		sendToDiscord(`Error getting user info from google OAuth credentials: ${err}`)
+		error(401, { message: 'Error logging in, try again' })
 	}
 
 	let sessionId: string
 	try {
 		sessionId = await createSessionForUser(user)
 	} catch (err) {
-		return new Response('Could not create session for user', { status: 401 })
+		sendToDiscord(`Error creating session for user, which signed up via google: ${err}`)
+		error(401, { message: 'Error logging in, try again' })
 	}
 
 	cookies.set('session', sessionId, {
@@ -58,5 +62,3 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	const decodedRedirectTo = redirectTo ? decodeURIComponent(redirectTo) : '/'
 	throw redirect(302, `${decodedRedirectTo}`)
 }
-
-// TODO: handle the edge cases appropriately in GET and POST methods

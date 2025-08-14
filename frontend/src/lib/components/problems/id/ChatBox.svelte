@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms'
 	import type { SubmitFunction } from '@sveltejs/kit'
 	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
-	import { handleError } from '$lib/helpers'
+	import { handleFrontendError } from '$lib/helpers'
 
 	let { code, updateCode }: { code: string; updateCode: (newCode: string) => void } = $props()
 
@@ -25,7 +25,7 @@
 				}
 			} catch (err) {
 				if (err instanceof Error) {
-					handleError('Error sending message, try again later', err)
+					handleFrontendError('Error sending message, try again later', err)
 					return
 				}
 			} finally {

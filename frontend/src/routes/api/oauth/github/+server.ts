@@ -3,20 +3,20 @@ import { PUBLIC_GITHUB_OAUTH_CLIENT_ID, PUBLIC_FRONTEND_BASE_URL } from '$env/st
 import { GITHUB_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { v4 as uuidv4 } from 'uuid'
 import { error, redirect } from '@sveltejs/kit'
-import { handleError } from '$lib/helpers'
 import { createSessionForUser, type User } from '$lib/api/users'
+import { sendToDiscord } from '$lib/helpers'
 
 const ghStateCookieName = 'gh_state'
 
 export const GET: RequestHandler = async ({ url, request, cookies }) => {
 	const redirectToAfterLogin = url.searchParams.get('redirectTo') ?? '/'
 	const redirectUri = `${PUBLIC_FRONTEND_BASE_URL}/api/oauth/github?redirectTo=${redirectToAfterLogin}`
-
 	if (url.searchParams.has('code')) {
 		const storedState = cookies.get(ghStateCookieName)
 		const returnedState = url.searchParams.get('state')
 		if (!storedState || storedState !== returnedState) {
-			redirect(308, '/login')
+			sendToDiscord('Possible XSS attack prevented')
+			error(401, { message: 'Error logging in, try again' })
 		}
 
 		let sessionId: string
@@ -26,9 +26,8 @@ export const GET: RequestHandler = async ({ url, request, cookies }) => {
 			const user = await getUserInfo(accessToken)
 			sessionId = await createSessionForUser(user)
 		} catch (err) {
-			return new Response(`Could not create session for user (auth via github): ${err}`, {
-				status: 401
-			})
+			sendToDiscord(`Error logging user in via GitHub: ${err}`)
+			error(401, { message: 'Error logging in, try again' })
 		}
 
 		cookies.set('session', sessionId, {
@@ -89,11 +88,6 @@ async function getAccessToken(code: string, redirectUri: string): Promise<string
 	}
 }
 
-interface GithubEmailRecord {
-	email: string
-	primary: boolean
-}
-
 async function getUserInfo(accessToken: string): Promise<User> {
 	try {
 		const response = await fetch('https://api.github.com/user', {
@@ -108,16 +102,13 @@ async function getUserInfo(accessToken: string): Promise<User> {
 			)
 		}
 		const body = await response.json()
-		console.log(body)
 		return {
 			id: `${body.id}`,
 			name: body.login,
 			profilePic: body.avatar_url,
-			email: 'foo'
+			email: body.email ?? ''
 		}
 	} catch (err) {
-		throw new Error(`could not get github user email: ${err}`)
+		throw new Error(`could not get github user details: ${err}`)
 	}
 }
-
-// TODO: clean up code after changing auth
