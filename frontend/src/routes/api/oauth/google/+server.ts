@@ -4,7 +4,7 @@ import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
 import { GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { error, redirect } from '@sveltejs/kit'
 import { createSessionForUser, type User } from '$lib/api/users'
-import { sendToDiscord } from '$lib/helpers'
+import { sendToDiscord } from '$lib/serverHelpers'
 
 const client = new OAuth2Client({
 	client_id: PUBLIC_GOOGLE_OAUTH_CLIENT_ID,

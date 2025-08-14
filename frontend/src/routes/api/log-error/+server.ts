@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit'
 import type { RequestHandler } from './$types'
-import { sendToDiscord } from '$lib/helpers'
+import { sendToDiscord } from '$lib/serverHelpers'
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {

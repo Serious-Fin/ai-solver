@@ -4,7 +4,7 @@ import { GITHUB_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { v4 as uuidv4 } from 'uuid'
 import { error, redirect } from '@sveltejs/kit'
 import { createSessionForUser, type User } from '$lib/api/users'
-import { sendToDiscord } from '$lib/helpers'
+import { sendToDiscord } from '$lib/serverHelpers'
 
 const ghStateCookieName = 'gh_state'
 
