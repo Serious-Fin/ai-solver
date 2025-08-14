@@ -10,16 +10,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type LoginRequest struct {
+type UserRequest struct {
 	Email string `json:"email"`
 }
 
-type LoginResponse struct {
-	UserId int `json:"userId"`
+type UserResponse struct {
+	User User `json:"user"`
 }
 
 type SessionRequest struct {
-	UserId int `json:"userId"`
+	UserId string `json:"userId"`
 }
 
 type SessionResponse struct {
@@ -31,13 +31,15 @@ type SessionInfoResponse struct {
 }
 
 type User struct {
-	Id    int    `json:"id"`
-	Email string `json:"email"`
+	Id         string `json:"id"`
+	ProfilePic string `json:"profilePic"`
+	Name       string `json:"name"`
+	Email      string `json:"email,omitempty"`
 }
 
 type Session struct {
 	Id        string `json:"id"`
-	UserId    int    `json:"userId"`
+	UserId    string `json:"userId"`
 	ExpiresAt string `json:"expiresAt"`
 }
 
@@ -51,43 +53,43 @@ func NewUserHandler(db common.DBInterface) *UserDBHandler {
 
 const sessionExpireDuration time.Duration = 7 * 24 * time.Hour
 
-func (handler *UserDBHandler) GetUser(email string) (*User, error) {
-	row := handler.DB.QueryRow("SELECT id, email FROM users WHERE email = ?", email)
+func (handler *UserDBHandler) GetUser(userId string) (*User, error) {
+	row := handler.DB.QueryRow("SELECT id, email, name, profilePic FROM users WHERE id = ?", userId)
 	var user User
-	err := row.Scan(&user.Id, &user.Email)
+	err := row.Scan(&user.Id, &user.Email, &user.Name, &user.ProfilePic)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not scan user (email %s): %w", email, err)
+		return nil, fmt.Errorf("could not scan user (userId %s): %w", userId, err)
 	}
 	return &user, nil
 }
 
-func (handler *UserDBHandler) CreateUser(email string) (*User, error) {
-	row := handler.DB.QueryRow("INSERT INTO users (email) VALUES (?) RETURNING id, email", email)
+func (handler *UserDBHandler) CreateUser(userInfo User) (*User, error) {
+	row := handler.DB.QueryRow("INSERT INTO users (id, email, name, profilePic) VALUES (?, ?, ?, ?) RETURNING id, email, name, profilePic", userInfo.Id, userInfo.Email, userInfo.Name, userInfo.ProfilePic)
 	var newUser User
-	err := row.Scan(&newUser.Id, &newUser.Email)
+	err := row.Scan(&newUser.Id, &newUser.Email, &newUser.Name, &newUser.ProfilePic)
 	if err != nil {
-		return nil, fmt.Errorf("could not insert user (email %s): %w", email, err)
+		return nil, fmt.Errorf("could not insert new user: %w", err)
 	}
 	return &newUser, nil
 }
 
 func (handler *UserDBHandler) GetUserFromSession(sessionId string) (*User, error) {
-	row := handler.DB.QueryRow("SELECT u.id, u.email FROM sessions AS s LEFT JOIN users AS u ON s.userId = u.id WHERE s.id = ?", sessionId)
+	row := handler.DB.QueryRow("SELECT u.id, u.email, u.name, u.profilePic FROM sessions AS s LEFT JOIN users AS u ON s.userId = u.id WHERE s.id = ?", sessionId)
 	var user User
-	err := row.Scan(&user.Id, &user.Email)
+	err := row.Scan(&user.Id, &user.Email, &user.Name, &user.ProfilePic)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not find user (sessionId %s): %w", sessionId, err)
+		return nil, fmt.Errorf("could not find user for session (sessionId %s): %w", sessionId, err)
 	}
 	return &user, nil
 }
 
-func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {
+func (handler *UserDBHandler) GetSession(userId string) (*Session, error) {
 	row := handler.DB.QueryRow("SELECT id, userId, expiresAt FROM sessions WHERE userId = ?", userId)
 	var session Session
 	err := row.Scan(&session.Id, &session.UserId, &session.ExpiresAt)
@@ -95,12 +97,12 @@ func (handler *UserDBHandler) GetSession(userId int) (*Session, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("could not scan session (userId %d): %w", userId, err)
+		return nil, fmt.Errorf("could not scan session (userId %s): %w", userId, err)
 	}
 	return &session, nil
 }
 
-func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
+func (handler *UserDBHandler) CreateSession(userId string) (*Session, error) {
 	sessionId := uuid.New().String()
 	expiresAt := time.Now().Add(sessionExpireDuration)
 	expiresAtStr := expiresAt.Format(time.RFC3339)
@@ -113,7 +115,7 @@ func (handler *UserDBHandler) CreateSession(userId int) (*Session, error) {
 	var session Session
 	err := row.Scan(&session.Id, &session.UserId, &session.ExpiresAt)
 	if err != nil {
-		return nil, fmt.Errorf("could not insert session (userId %d): %w", userId, err)
+		return nil, fmt.Errorf("could not insert session (userId %s): %w", userId, err)
 	}
 	return &session, nil
 }
@@ -146,7 +148,7 @@ func IsSessionExpired(session *Session) bool {
 	return time.Now().After(expiresAt)
 }
 
-func (handler *UserDBHandler) CleanupExpiredSessions(userId int) error {
+func (handler *UserDBHandler) CleanupExpiredSessions(userId string) error {
 	now := time.Now().Format(time.RFC3339)
 	_, err := handler.DB.Exec("DELETE FROM sessions WHERE userId = ? AND expiresAt < ?", userId, now)
 	if err != nil {

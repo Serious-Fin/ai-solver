@@ -17,6 +17,8 @@
 		}
 	}
 
+	console.log(JSON.stringify(user))
+
 	async function login() {
 		window.location.href = `/login?redirectTo=${encodeURIComponent(page.url.pathname)}`
 	}
@@ -28,7 +30,17 @@
 	</article>
 {:else}
 	<article class="inter">
-		<p class="part_email">{getUsernameFromEmail(user.email)}</p>
+		<p>{user.id}</p>
+		{#if user.email}
+			<p>{user.email}</p>
+		{/if}
+		{#if user.name}
+			<p>{user.name}</p>
+		{/if}
+		{#if user.profilePic}
+			<img src={user.profilePic} alt="user avatar" />
+		{/if}
+		<!--<p class="part_email">{getUsernameFromEmail(user.email)}</p>-->
 		<p class="full_email">{user.email}</p>
 		<button onclick={logout} class="logout"><img src="/logout.svg" alt="logout" /></button>
 	</article>

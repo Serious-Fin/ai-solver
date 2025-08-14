@@ -4,7 +4,7 @@ import { GITHUB_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { v4 as uuidv4 } from 'uuid'
 import { error, redirect } from '@sveltejs/kit'
 import { handleError } from '$lib/helpers'
-import { createSessionForUser } from '$lib/api/users'
+import { createSessionForUser, type User } from '$lib/api/users'
 
 const ghStateCookieName = 'gh_state'
 
@@ -23,9 +23,8 @@ export const GET: RequestHandler = async ({ url, request, cookies }) => {
 		try {
 			const code = url.searchParams.get('code') ?? ''
 			const accessToken = await getAccessToken(code, redirectUri)
-			const email = await getUserEmail(accessToken)
-			console.log(email)
-			sessionId = await createSessionForUser(email)
+			const user = await getUserInfo(accessToken)
+			sessionId = await createSessionForUser(user)
 		} catch (err) {
 			return new Response(`Could not create session for user (auth via github): ${err}`, {
 				status: 401
@@ -95,12 +94,11 @@ interface GithubEmailRecord {
 	primary: boolean
 }
 
-async function getUserEmail(accessToken: string): Promise<string> {
+async function getUserInfo(accessToken: string): Promise<User> {
 	try {
-		const response = await fetch('https://api.github.com/user/emails', {
+		const response = await fetch('https://api.github.com/user', {
 			headers: {
-				Authorization: `Bearer ${accessToken}`,
-				Accept: 'application/vnd.github+json'
+				Authorization: `Bearer ${accessToken}`
 			}
 		})
 		if (!response.ok) {
@@ -109,20 +107,17 @@ async function getUserEmail(accessToken: string): Promise<string> {
 				`response was non 2xx ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
-		const allEmails: GithubEmailRecord[] = await response.json()
-		if (allEmails.length === 0) {
-			throw new Error('Github user does not have an email set')
+		const body = await response.json()
+		console.log(body)
+		return {
+			id: `${body.id}`,
+			name: body.login,
+			profilePic: body.avatar_url,
+			email: 'foo'
 		}
-		const primaryEmail = allEmails.find((e) => e.primary)?.email
-		if (!primaryEmail) {
-			return allEmails[0].email
-		}
-		return primaryEmail
 	} catch (err) {
 		throw new Error(`could not get github user email: ${err}`)
 	}
 }
 
-// TODO: redo github auth to read username and id.
-// TODO: redo google auth to read username and id.
-// TODO: redo user info display: show username and manage sessions by id
+// TODO: clean up code after changing auth

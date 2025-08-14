@@ -61,7 +61,7 @@ func TestGetUserErrorThrowsError(t *testing.T) {
 
 func TestGetUserReturnsUser(t *testing.T) {
 	want := &User{
-		Id:    1,
+		Id:    "1",
 		Email: "example.abc.com",
 	}
 	db, mock, err := sqlmock.New()
@@ -91,7 +91,12 @@ func TestGetUserReturnsUser(t *testing.T) {
 }
 
 func TestCreateUserErrorThrowsError(t *testing.T) {
-	userEmail := "example@abc.com"
+	user := User{
+		Id:         "1",
+		Name:       "testName",
+		Email:      "testEmail",
+		ProfilePic: "profilePic",
+	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -100,9 +105,9 @@ func TestCreateUserErrorThrowsError(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(userEmail).WillReturnError(errors.New("something happened"))
+	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(user).WillReturnError(errors.New("something happened"))
 
-	if _, err := mockDb.CreateUser(userEmail); err == nil {
+	if _, err := mockDb.CreateUser(user); err == nil {
 		t.Error("expected error when executing from db throws error")
 	}
 
@@ -112,8 +117,8 @@ func TestCreateUserErrorThrowsError(t *testing.T) {
 }
 
 func TestCreateUserReturnsNewUser(t *testing.T) {
-	want := &User{
-		Id:    1,
+	want := User{
+		Id:    "1",
 		Email: "example.abc.com",
 	}
 	db, mock, err := sqlmock.New()
@@ -128,7 +133,7 @@ func TestCreateUserReturnsNewUser(t *testing.T) {
 		"id", "email",
 	}).AddRow([]driver.Value{want.Id, want.Email}...))
 
-	got, err := mockDb.CreateUser(want.Email)
+	got, err := mockDb.CreateUser(want)
 	if err != nil {
 		t.Errorf("unexpected error when reading from db does not throw: %v", err)
 	}
@@ -143,7 +148,7 @@ func TestCreateUserReturnsNewUser(t *testing.T) {
 }
 
 func TestGetSessionNoRowsReturnsNil(t *testing.T) {
-	userId := 1
+	userId := "1"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -171,7 +176,7 @@ func TestGetSessionNoRowsReturnsNil(t *testing.T) {
 }
 
 func TestGetSessionErrorThrowsError(t *testing.T) {
-	userId := 1
+	userId := "1"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -194,7 +199,7 @@ func TestGetSessionErrorThrowsError(t *testing.T) {
 func TestGetSessionReturnsSession(t *testing.T) {
 	want := &Session{
 		Id:        "1",
-		UserId:    1,
+		UserId:    "1",
 		ExpiresAt: "2006-01-02T15:04:05Z07:00",
 	}
 	db, mock, err := sqlmock.New()
@@ -234,7 +239,7 @@ func TestCreateSessionErrorThrowsError(t *testing.T) {
 
 	mock.ExpectQuery("INSERT INTO sessions .* VALUES .* RETURNING id, userId, expiresAt").WillReturnError(errors.New("something happened"))
 
-	if _, err := mockDb.CreateSession(1); err == nil {
+	if _, err := mockDb.CreateSession("1"); err == nil {
 		t.Error("expected error when executing from db throws error")
 	}
 
@@ -246,7 +251,7 @@ func TestCreateSessionErrorThrowsError(t *testing.T) {
 func TestCreateSessionReturnsNewSession(t *testing.T) {
 	want := &Session{
 		Id:        "1",
-		UserId:    1,
+		UserId:    "1",
 		ExpiresAt: "2006-01-02T15:04:05Z07:00",
 	}
 	db, mock, err := sqlmock.New()
@@ -345,7 +350,7 @@ func TestUpdateSessionErrorThrowsError(t *testing.T) {
 func TestUpdateSessionReturnsSession(t *testing.T) {
 	want := &Session{
 		Id:        "1",
-		UserId:    1,
+		UserId:    "1",
 		ExpiresAt: "2006-01-02T15:04:05Z07:00",
 	}
 	db, mock, err := sqlmock.New()
@@ -385,7 +390,7 @@ func TestCleanupExpiredSessionsErrorThrowsError(t *testing.T) {
 
 	mock.ExpectExec("DELETE FROM sessions WHERE .* AND .*").WillReturnError(errors.New("something happened"))
 
-	if err := mockDb.CleanupExpiredSessions(1); err == nil {
+	if err := mockDb.CleanupExpiredSessions("1"); err == nil {
 		t.Error("expected error when executing from db throws error")
 	}
 
@@ -405,7 +410,7 @@ func TestCleanupExpiredSessionsSuccessReturnsNil(t *testing.T) {
 
 	mock.ExpectExec("DELETE FROM sessions WHERE .* AND .*").WillReturnResult(sqlmock.NewResult(0, 1))
 
-	if err := mockDb.CleanupExpiredSessions(1); err != nil {
+	if err := mockDb.CleanupExpiredSessions("1"); err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
 
@@ -413,3 +418,5 @@ func TestCleanupExpiredSessionsSuccessReturnsNil(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
+
+// TODO: fix user tests after changing API

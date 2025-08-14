@@ -3,23 +3,28 @@ import { OAuth2Client } from 'google-auth-library'
 import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
 import { GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { redirect } from '@sveltejs/kit'
-import { createSessionForUser } from '$lib/api/users'
+import { createSessionForUser, type User } from '$lib/api/users'
 
 const client = new OAuth2Client({
 	client_id: PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
 	client_secret: GOOGLE_OAUTH_CLIENT_SECRET
 })
 
-async function getEmail(token: string): Promise<string> {
+async function getUserInfo(token: string): Promise<User> {
 	const ticket = await client.verifyIdToken({
 		idToken: token,
 		audience: PUBLIC_GOOGLE_OAUTH_CLIENT_ID
 	})
 	const payload = ticket.getPayload()
-	if (!payload || !payload.email) {
+	if (!payload) {
 		throw new Error('oauth payload is empty or has no email')
 	}
-	return payload.email
+	return {
+		id: payload.sub,
+		name: payload.name,
+		profilePic: payload.picture,
+		email: payload.email
+	}
 }
 
 export const POST: RequestHandler = async ({ url, request, cookies }) => {
@@ -28,16 +33,16 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	if (!credential) {
 		return new Response('No Google credential in OAuth response', { status: 401 })
 	}
-	let email: string
+	let user: User
 	try {
-		email = await getEmail(credential as string)
+		user = await getUserInfo(credential as string)
 	} catch (err) {
 		return new Response('Could not get email from OAuth response', { status: 401 })
 	}
 
 	let sessionId: string
 	try {
-		sessionId = await createSessionForUser(email)
+		sessionId = await createSessionForUser(user)
 	} catch (err) {
 		return new Response('Could not create session for user', { status: 401 })
 	}

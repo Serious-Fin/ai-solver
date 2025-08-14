@@ -92,7 +92,8 @@ func main() {
 	router.GET("/problems/:id/go", GetProblemTemplateGo)
 	router.POST("/query/:sessionId", QueryAgent)
 	router.POST("/validate", ValidateCode)
-	router.POST("/login", Login)
+	router.GET("/user/:userId", GetUser)
+	router.POST("/user", CreateUser)
 	router.POST("/session", StartSession)
 	router.GET("/session/:sessionId", GetSession)
 
@@ -173,10 +174,7 @@ func GetSession(c *gin.Context) {
 
 	if foundUser != nil {
 		c.IndentedJSON(http.StatusOK, user.SessionInfoResponse{
-			User: user.User{
-				Id:    foundUser.Id,
-				Email: foundUser.Email,
-			},
+			User: *foundUser,
 		})
 		return
 	}
@@ -184,34 +182,38 @@ func GetSession(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, nil)
 }
 
-func Login(c *gin.Context) {
-	var body user.LoginRequest
+func GetUser(c *gin.Context) {
+	userId := c.Param("userId")
+	existingUser, err := userHandler.GetUser(userId)
+	if err != nil {
+		c.Error(err)
+		return
+	}
+
+	if existingUser == nil {
+		c.IndentedJSON(http.StatusNotFound, nil)
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, user.UserResponse{
+		User: *existingUser,
+	})
+}
+
+func CreateUser(c *gin.Context) {
+	var body user.User
 	if err := c.ShouldBind(&body); err != nil {
 		c.Error(err)
 		return
 	}
-
-	existingUser, err := userHandler.GetUser(body.Email)
+	newUser, err := userHandler.CreateUser(body)
 	if err != nil {
 		c.Error(err)
 		return
 	}
 
-	if existingUser != nil {
-		c.IndentedJSON(http.StatusOK, user.LoginResponse{
-			UserId: existingUser.Id,
-		})
-		return
-	}
-
-	newUser, err := userHandler.CreateUser(body.Email)
-	if err != nil {
-		c.Error(err)
-		return
-	}
-
-	c.IndentedJSON(http.StatusCreated, user.LoginResponse{
-		UserId: newUser.Id,
+	c.IndentedJSON(http.StatusCreated, user.UserResponse{
+		User: *newUser,
 	})
 }
 
