@@ -14,3 +14,47 @@ Stage 1:
 - add login/sign-up screens
 - create login/sign-up functionality
 - try and host it on the internet
+
+## Deploying
+
+### API
+
+#### Preparation
+
+Added the following to `.env` file:
+
+```text
+GIN_MODE=release
+```
+
+TODO: use `SetTrustedProxies()` to let traffic only from frontend IP?
+
+#### Build & Run
+
+Command to build the API docker image:
+
+```text
+docker build -f Dockerfile --tag go-api .
+```
+
+Command to run image as container:
+
+```text
+docker run -p 8080:8080 go-api
+```
+
+### Frontend
+
+#### Build & Run
+
+Build frontend via:
+
+```text
+docker build -f Dockerfile --tag svelte-frontend .
+```
+
+Run image:
+
+```text
+docker run -p 3000:3000 svelte-frontend
+```
