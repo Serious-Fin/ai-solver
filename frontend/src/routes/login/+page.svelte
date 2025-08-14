@@ -4,13 +4,7 @@
 	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
 
 	const loginViaGithub = () => {
-		const redirectUrl = `http://localhost:5173/api/oauth/github?redirectTo=${encodeURIComponent(redirectTo)}`
-		const scopes = 'read:user user:email'
-		window.location.href =
-			`https://github.com/login/oauth/authorize` +
-			`?client_id=${encodeURIComponent(PUBLIC_GITHUB_OAUTH_CLIENT_ID)}` +
-			`&redirect_uri=${encodeURIComponent(redirectUrl)}` +
-			`&scopes=${encodeURIComponent(scopes)}`
+		window.location.href = `/api/oauth/github?redirectTo=${encodeURIComponent(redirectTo)}`
 	}
 </script>
 

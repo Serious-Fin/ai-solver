@@ -2,8 +2,8 @@ import type { RequestHandler } from './$types'
 import { OAuth2Client } from 'google-auth-library'
 import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID } from '$env/static/public'
 import { GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private'
-import { login, startSession } from '$lib/api/users'
 import { redirect } from '@sveltejs/kit'
+import { createSessionForUser } from '$lib/api/users'
 
 const client = new OAuth2Client({
 	client_id: PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
@@ -37,10 +37,9 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 
 	let sessionId: string
 	try {
-		const userId = await login(email)
-		sessionId = await startSession(userId)
+		sessionId = await createSessionForUser(email)
 	} catch (err) {
-		return new Response(`Could not sign user in: ${JSON.stringify(err)}`, { status: 401 })
+		return new Response('Could not create session for user', { status: 401 })
 	}
 
 	cookies.set('session', sessionId, {
@@ -54,3 +53,5 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	const decodedRedirectTo = redirectTo ? decodeURIComponent(redirectTo) : '/'
 	throw redirect(302, `${decodedRedirectTo}`)
 }
+
+// TODO: handle the edge cases appropriately in GET and POST methods
