@@ -11,7 +11,7 @@ import (
 )
 
 func TestGetUserNoRowsReturnsNil(t *testing.T) {
-	userEmail := "example@abc.com"
+	userId := "123"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -20,11 +20,11 @@ func TestGetUserNoRowsReturnsNil(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("SELECT id, email FROM users WHERE email = ?").WithArgs(userEmail).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "email",
+	mock.ExpectQuery("SELECT id, email, name, profilePic FROM users WHERE id = ?").WithArgs(userId).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "email", "name", "profilePic",
 	}))
 
-	user, err := mockDb.GetUser(userEmail)
+	user, err := mockDb.GetUser(userId)
 	if err != nil {
 		t.Errorf("unexpected error when no user found: %v", err)
 	}
@@ -39,7 +39,7 @@ func TestGetUserNoRowsReturnsNil(t *testing.T) {
 }
 
 func TestGetUserErrorThrowsError(t *testing.T) {
-	userEmail := "example@abc.com"
+	userId := "123"
 	db, mock, err := sqlmock.New()
 	if err != nil {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
@@ -48,9 +48,9 @@ func TestGetUserErrorThrowsError(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("SELECT id, email FROM users WHERE email = ?").WithArgs(userEmail).WillReturnError(errors.New("something happened"))
+	mock.ExpectQuery("SELECT id, email, name, profilePic FROM users WHERE id = ?").WithArgs(userId).WillReturnError(errors.New("something happened"))
 
-	if _, err := mockDb.GetUser(userEmail); err == nil {
+	if _, err := mockDb.GetUser(userId); err == nil {
 		t.Error("expected error when reading from db throws error")
 	}
 
@@ -61,8 +61,10 @@ func TestGetUserErrorThrowsError(t *testing.T) {
 
 func TestGetUserReturnsUser(t *testing.T) {
 	want := &User{
-		Id:    "1",
-		Email: "example.abc.com",
+		Id:         "1",
+		Email:      "example.abc.com",
+		Name:       "name",
+		ProfilePic: "image_url",
 	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -72,11 +74,11 @@ func TestGetUserReturnsUser(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("SELECT id, email FROM users WHERE email = ?").WithArgs(want.Email).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "email",
-	}).AddRow([]driver.Value{want.Id, want.Email}...))
+	mock.ExpectQuery("SELECT id, email, name, profilePic FROM users WHERE id = ?").WithArgs(want.Id).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "email", "name", "profilePic",
+	}).AddRow([]driver.Value{want.Id, want.Email, want.Name, want.ProfilePic}...))
 
-	got, err := mockDb.GetUser(want.Email)
+	got, err := mockDb.GetUser(want.Id)
 	if err != nil {
 		t.Errorf("unexpected error when reading from db does not throw: %v", err)
 	}
@@ -105,7 +107,7 @@ func TestCreateUserErrorThrowsError(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(user).WillReturnError(errors.New("something happened"))
+	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email, name, profilePic").WithArgs(user.Id, user.Email, user.Name, user.ProfilePic).WillReturnError(errors.New("something happened"))
 
 	if _, err := mockDb.CreateUser(user); err == nil {
 		t.Error("expected error when executing from db throws error")
@@ -118,8 +120,10 @@ func TestCreateUserErrorThrowsError(t *testing.T) {
 
 func TestCreateUserReturnsNewUser(t *testing.T) {
 	want := User{
-		Id:    "1",
-		Email: "example.abc.com",
+		Id:         "1",
+		Email:      "example.abc.com",
+		Name:       "name",
+		ProfilePic: "image",
 	}
 	db, mock, err := sqlmock.New()
 	if err != nil {
@@ -129,16 +133,16 @@ func TestCreateUserReturnsNewUser(t *testing.T) {
 
 	var mockDb = NewUserHandler(db)
 
-	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email").WithArgs(want.Email).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "email",
-	}).AddRow([]driver.Value{want.Id, want.Email}...))
+	mock.ExpectQuery("INSERT INTO users .* VALUES .* RETURNING id, email, name, profilePic").WithArgs(want.Id, want.Email, want.Name, want.ProfilePic).WillReturnRows(sqlmock.NewRows([]string{
+		"id", "email", "name", "profilePic",
+	}).AddRow([]driver.Value{want.Id, want.Email, want.Name, want.ProfilePic}...))
 
 	got, err := mockDb.CreateUser(want)
 	if err != nil {
 		t.Errorf("unexpected error when reading from db does not throw: %v", err)
 	}
 
-	if res := reflect.DeepEqual(got, want); res == false {
+	if res := reflect.DeepEqual(*got, want); res == false {
 		t.Errorf("want: %v, got: %v", want, got)
 	}
 
@@ -158,7 +162,7 @@ func TestGetSessionNoRowsReturnsNil(t *testing.T) {
 	var mockDb = NewUserHandler(db)
 
 	mock.ExpectQuery("SELECT id, userId, expiresAt FROM sessions WHERE userId = ?").WithArgs(userId).WillReturnRows(sqlmock.NewRows([]string{
-		"id", "email",
+		"id", "userId", "expiresAt",
 	}))
 
 	user, err := mockDb.GetSession(userId)
@@ -418,5 +422,3 @@ func TestCleanupExpiredSessionsSuccessReturnsNil(t *testing.T) {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
 }
-
-// TODO: fix user tests after changing API
