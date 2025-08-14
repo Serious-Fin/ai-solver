@@ -15,7 +15,7 @@
 	let description: string = data.problem.description ?? ''
 	let testCases: TestCase[] = data.problem.testCases ?? []
 	let code: string = $state(data.problem.goPlaceholder ?? '')
-	let isCompleted: boolean = data.problem.isCompleted
+	let isCompleted: boolean = $state(data.problem.isCompleted)
 	const user = data.user
 
 	function updateCode(newCode: string) {
@@ -27,6 +27,7 @@
 			try {
 				await markProblemCompleted(problemId, user.id)
 				showSuccess('Problem completed!')
+				isCompleted = true
 			} catch (err) {
 				if (err instanceof Error) {
 					handleFrontendError('Error saving progress, try again', err)
@@ -60,8 +61,6 @@
 
 	<TestBox {problemId} {testCases} {code} {markProblemCompletedFunc}></TestBox>
 </section>
-
-<!-- TODO: after completing the problem, display completed icon immediately-->
 
 <style>
 	section {
