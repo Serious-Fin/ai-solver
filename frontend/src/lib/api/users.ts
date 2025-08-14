@@ -1,4 +1,4 @@
-const BASE_URL = 'http://127.0.0.1:8080'
+import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
 
 export interface User {
 	id: number
@@ -11,7 +11,7 @@ export interface SessionInfo {
 
 export async function login(email: string): Promise<number> {
 	try {
-		const response = await fetch(`${BASE_URL}/login`, {
+		const response = await fetch(`${API_BASE_URL}/login`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ export async function login(email: string): Promise<number> {
 
 export async function startSession(userId: number): Promise<string> {
 	try {
-		const response = await fetch(`${BASE_URL}/session`, {
+		const response = await fetch(`${API_BASE_URL}/session`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -57,7 +57,7 @@ export async function startSession(userId: number): Promise<string> {
 
 export async function getSession(sessionId: string): Promise<SessionInfo> {
 	try {
-		const response = await fetch(`${BASE_URL}/session/${sessionId}`)
+		const response = await fetch(`${API_BASE_URL}/session/${sessionId}`)
 		if (!response.ok) {
 			if (response.status === 404) {
 				return {}

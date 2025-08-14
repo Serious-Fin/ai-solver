@@ -1,3 +1,5 @@
+import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
+
 export interface Problem {
 	id: string
 	title: string
@@ -14,11 +16,9 @@ export interface TestCase {
 	output: string
 }
 
-const BASE_URL = 'http://127.0.0.1:8080'
-
 export async function getProblems(userId: number): Promise<Problem[]> {
 	try {
-		const response = await fetch(`${BASE_URL}/problems?user=${userId}`)
+		const response = await fetch(`${API_BASE_URL}/problems?user=${userId}`)
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
@@ -35,7 +35,7 @@ export async function getProblems(userId: number): Promise<Problem[]> {
 
 export async function getProblemById(problemId: string, userId: number): Promise<Problem> {
 	try {
-		const response = await fetch(`${BASE_URL}/problems/${problemId}?user=${userId}`)
+		const response = await fetch(`${API_BASE_URL}/problems/${problemId}?user=${userId}`)
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
@@ -44,7 +44,7 @@ export async function getProblemById(problemId: string, userId: number): Promise
 		}
 		const problem: Problem = await response.json()
 
-		const codeTemplate = await fetch(`${BASE_URL}/problems/${problemId}/go`)
+		const codeTemplate = await fetch(`${API_BASE_URL}/problems/${problemId}/go`)
 		if (!codeTemplate.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(

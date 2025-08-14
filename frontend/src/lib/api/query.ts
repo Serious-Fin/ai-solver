@@ -1,3 +1,5 @@
+import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
+
 export interface QueryRequest {
 	input: string
 	code: string
@@ -10,11 +12,9 @@ export interface QueryResponse {
 	response: string
 }
 
-const BASE_URL = 'http://127.0.0.1:8080'
-
 export async function query(params: QueryRequest): Promise<string> {
 	try {
-		const response = await fetch(`${BASE_URL}/query/${params.sessionId}`, {
+		const response = await fetch(`${API_BASE_URL}/query/${params.sessionId}`, {
 			body: JSON.stringify({
 				input: params.input,
 				code: params.code,
