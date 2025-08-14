@@ -2,7 +2,7 @@
 	import { page } from '$app/state'
 	import type { User } from '$lib/api/users'
 	import { handleFrontendError } from '$lib/helpers'
-	import { onMount, onDestroy } from 'svelte'
+	import { onMount } from 'svelte'
 
 	let { user }: { user?: User } = $props()
 	let visibleUserInfo: boolean = $state(false)
