@@ -2,7 +2,6 @@ package validator
 
 import (
 	"bufio"
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -151,25 +150,26 @@ func createTestFile(filename, testableCode string, testParams testCreationParams
 }
 
 func runTests(testFilePath string) (string, error) {
-	var outputBuffer bytes.Buffer
-	testCommand := exec.Command("go", "mod", "init", "test_proj", "&&", "go", "test", "--json")
-	testCommand.Dir = testFilePath
-	testCommand.Stdout = &outputBuffer
-	testCommand.Stderr = &outputBuffer
+	initCmd := exec.Command("go", "mod", "init", "test_proj")
+	initCmd.Dir = testFilePath
+	if err := initCmd.Run(); err != nil {
+		return "", fmt.Errorf("go mod init failed: %w", err)
+	}
 
-	err := testCommand.Run()
-	output := outputBuffer.String()
+	testCmd := exec.Command("go", "test", "-json")
+	testCmd.Dir = testFilePath
+	output, err := testCmd.Output()
 	if err != nil {
 		// return error only if it's status code is other than 1, because failing go tests return exit code 1
 		exitError, ok := err.(*exec.ExitError)
 		if !ok {
-			return output, fmt.Errorf("command execution returned error not of type ExitError: %w", err)
+			return string(output), fmt.Errorf("command execution returned error not of type ExitError: %w", err)
 		}
 		if exitError.ExitCode() != 1 {
-			return output, fmt.Errorf("command execution returned: %s, error: %w", output, err)
+			return string(output), fmt.Errorf("command execution returned: %s, error: %w", string(output), err)
 		}
 	}
-	return output, nil
+	return string(output), nil
 }
 
 func parseCommandOutput(cmdOutput string) (*Response, error) {

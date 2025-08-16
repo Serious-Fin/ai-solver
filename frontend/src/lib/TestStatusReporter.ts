@@ -64,7 +64,10 @@ export class TestStatusReporter {
 
 	public AllTestsSuccessful(): boolean {
 		for (const key in this.statuses) {
-			if (this.statuses[key].status === TestStatus.FAIL) {
+			if (
+				this.statuses[key].status === TestStatus.FAIL ||
+				this.statuses[key].status === TestStatus.UNKNOWN
+			) {
 				return false
 			}
 		}

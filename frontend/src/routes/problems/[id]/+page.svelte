@@ -25,9 +25,11 @@
 	const markProblemCompletedFunc = async () => {
 		if (user) {
 			try {
-				await markProblemCompleted(problemId, user.id)
+				if (!isCompleted) {
+					await markProblemCompleted(problemId, user.id)
+					isCompleted = true
+				}
 				showSuccess('Problem completed!')
-				isCompleted = true
 			} catch (err) {
 				if (err instanceof Error) {
 					handleFrontendError('Error saving progress, try again', err)
