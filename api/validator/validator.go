@@ -165,7 +165,7 @@ func runTests(testFilePath string) (string, error) {
 			return output, fmt.Errorf("command execution returned error not of type ExitError: %w", err)
 		}
 		if exitError.ExitCode() != 1 {
-			return output, fmt.Errorf("command execution returned error: %w", err)
+			return output, fmt.Errorf("command execution returned: %s, error: %w", output, err)
 		}
 	}
 	return output, nil
