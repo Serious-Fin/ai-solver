@@ -98,7 +98,7 @@ func main() {
 	router.POST("/session", StartSession)
 	router.GET("/session/:sessionId", GetSession)
 
-	router.Run("localhost:8080")
+	router.Run("0.0.0.0:8080")
 }
 
 func GetProblems(c *gin.Context) {

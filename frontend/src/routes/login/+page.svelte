@@ -1,5 +1,9 @@
 <script lang="ts">
-	import { PUBLIC_GOOGLE_OAUTH_CLIENT_ID, PUBLIC_GITHUB_OAUTH_CLIENT_ID } from '$env/static/public'
+	import {
+		PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
+		PUBLIC_GITHUB_OAUTH_CLIENT_ID,
+		PUBLIC_FRONTEND_BASE_URL
+	} from '$env/static/public'
 	import { page } from '$app/state'
 	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
 

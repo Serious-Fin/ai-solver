@@ -10,7 +10,7 @@ const ghStateCookieName = 'gh_state'
 
 export const GET: RequestHandler = async ({ url, request, cookies }) => {
 	const redirectToAfterLogin = url.searchParams.get('redirectTo') ?? '/'
-	const redirectUri = `${PUBLIC_FRONTEND_BASE_URL}/api/oauth/github?redirectTo=${redirectToAfterLogin}`
+	const redirectUri = `http://localhost:5173/api/oauth/github?redirectTo=${redirectToAfterLogin}`
 	if (url.searchParams.has('code')) {
 		const storedState = cookies.get(ghStateCookieName)
 		const returnedState = url.searchParams.get('state')
