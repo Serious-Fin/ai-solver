@@ -47,6 +47,13 @@ export function getDifficultyName(difficulty: number): string {
 	}
 }
 
+/**
+ * This helper function is needed because based on whether API is called from browser or server,
+ * different URLS are used.
+ * Calling from server side - use "api" abbreviation because docker compose handles it
+ * Calling from browser - use "localhost"
+ * @returns api host name
+ */
 export function getApiName(): string {
 	if (browser) {
 		return 'http://localhost:8080'

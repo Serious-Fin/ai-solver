@@ -1,5 +1,4 @@
 import type { TestRunOutput } from '$lib/TestStatusReporter'
-import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
 import { getApiName } from '$lib/helpers'
 
 export interface ValidateRequest {

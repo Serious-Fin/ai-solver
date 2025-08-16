@@ -152,7 +152,8 @@ func createTestFile(filename, testableCode string, testParams testCreationParams
 
 func runTests(testFilePath string) (string, error) {
 	var outputBuffer bytes.Buffer
-	testCommand := exec.Command("docker", "run", "--rm", "-v", fmt.Sprintf("%s:/app", testFilePath), "--network", "none", "go-testing-image:latest", "/bin/sh", "-c", "go mod init test_proj && go test --json")
+	testCommand := exec.Command("go", "mod", "init", "test_proj", "&&", "go", "test", "--json")
+	testCommand.Dir = testFilePath
 	testCommand.Stdout = &outputBuffer
 	testCommand.Stderr = &outputBuffer
 

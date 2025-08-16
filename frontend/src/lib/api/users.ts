@@ -1,4 +1,4 @@
-import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
+import { getApiName } from '$lib/helpers'
 
 export interface User {
 	id: string
@@ -27,7 +27,7 @@ export async function createSessionForUser(user: User): Promise<string> {
 
 export async function getSession(sessionId: string): Promise<SessionInfo> {
 	try {
-		const response = await fetch(`${API_BASE_URL}/session/${sessionId}`)
+		const response = await fetch(`${getApiName()}/session/${sessionId}`)
 		if (!response.ok) {
 			if (response.status === 404) {
 				return {}
@@ -47,7 +47,7 @@ export async function getSession(sessionId: string): Promise<SessionInfo> {
 
 async function tryGetExistingUser(userId: string): Promise<User | undefined> {
 	try {
-		const response = await fetch(`${API_BASE_URL}/user/${userId}`)
+		const response = await fetch(`${getApiName()}/user/${userId}`)
 		if (!response.ok) {
 			if (response.status === 404) {
 				return undefined
@@ -66,7 +66,7 @@ async function tryGetExistingUser(userId: string): Promise<User | undefined> {
 
 async function createNewUser(user: User): Promise<void> {
 	try {
-		const response = await fetch(`${API_BASE_URL}/user`, {
+		const response = await fetch(`${getApiName()}/user`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -84,7 +84,7 @@ async function createNewUser(user: User): Promise<void> {
 
 async function startSession(userId: string): Promise<string> {
 	try {
-		const response = await fetch(`${API_BASE_URL}/session`, {
+		const response = await fetch(`${getApiName()}/session`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
