@@ -34,7 +34,7 @@ export async function getSession(sessionId: string): Promise<SessionInfo> {
 			}
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching sessions ${response.status} - ${JSON.stringify(errorBody) || 'Unknown error'}`
+				`Error fetching sessions ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		const session: SessionInfo = await response.json()
@@ -54,7 +54,7 @@ async function tryGetExistingUser(userId: string): Promise<User | undefined> {
 			}
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error getting existing user ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error getting existing user ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		const user: User = await response.json()
@@ -75,7 +75,9 @@ async function createNewUser(user: User): Promise<void> {
 		})
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-			throw new Error(`Error creating user ${response.status} - ${errorBody || 'Unknown error'}`)
+			throw new Error(
+				`Error creating user ${response.status} - ${errorBody.message || 'Unknown error'}`
+			)
 		}
 	} catch (err) {
 		throw new Error(`Could not create new user: ${err}`)
@@ -95,7 +97,9 @@ async function startSession(userId: string): Promise<string> {
 		})
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
-			throw new Error(`Error starting session ${response.status} - ${errorBody || 'Unknown error'}`)
+			throw new Error(
+				`Error starting session ${response.status} - ${errorBody.message || 'Unknown error'}`
+			)
 		}
 		const jsonResponse: { sessionId: string } = await response.json()
 		return jsonResponse.sessionId

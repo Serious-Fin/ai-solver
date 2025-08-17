@@ -1,6 +1,6 @@
 import { toast } from 'svelte-sonner'
 import { browser } from '$app/environment'
-import { PUBLIC_API_BASE_URL as API_BASE_URL } from '$env/static/public'
+import { PUBLIC_API_BASE_URL_SERVER } from '$env/static/public'
 
 export function handleFrontendError(msgToUser: string, err: Error) {
 	toast.error(msgToUser)
@@ -50,14 +50,12 @@ export function getDifficultyName(difficulty: number): string {
 /**
  * This helper function is needed because based on whether API is called from browser or server,
  * different URLS are used.
- * Calling from server side - use "api" abbreviation because docker compose handles it
- * Calling from browser - use "localhost"
  * @returns api host name
  */
 export function getApiName(): string {
 	if (browser) {
-		return 'http://localhost:8080'
+		return '/api/proxy'
 	} else {
-		return API_BASE_URL
+		return PUBLIC_API_BASE_URL_SERVER
 	}
 }

@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types'
-import { PUBLIC_GITHUB_OAUTH_CLIENT_ID, PUBLIC_FRONTEND_BASE_URL } from '$env/static/public'
+import { PUBLIC_GITHUB_OAUTH_CLIENT_ID, PUBLIC_FRONTEND_BASE_URL_BROWSER } from '$env/static/public'
 import { GITHUB_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { v4 as uuidv4 } from 'uuid'
 import { error, redirect } from '@sveltejs/kit'
@@ -10,7 +10,7 @@ const ghStateCookieName = 'gh_state'
 
 export const GET: RequestHandler = async ({ url, request, cookies }) => {
 	const redirectToAfterLogin = url.searchParams.get('redirectTo') ?? '/'
-	const redirectUri = `http://localhost:5173/api/oauth/github?redirectTo=${redirectToAfterLogin}`
+	const redirectUri = `${PUBLIC_FRONTEND_BASE_URL_BROWSER}/api/oauth/github?redirectTo=${redirectToAfterLogin}`
 	if (url.searchParams.has('code')) {
 		const storedState = cookies.get(ghStateCookieName)
 		const returnedState = url.searchParams.get('state')
@@ -78,7 +78,7 @@ async function getAccessToken(code: string, redirectUri: string): Promise<string
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error receiving github access token ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error receiving github access token ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		const { access_token } = await response.json()

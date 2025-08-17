@@ -1,7 +1,7 @@
 import { getApiName } from '$lib/helpers'
 
 export interface Problem {
-	id: string
+	id: number
 	title: string
 	difficulty: number
 	description?: string
@@ -22,7 +22,7 @@ export async function getProblems(userId: string): Promise<Problem[]> {
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching problems ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error fetching problems ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		const problems: Problem[] = await response.json()
@@ -32,13 +32,13 @@ export async function getProblems(userId: string): Promise<Problem[]> {
 	}
 }
 
-export async function getProblemById(problemId: string, userId: string): Promise<Problem> {
+export async function getProblemById(problemId: number, userId: string): Promise<Problem> {
 	try {
 		const response = await fetch(`${getApiName()}/problems/${problemId}?user=${userId}`)
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching problem with id '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error fetching problem with id '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		const problem: Problem = await response.json()
@@ -47,7 +47,7 @@ export async function getProblemById(problemId: string, userId: string): Promise
 		if (!codeTemplate.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error fetching problem template with id '${problemId}' ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error fetching problem template with id '${problemId}' ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 		problem.goPlaceholder = await codeTemplate.json()
@@ -57,7 +57,7 @@ export async function getProblemById(problemId: string, userId: string): Promise
 	}
 }
 
-export async function markProblemCompleted(problemId: string, userId: string): Promise<void> {
+export async function markProblemCompleted(problemId: number, userId: string): Promise<void> {
 	try {
 		const response = await fetch(`${getApiName()}/problems/${problemId}`, {
 			method: 'POST',
@@ -71,7 +71,7 @@ export async function markProblemCompleted(problemId: string, userId: string): P
 		if (!response.ok) {
 			const errorBody = await response.json().catch(() => ({ message: response.statusText }))
 			throw new Error(
-				`Error marking problem as completed '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody || 'Unknown error'}`
+				`Error marking problem as completed '${problemId}' (userId: ${userId}) ${response.status} - ${errorBody.message || 'Unknown error'}`
 			)
 		}
 	} catch (err) {

@@ -1,8 +1,7 @@
 <script lang="ts">
 	import {
-		PUBLIC_GOOGLE_OAUTH_CLIENT_ID,
-		PUBLIC_GITHUB_OAUTH_CLIENT_ID,
-		PUBLIC_FRONTEND_BASE_URL
+		PUBLIC_FRONTEND_BASE_URL_BROWSER,
+		PUBLIC_GOOGLE_OAUTH_CLIENT_ID
 	} from '$env/static/public'
 	import { page } from '$app/state'
 	const redirectTo = page.url.searchParams.get('redirectTo') ?? '/'
@@ -24,7 +23,7 @@
 					id="g_id_onload"
 					data-client_id={PUBLIC_GOOGLE_OAUTH_CLIENT_ID}
 					data-context="signin"
-					data-login_uri="http://localhost:5173/api/oauth/google?redirectTo={redirectTo}"
+					data-login_uri="{PUBLIC_FRONTEND_BASE_URL_BROWSER}/api/oauth/google?redirectTo={redirectTo}"
 				></div>
 				<div
 					class="g_id_signin"

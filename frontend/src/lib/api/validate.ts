@@ -2,7 +2,7 @@ import type { TestRunOutput } from '$lib/TestStatusReporter'
 import { getApiName } from '$lib/helpers'
 
 export interface ValidateRequest {
-	problemId: string
+	problemId: number
 	code: string
 	language: string
 }

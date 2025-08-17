@@ -10,7 +10,7 @@
 	import { handleFrontendError, showSuccess, showWarning } from '$lib/helpers'
 	let { data }: PageProps = $props()
 
-	let problemId: string = data.problem.id
+	let problemId: number = data.problem.id
 	let title: string = data.problem.title
 	let description: string = data.problem.description ?? ''
 	let testCases: TestCase[] = data.problem.testCases ?? []
@@ -22,11 +22,22 @@
 		code = newCode
 	}
 
+	async function markCompletionFetchLogic() {
+		const formData = new FormData()
+		formData.set('problemId', problemId.toString())
+		formData.set('userId', user?.id ?? '-1')
+		const response = await fetch('?/markProblemCompleted', {
+			method: 'POST',
+			body: formData
+		})
+		return response
+	}
+
 	const markProblemCompletedFunc = async () => {
 		if (user) {
 			try {
 				if (!isCompleted) {
-					await markProblemCompleted(problemId, user.id)
+					await markCompletionFetchLogic()
 					isCompleted = true
 				}
 				showSuccess('Problem completed!')

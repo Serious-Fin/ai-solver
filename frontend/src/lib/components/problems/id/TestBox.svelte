@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { validate } from '$lib/api/validate'
-	import { TestStatusReporter } from '$lib/TestStatusReporter'
+	import { TestStatusReporter, type TestRunOutput } from '$lib/TestStatusReporter'
 	import { handleFrontendError } from '$lib/helpers'
 	import SingleTestCase from './SingleTestCase.svelte'
 	import { type TestCase } from '$lib/api/problems'
 	import LoadingSpinner from '$lib/components/helpers/LoadingSpinner.svelte'
+	import { enhance } from '$app/forms'
+	import type { SubmitFunction } from '@sveltejs/kit'
 
 	let {
 		problemId,
@@ -12,7 +13,7 @@
 		code,
 		markProblemCompletedFunc
 	}: {
-		problemId: string
+		problemId: number
 		testCases: TestCase[]
 		code: string
 		markProblemCompletedFunc: () => Promise<void>
@@ -22,26 +23,35 @@
 	let testStates = $state(testStatusReporter.GetTestStatuses())
 	let isLoading = $state(false)
 
-	const handleRunTests = async () => {
+	async function updateTests(testRunOutput: TestRunOutput) {
+		testStatusReporter.UpdateTestStatuses(testRunOutput)
+		testStates = testStatusReporter.GetTestStatuses()
+		if (testStatusReporter.AllTestsSuccessful()) {
+			await markProblemCompletedFunc()
+		}
+	}
+
+	const handleRunTests: SubmitFunction = () => {
 		isLoading = true
-		try {
-			const testRunOutput = await validate({
-				problemId,
-				code,
-				language: 'go'
-			})
-			testStatusReporter.UpdateTestStatuses(testRunOutput)
-			testStates = testStatusReporter.GetTestStatuses()
-			if (testStatusReporter.AllTestsSuccessful()) {
-				await markProblemCompletedFunc()
+		return async ({ update, result }) => {
+			try {
+				await update()
+				if (result.type === 'success' && result.data?.response) {
+					const testRunOutput = result.data.response
+					updateTests(testRunOutput)
+				} else if (result.type === 'failure') {
+					throw Error(result.data?.message || 'Unknown server error occurred')
+				} else {
+					throw Error('Could not run tests')
+				}
+			} catch (err) {
+				if (err instanceof Error) {
+					handleFrontendError('Error running tests, try again later', err)
+					return
+				}
+			} finally {
+				isLoading = false
 			}
-		} catch (err) {
-			if (err instanceof Error) {
-				handleFrontendError('Error running tests, try again later', err)
-				return
-			}
-		} finally {
-			isLoading = false
 		}
 	}
 </script>
@@ -54,13 +64,19 @@
 		<SingleTestCase {test}></SingleTestCase>
 	{/each}
 	<footer>
-		<button class="inter" onclick={handleRunTests} disabled={isLoading}>
-			{#if isLoading}
-				<LoadingSpinner></LoadingSpinner>
-			{:else}
-				Run tests
-			{/if}
-		</button>
+		<form method="POST" action="?/runTests" use:enhance={handleRunTests}>
+			<input type="hidden" name="code" value={code} />
+			<input type="hidden" name="language" value="go" />
+			<input type="hidden" name="problemId" value={problemId} />
+
+			<button type="submit" class="inter" disabled={isLoading}>
+				{#if isLoading}
+					<LoadingSpinner></LoadingSpinner>
+				{:else}
+					Run tests
+				{/if}
+			</button>
+		</form>
 	</footer>
 </article>
 
