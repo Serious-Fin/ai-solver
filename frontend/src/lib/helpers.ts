@@ -1,6 +1,5 @@
 import { toast } from 'svelte-sonner'
 import { browser } from '$app/environment'
-import { PUBLIC_API_BASE_URL_SERVER } from '$env/static/public'
 
 export function handleFrontendError(msgToUser: string, err: Error) {
 	toast.error(msgToUser)
@@ -44,18 +43,5 @@ export function getDifficultyName(difficulty: number): string {
 			return 'hard'
 		default:
 			return 'legendary'
-	}
-}
-
-/**
- * This helper function is needed because based on whether API is called from browser or server,
- * different URLS are used.
- * @returns api host name
- */
-export function getApiName(): string {
-	if (browser) {
-		return '/api/proxy'
-	} else {
-		return PUBLIC_API_BASE_URL_SERVER
 	}
 }

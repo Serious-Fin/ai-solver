@@ -1,4 +1,4 @@
-import { getApiName } from '$lib/helpers'
+import { PUBLIC_API_BASE_URL } from '$env/static/public'
 
 export interface QueryRequest {
 	input: string
@@ -14,7 +14,7 @@ export interface QueryResponse {
 
 export async function query(params: QueryRequest): Promise<string> {
 	try {
-		const response = await fetch(`${getApiName()}/query/${params.sessionId}`, {
+		const response = await fetch(`${PUBLIC_API_BASE_URL}/query/${params.sessionId}`, {
 			body: JSON.stringify({
 				input: params.input,
 				code: params.code,
