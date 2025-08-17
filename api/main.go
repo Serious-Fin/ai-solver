@@ -71,7 +71,7 @@ func main() {
 
 	checkEnvVariablesOrFail()
 	cache := initializeContextCacheOrFail(sessionContextSize, cacheCleanupInterval, sessionTimeoutInCache)
-	database := connectToDatabaseOrFail("database.db")
+	database := connectToDatabaseOrFail("/app/data/database.db")
 	defer database.Close()
 	aiHandlers := createAIAgentClientsOrFail(openai.GPT3Dot5Turbo, "gemini-2.5-flash", cache)
 
@@ -323,9 +323,9 @@ func initializeContextCacheOrFail(maxSize int, cleanupInterval time.Duration, se
 }
 
 func connectToDatabaseOrFail(dbFilePath string) *sql.DB {
-	db, err := sql.Open("sqlite3", fmt.Sprintf("./%s", dbFilePath))
+	db, err := sql.Open("sqlite3", dbFilePath)
 	if err != nil {
-		log.Fatalf("Error while opening database: %v", err)
+		log.Fatalf("Error while opening database (path: %s): %v", dbFilePath, err)
 	}
 	err = db.Ping()
 	if err != nil {
