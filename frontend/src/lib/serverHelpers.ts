@@ -1,5 +1,4 @@
-import { DISCORD_TOKEN } from '$env/static/private'
-import { DISCORD_CHANNEL_ID } from '$env/static/private'
+import { DISCORD_TOKEN, DISCORD_CHANNEL_ID } from '$env/static/private'
 
 // had to export this function here, because having it in the same
 // file as some other method used in frontend, results in sveltekit error
