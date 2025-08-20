@@ -1,5 +1,32 @@
 # AI Solver
 
+## Launching
+
+### Launch locally (without Docker containers)
+
+To run the project locally UNIX environment is needed. If you have a Mac or Linux PC, then it will work. Windows users should download [https://learn.microsoft.com/en-us/windows/wsl/install](Windows Subsystem for Linux).
+
+Clone the project locally:
+
+```text
+https://github.com/Serious-Fin/ai-solver.git
+```
+
+Add the following files to the project (TODO: provide their schemas):
+
+- `.env` in `/ai-solver/frontend/`
+- `.env` in `/ai-solver/api/`
+- `database.db` in `ai-solver/api/data/`
+
+Launch a shell script ([https://github.com/tmux/tmux/wiki/Installing](tmux) terminal utility is needed)
+
+```text
+./workspace.sh
+```
+
+Frontend is now accessible via the browser at [http://localhost:5173](http://localhost:5173)
+
+
 ## Cleanup of server
 
 SSH into server:
