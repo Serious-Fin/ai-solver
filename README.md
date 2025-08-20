@@ -28,6 +28,8 @@ Launch a shell script ([tmux](https://github.com/tmux/tmux/wiki/Installing) term
 
 Frontend is now accessible via the browser at [http://localhost:5173](http://localhost:5173)
 
+> **Note:** Logging in does not work locally, as OAuth clients are configured to work on original host name.
+
 ---
 
 Keep in mind:
