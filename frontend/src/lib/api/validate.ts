@@ -1,5 +1,5 @@
 import type { TestRunOutput } from '$lib/TestStatusReporter'
-import { PUBLIC_API_BASE_URL } from '$env/static/public'
+import { getBackendHost } from '$lib/helpers'
 
 export interface ValidateRequest {
 	problemId: number
@@ -9,7 +9,7 @@ export interface ValidateRequest {
 
 export async function validate(req: ValidateRequest): Promise<TestRunOutput> {
 	try {
-		const resp = await fetch(`${PUBLIC_API_BASE_URL}/validate`, {
+		const resp = await fetch(`${getBackendHost()}/validate`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'

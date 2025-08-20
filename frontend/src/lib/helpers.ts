@@ -1,5 +1,6 @@
 import { toast } from 'svelte-sonner'
 import { browser } from '$app/environment'
+import { PUBLIC_API_BASE_URL } from '$env/static/public'
 
 export function handleFrontendError(msgToUser: string, err: Error) {
 	toast.error(msgToUser)
@@ -43,5 +44,18 @@ export function getDifficultyName(difficulty: number): string {
 			return 'hard'
 		default:
 			return 'legendary'
+	}
+}
+
+/**
+ * Returns backend host name based on whether app is running in production
+ * or debug environment
+ * @returns backend hostname
+ */
+export function getBackendHost(): string {
+	if (process.env.NODE_ENV === 'production') {
+		return PUBLIC_API_BASE_URL
+	} else {
+		return 'http://localhost:8080'
 	}
 }
