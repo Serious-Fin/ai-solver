@@ -1,38 +1,48 @@
-# sv
+# AI Solver
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+## Cleanup of server
 
-## Creating a project
+SSH into server:
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+```text
+ssh -i ~/.ssh/droplet-ai-solver root@138.68.76.119
 ```
 
-## Developing
+Cleanup
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```text
+# Stop all running containers
+docker stop $(docker ps -q)
 
-```bash
-npm run dev
+# Remove all containers
+docker rm $(docker ps -aq)
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Remove all images
+docker rmi $(docker images -q)
 ```
 
-## Building
+## Launching new
 
-To create a production version of your app:
+Go to `/ai-solver/frontend`:
 
-```bash
-npm run build
+```text
+docker build --platform linux/amd64 -t seriousfin/ai-solver-frontend:latest .
 ```
 
-You can preview the production build with `npm run preview`.
+Go to `/ai-solver/api`:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```text
+docker build --platform linux/amd64 -t seriousfin/ai-solver-api:latest .
+```
+
+Go to a directory where images may be saved temporarily and run:
+
+```text
+docker save -o api.tar seriousfin/ai-solver-api:latest
+docker save -o web.tar seriousfin/ai-solver-frontend:latest
+```
+
+Transfer images to server:
+```text
+scp -i ~/.ssh/droplet-ai-solver web.tar root@138.68.76.119:/root
+```

@@ -71,7 +71,7 @@ func main() {
 
 	checkEnvVariablesOrFail()
 	cache := initializeContextCacheOrFail(sessionContextSize, cacheCleanupInterval, sessionTimeoutInCache)
-	database := connectToDatabaseOrFail("/app/data/database.db")
+	database := connectToDatabaseOrFail("./data/database.db")
 	defer database.Close()
 	aiHandlers := createAIAgentClientsOrFail(openai.GPT3Dot5Turbo, "gemini-2.5-flash", cache)
 
@@ -329,7 +329,7 @@ func connectToDatabaseOrFail(dbFilePath string) *sql.DB {
 	}
 	err = db.Ping()
 	if err != nil {
-		log.Fatalf("Error connecting to database: %v", err)
+		log.Fatalf("Error connecting to database (path: %s): %v", dbFilePath, err)
 	}
 	return db
 }
