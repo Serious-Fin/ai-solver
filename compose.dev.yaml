@@ -1,7 +1,6 @@
 services:
   api:
     build: ./api
-    #image: seriousfin/ai-solver-api:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./api/data:/app/data
@@ -9,9 +8,5 @@ services:
       - "8080"
   frontend:
     build: ./frontend
-    #image: seriousfin/ai-solver-frontend:latest
-    volumes:
-      - /etc/letsencrypt:/etc/letsencrypt:ro
     ports:
-      - "80:80"
-      - "443:443"
+      - "80:3000"
