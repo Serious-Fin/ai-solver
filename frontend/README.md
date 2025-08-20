@@ -4,7 +4,7 @@
 
 ### Launch locally (without Docker containers)
 
-To run the project locally UNIX environment is needed. If you have a Mac or Linux PC, then it will work. Windows users should download [https://learn.microsoft.com/en-us/windows/wsl/install](Windows Subsystem for Linux).
+To run the project locally UNIX environment is needed. If you have a Mac or Linux PC, then it will work. Windows users should download [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install).
 
 Clone the project locally:
 
@@ -18,7 +18,7 @@ Add the following files to the project (TODO: provide their schemas):
 - `.env` in `/ai-solver/api/`
 - `database.db` in `ai-solver/api/data/`
 
-Launch a shell script ([https://github.com/tmux/tmux/wiki/Installing](tmux) terminal utility is needed)
+Launch a shell script ([tmux](https://github.com/tmux/tmux/wiki/Installing) terminal utility is needed)
 
 ```text
 ./workspace.sh
