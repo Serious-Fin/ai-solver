@@ -34,7 +34,7 @@ jobs:
           --build-arg DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} \
           --build-arg DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }} \
           --build-arg GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }} \
-          --build-arg GITHUB_OAUTH_CLIENT_SECRET=${{ secrets.GITHUB_OAUTH_CLIENT_SECRET }} \
+          --build-arg GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }} \
           --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest \
           ./frontend
 

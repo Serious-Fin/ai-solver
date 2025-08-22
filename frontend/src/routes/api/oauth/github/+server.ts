@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types'
 import { PUBLIC_GITHUB_OAUTH_CLIENT_ID, PUBLIC_FRONTEND_BASE_URL_BROWSER } from '$env/static/public'
-import { GITHUB_OAUTH_CLIENT_SECRET } from '$env/static/private'
+import { GH_OAUTH_CLIENT_SECRET } from '$env/static/private'
 import { v4 as uuidv4 } from 'uuid'
 import { error, redirect } from '@sveltejs/kit'
 import { createSessionForUser, type User } from '$lib/api/users'
@@ -70,7 +70,7 @@ async function getAccessToken(code: string, redirectUri: string): Promise<string
 			},
 			body: JSON.stringify({
 				client_id: PUBLIC_GITHUB_OAUTH_CLIENT_ID,
-				client_secret: GITHUB_OAUTH_CLIENT_SECRET,
+				client_secret: GH_OAUTH_CLIENT_SECRET,
 				code,
 				redirect_uri: redirectUri
 			})
