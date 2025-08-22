@@ -30,6 +30,14 @@ jobs:
       - name: Build frontend image
         run: docker build --build-arg DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" --build-arg DISCORD_CHANNEL_ID="${{ secrets.DISCORD_CHANNEL_ID }}" --build-arg GOOGLE_OAUTH_CLIENT_SECRET="${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" --build-arg GH_OAUTH_CLIENT_SECRET="${{ secrets.GH_OAUTH_CLIENT_SECRET }}" --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
 
+      - name: Add api .env file
+        run: |
+          echo "CHATGPT_KEY=${{ secrets.CHATGPT_KEY }}" >> ./api/.env
+          echo "GEMINI_KEY=${{ secrets.GEMINI_KEY }}" >> ./api/.env
+          echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./api/.env
+          echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./api/.env
+          echo "GIN_MODE=${{ secrets.GIN_MODE }}" >> ./api/.env
+
       - name: Build API image
         run: |
           docker build ./api --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-api:latest
