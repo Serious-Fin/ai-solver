@@ -65,10 +65,10 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            cd cd /root/ai-solver
+            cd /root/ai-solver
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
-            docker-compose -f compose.prod.yaml pull
-            docker-compose -f compose.prod.yaml up -d --remove-orphans
+            docker compose -f compose.prod.yaml pull
+            docker compose -f compose.prod.yaml up -d --remove-orphans
 
-            docker image prune -f
+            docker image prune -f -a
