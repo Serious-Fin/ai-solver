@@ -23,4 +23,4 @@ services:
       - caddy_data:/data
 
 volumes:
-  caddy_data
+  caddy_data:
