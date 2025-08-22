@@ -80,3 +80,14 @@ GIN_MODE=release
 ```
 
 TODO: use `SetTrustedProxies()` to let traffic only from frontend IP?
+
+TODO: tests are not re-run if problem is completed. change it
+TODO: make the system instructions more clear:
+    - if not understand what to do with code -> don't change it at all
+    - NEVER CHANGE FUNCTION NAME
+TODO: pop-up at the bottom should last for longer (maybe even be bigger)
+TODO: problems page -> change cards to be round maybe (distinct from the problem page so user might see the visual difference)
+TODO: problems page add header, becaue user confused what is medium
+TODO: maybe show "completed" when user clicks the completed icon?
+TODO: after completing a problem, add a "back to problems" at the bottom (convenient for tablet and phone users)
+TODO: add a "are you sure" dialog to logging out
