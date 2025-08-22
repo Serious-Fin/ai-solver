@@ -29,7 +29,6 @@ jobs:
 
       - name: Build frontend image
         run: docker build \
-          --build-arg DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" \
           --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest \
           ./frontend
 
