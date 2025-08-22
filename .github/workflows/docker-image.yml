@@ -28,7 +28,7 @@ jobs:
           echo "PUBLIC_FRONTEND_BASE_URL_BROWSER=${{ secrets.PUBLIC_FRONTEND_BASE_URL_BROWSER }}" >> ./frontend/.env
 
       - name: Build frontend image
-        run: docker --build-arg DISCORD_CHANNEL_ID="${{ secrets.DISCORD_CHANNEL_ID }}" build --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
+        run: docker build --build-arg DISCORD_CHANNEL_ID="${{ secrets.DISCORD_CHANNEL_ID }}" build --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
 
       - name: Build API image
         run: |
