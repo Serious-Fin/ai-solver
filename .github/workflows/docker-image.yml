@@ -23,39 +23,39 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # - name: Add frontend .env file with public env vars
-      #   run: |
-      #     echo "PUBLIC_GOOGLE_OAUTH_CLIENT_ID=${{ secrets.PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}" >> ./frontend/.env
-      #     echo "PUBLIC_GITHUB_OAUTH_CLIENT_ID=${{ secrets.PUBLIC_GITHUB_OAUTH_CLIENT_ID }}" >> ./frontend/.env
-      #     echo "PUBLIC_API_BASE_URL=${{ secrets.PUBLIC_API_BASE_URL }}" >> ./frontend/.env
-      #     echo "PUBLIC_FRONTEND_BASE_URL_BROWSER=${{ secrets.PUBLIC_FRONTEND_BASE_URL_BROWSER }}" >> ./frontend/.env
-      #     echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./frontend/.env
-      #     echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./frontend/.env
-      #     echo "GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
-      #     echo "GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
+      - name: Add frontend .env file with public env vars
+        run: |
+          echo "PUBLIC_GOOGLE_OAUTH_CLIENT_ID=${{ secrets.PUBLIC_GOOGLE_OAUTH_CLIENT_ID }}" >> ./frontend/.env
+          echo "PUBLIC_GITHUB_OAUTH_CLIENT_ID=${{ secrets.PUBLIC_GITHUB_OAUTH_CLIENT_ID }}" >> ./frontend/.env
+          echo "PUBLIC_API_BASE_URL=${{ secrets.PUBLIC_API_BASE_URL }}" >> ./frontend/.env
+          echo "PUBLIC_FRONTEND_BASE_URL_BROWSER=${{ secrets.PUBLIC_FRONTEND_BASE_URL_BROWSER }}" >> ./frontend/.env
+          echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./frontend/.env
+          echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./frontend/.env
+          echo "GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
+          echo "GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
 
-      # - name: Build frontend image
-      #   run: docker build --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
+      - name: Build frontend image
+        run: docker build --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
 
-      # - name: Add api .env file
-      #   run: |
-      #     echo "CHATGPT_KEY=${{ secrets.CHATGPT_KEY }}" >> ./api/.env
-      #     echo "GEMINI_KEY=${{ secrets.GEMINI_KEY }}" >> ./api/.env
-      #     echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./api/.env
-      #     echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./api/.env
-      #     echo "GIN_MODE=${{ secrets.GIN_MODE }}" >> ./api/.env
+      - name: Add api .env file
+        run: |
+          echo "CHATGPT_KEY=${{ secrets.CHATGPT_KEY }}" >> ./api/.env
+          echo "GEMINI_KEY=${{ secrets.GEMINI_KEY }}" >> ./api/.env
+          echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./api/.env
+          echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./api/.env
+          echo "GIN_MODE=${{ secrets.GIN_MODE }}" >> ./api/.env
 
-      # - name: Build API image
-      #   run: |
-      #     docker build ./api --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-api:latest
+      - name: Build API image
+        run: |
+          docker build ./api --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-api:latest
 
-      # - name: Push frontend image to registry
-      #   run: |
-      #     docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest
+      - name: Push frontend image to registry
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest
 
-      # - name: Push API image to registry
-      #   run: |
-      #     docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-api:latest
+      - name: Push API image to registry
+        run: |
+          docker push ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-api:latest
 
       - name: Update containers on server
         uses: appleboy/ssh-action@v1
@@ -66,6 +66,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd /root/ai-solver
+            git pull
             echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
 
             docker compose -f compose.prod.yaml pull
