@@ -29,9 +29,13 @@ jobs:
           echo "PUBLIC_GITHUB_OAUTH_CLIENT_ID=${{ secrets.PUBLIC_GITHUB_OAUTH_CLIENT_ID }}" >> ./frontend/.env
           echo "PUBLIC_API_BASE_URL=${{ secrets.PUBLIC_API_BASE_URL }}" >> ./frontend/.env
           echo "PUBLIC_FRONTEND_BASE_URL_BROWSER=${{ secrets.PUBLIC_FRONTEND_BASE_URL_BROWSER }}" >> ./frontend/.env
+          echo "DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }}" >> ./frontend/.env
+          echo "DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }}" >> ./frontend/.env
+          echo "GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
+          echo "GH_OAUTH_CLIENT_SECRET=${{ secrets.GH_OAUTH_CLIENT_SECRET }}" >> ./frontend/.env
 
       - name: Build frontend image
-        run: docker build --build-arg DISCORD_TOKEN="${{ secrets.DISCORD_TOKEN }}" --build-arg DISCORD_CHANNEL_ID="${{ secrets.DISCORD_CHANNEL_ID }}" --build-arg GOOGLE_OAUTH_CLIENT_SECRET="${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }}" --build-arg GH_OAUTH_CLIENT_SECRET="${{ secrets.GH_OAUTH_CLIENT_SECRET }}" --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
+        run: docker build --tag ${{ env.REGISTRY }}/${{ env.REPOSITORY }}/${{ env.PROJECT }}-web:latest ./frontend
 
       - name: Add api .env file
         run: |
