@@ -16,7 +16,7 @@ export const GET: RequestHandler = async ({ url, request, cookies }) => {
 		const returnedState = url.searchParams.get('state')
 		if (!storedState || storedState !== returnedState) {
 			sendToDiscord('Possible XSS attack prevented')
-			error(401, { message: 'Error logging in, try again' })
+			error(401, { message: 'Error logging in, try again (XSS)' })
 		}
 
 		let sessionId: string
@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ url, request, cookies }) => {
 			sessionId = await createSessionForUser(user)
 		} catch (err) {
 			sendToDiscord(`Error logging user in via GitHub: ${err}`)
-			error(401, { message: 'Error logging in, try again' })
+			error(401, { message: `Error logging in, try again ${err}` })
 		}
 
 		cookies.set('session', sessionId, {
