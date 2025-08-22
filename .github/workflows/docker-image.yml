@@ -30,7 +30,6 @@ jobs:
       - name: Build frontend image
         run: |
           docker build \
-          $(grep -v '^#' ./frontend/.env | sed 's/^/--build-arg /') \
           --build-arg DISCORD_TOKEN=${{ secrets.DISCORD_TOKEN }} \
           --build-arg DISCORD_CHANNEL_ID=${{ secrets.DISCORD_CHANNEL_ID }} \
           --build-arg GOOGLE_OAUTH_CLIENT_SECRET=${{ secrets.GOOGLE_OAUTH_CLIENT_SECRET }} \
