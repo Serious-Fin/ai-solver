@@ -1,13 +1,13 @@
 services:
   api:
-    image: seriousfin/ai-solver-api:latest
+    image: ghcr.io/serious-fin/ai-solver-api:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./api/data:/app/data
     expose:
       - "8080"
   frontend:
-    image: seriousfin/ai-solver-frontend:latest
+    image: ghcr.io/serious-fin/ai-solver-web:latest
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
     ports:
