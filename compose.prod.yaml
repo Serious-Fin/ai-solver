@@ -10,6 +10,17 @@ services:
     image: ghcr.io/serious-fin/ai-solver-web:latest
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt:ro
+    expose:
+      - "3000"
+
+  caddy:
+    image: caddy:2-alpine
     ports:
       - "80:80"
       - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+
+volumes:
+  caddy_data

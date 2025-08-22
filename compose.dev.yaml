@@ -2,7 +2,6 @@ services:
   api:
     build: ./api
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./api/data:/app/data
     expose:
       - "8080"
