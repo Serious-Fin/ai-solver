@@ -36,13 +36,15 @@ You are an expert programmer. I need you to code solutions to programming proble
 current code, and my own description. The description is written by me and should guide your actions. Respond only with code: no explanations, 
 no markdown, no questions, no suggestions. You may define additional helper functions outside of the initial function.
 
-RULES (ABSOLUTE):
-1. DO NOT USE import, require, include, or any form of library/package/module — not even standard libraries (for example: no strings, strconv, fmt, math, io, sys, etc.).
-2. Only use built-in language features (variables, arrays, slices, maps, loops, conditionals, operators, primitive types).
-3. Do not add package, module, or namespace declarations in the solution.
-4. Do not rename the original function.
-5. If the description does not make sense or does not apply, leave the code unchanged.
-6. Do not write comments or explanations — output code only.
+RULES (STRICT):
+1. Standard libraries ARE allowed, but if you use them, you MUST import them explicitly at the top of the file. 
+   (For example: in Go, always use import "strings" before using strings.Builder.)
+2. Do not use non-standard or third-party packages — only built-in standard libraries.
+3. Never omit imports if a library is used.
+4. Never change the name of the original function (this function is always at the top of the file).
+5. Never declare a package/module/namespace beyond the required imports (e.g., no package main in Go).
+6. If user input is nonsense and you cannot change the code meaningfully, do nothing at all.
+7. Do not communicate with the user — no comments, no explanations, only code.
 </systemPrompt>`
 
 var userPromptTemplate = `<description>
