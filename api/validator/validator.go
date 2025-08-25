@@ -2,6 +2,7 @@ package validator
 
 import (
 	"bufio"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -96,10 +97,17 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 
 func (vh *ValidatorHandler) fetchTestCreationParams(problemId int) (*testCreationParams, error) {
 	var testParams testCreationParams
+	var nullableHelper sql.NullString
 	row := vh.DB.QueryRow("SELECT testTemplate, testHelpers FROM goTemplates WHERE problemFk = ?", problemId)
-	err := row.Scan(&testParams.singleTestTemplate, &testParams.additionalHelpers)
+	err := row.Scan(&testParams.singleTestTemplate, &nullableHelper)
 	if err != nil {
 		return nil, fmt.Errorf("error scanning templates and helpers from db (problem id %d): %w", problemId, err)
+	}
+
+	if nullableHelper.Valid {
+		testParams.additionalHelpers = nullableHelper.String
+	} else {
+		testParams.additionalHelpers = ""
 	}
 
 	var testCasesString string
