@@ -14,6 +14,11 @@
 	</article>
 	<article>
 		<ul>
+			<li>
+				<p class="inter explain">Problem name</p>
+				<p class="inter explain">Difficulty</p>
+				<p class="inter explain">Completed</p>
+			</li>
 			{#each data.problems as problem}
 				<a href="problems/{problem.id}">
 					<li>
@@ -98,13 +103,18 @@
 		color: black;
 
 		display: grid;
-		grid-template-columns: auto 60px 30px;
+		grid-template-columns: auto 80px 80px;
 		align-items: center;
 		gap: 15px;
 	}
 
 	a {
 		text-decoration: none;
+	}
+
+	.explain {
+		font-size: 10pt;
+		font-weight: 800;
 	}
 
 	@media (min-width: 768px) {
