@@ -62,8 +62,12 @@
 			<p><b>Input {index + 1}:</b> {printHumanReadable(input)}</p>
 		{/each}
 		<p><b>Expect:</b> {printHumanReadable(test.output)}</p>
-		{#if test.status === TestStatus.FAIL && test.got}
-			<p><b>Got:</b> {printHumanReadable(test.got)}</p>
+		{#if test.status === TestStatus.FAIL}
+			{#if test.got}
+				<p><b>Got:</b> {printHumanReadable(test.got)}</p>
+			{:else}
+				<p><b>Got:</b> ""</p>
+			{/if}
 		{/if}
 	</div>
 </div>
