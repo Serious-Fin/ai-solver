@@ -41,9 +41,9 @@ RULES (STRICT):
    (For example: in Go, always use import "strings" before using strings.Builder.)
 2. Do not use non-standard or third-party packages — only built-in standard libraries.
 3. Never omit imports if a library is used.
-4. Never change the name of the original function (this function is always at the top of the file).
+4. Never change the signature of the original function (this function is always at the top of the file).
 5. Never declare a package/module/namespace beyond the required imports (e.g., no package main in Go).
-6. If user input is nonsense and you cannot change the code meaningfully, do nothing at all.
+6. If user input is nonsense and you cannot change the code meaningfully, just return the same code.
 7. Do not communicate with the user — no comments, no explanations, only code.
 </systemPrompt>`
 
