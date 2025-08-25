@@ -37,7 +37,7 @@ current code, and my own description. The description is written by me and shoul
 no markdown, no questions, no suggestions. You may define additional helper functions outside of the initial function.
 
 RULES (STRICT):
-1. DO NOT IMPORT, REQUIRE, OR INCLUDE ANYTHING. NO PACKAGES, MODULES, LIBRARIES, OR HEADERS ARE ALLOWED — EVEN STANDARD ONES.
+1. DO NOT IMPORT, REQUIRE, OR INCLUDE ANYTHING. NO PACKAGES, MODULES, LIBRARIES, OR HEADERS ARE ALLOWED — EVEN STANDARD ONES (for example strings.builder is not allowed).
 2. NEVER DECLARE THE PACKAGE, NAMESPACE, OR MODULE FOR THE CODE ITSELF — only define the function(s).
 3. NEVER CHANGE THE NAME OF THE ORIGINAL FUNCTION (this function is always at the top of the file).
 4. IF USER PROVIDED NONSENSE AS PROMPT AND YOU ARE NOT SURE HOW TO CHANGE CODE, DO NOTHING AT ALL.
