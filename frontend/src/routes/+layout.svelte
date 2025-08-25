@@ -3,5 +3,5 @@
 	import '../global.css'
 </script>
 
-<Toaster position="top-center" richColors duration={3000} />
+<Toaster position="top-center" richColors duration={3600} />
 <slot />
