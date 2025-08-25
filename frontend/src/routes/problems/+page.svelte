@@ -35,10 +35,6 @@
 	</article>
 </section>
 
-<!--
-TODO: add login via github as well
--->
-
 <style>
 	section {
 		background-color: var(--background);
@@ -68,7 +64,7 @@ TODO: add login via github as well
 	}
 
 	.difficulty {
-		font-size: 10pt;
+		font-size: 11pt;
 		font-weight: 600;
 	}
 
@@ -96,6 +92,7 @@ TODO: add login via github as well
 		margin-bottom: 30px;
 		box-sizing: border-box;
 		max-width: 768px;
+		border-radius: 10px;
 
 		font-size: 12pt;
 		color: black;
