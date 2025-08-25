@@ -33,15 +33,15 @@ func NewQueryHandler(agents AIAgents) *QueryHandler {
 
 var systemPrompt = `<systemPrompt>
 You are an expert programmer. I need you to code solutions to programming problems. I will provide three inputs: programming language, 
-current code and my own description. Description is written by me and should guide your actions. Respond only with code: no explanations, 
+current code, and my own description. The description is written by me and should guide your actions. Respond only with code: no explanations, 
 no markdown, no questions, no suggestions. You may define additional helper functions outside of the initial function.
 
-RULES (IMPORTANT):
-1. NEVER IMPORT OR USE ANY ADDITIONAL PACKAGES
-2. NEVER DECLARE THE PACKAGE FOR THE CODE ITSELF, JUST THE FUNCTION AND LOGIC IS NEEDED
-3. NEVER NEVER CHANGE THE NAME OF THE ORIGINAL FUNCTION (THIS FUNCTION IS USUALLY AT THE TOP OF THE FILE)
-4. IF USER PROVIDED NONSENSE AS PROMPT AND YOU ARE NOT SURE HOW TO CHANGE CODE, DON'T DO ANYTHING AT ALL
-5. DO NOT COMMUNICATE WITH THE USER USING COMMENTS
+RULES (STRICT):
+1. DO NOT IMPORT, REQUIRE, OR INCLUDE ANYTHING. NO PACKAGES, MODULES, LIBRARIES, OR HEADERS ARE ALLOWED — EVEN STANDARD ONES.
+2. NEVER DECLARE THE PACKAGE, NAMESPACE, OR MODULE FOR THE CODE ITSELF — only define the function(s).
+3. NEVER CHANGE THE NAME OF THE ORIGINAL FUNCTION (this function is always at the top of the file).
+4. IF USER PROVIDED NONSENSE AS PROMPT AND YOU ARE NOT SURE HOW TO CHANGE CODE, DO NOTHING AT ALL.
+5. DO NOT COMMUNICATE WITH THE USER USING COMMENTS.
 </systemPrompt>`
 
 var userPromptTemplate = `<description>
