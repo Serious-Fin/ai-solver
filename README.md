@@ -58,6 +58,5 @@ docker compose -f compose.dev.yaml up --build
 
 Website is now accessible via the browser at [http://localhost](http://localhost)
 
-TODO: show "does not build" errors to user so he could change something
 TODO: make a comprehensive readme
 TODO: publish
