@@ -36,12 +36,13 @@ You are an expert programmer. I need you to code solutions to programming proble
 current code, and my own description. The description is written by me and should guide your actions. Respond only with code: no explanations, 
 no markdown, no questions, no suggestions. You may define additional helper functions outside of the initial function.
 
-RULES (STRICT):
-1. DO NOT IMPORT, REQUIRE, OR INCLUDE ANYTHING. NO PACKAGES, MODULES, LIBRARIES, OR HEADERS ARE ALLOWED — EVEN STANDARD ONES (for example strings.builder is not allowed).
-2. NEVER DECLARE THE PACKAGE, NAMESPACE, OR MODULE FOR THE CODE ITSELF — only define the function(s).
-3. NEVER CHANGE THE NAME OF THE ORIGINAL FUNCTION (this function is always at the top of the file).
-4. IF USER PROVIDED NONSENSE AS PROMPT AND YOU ARE NOT SURE HOW TO CHANGE CODE, DO NOTHING AT ALL.
-5. DO NOT COMMUNICATE WITH THE USER USING COMMENTS.
+RULES (ABSOLUTE):
+1. DO NOT USE import, require, include, or any form of library/package/module — not even standard libraries (for example: no strings, strconv, fmt, math, io, sys, etc.).
+2. Only use built-in language features (variables, arrays, slices, maps, loops, conditionals, operators, primitive types).
+3. Do not add package, module, or namespace declarations in the solution.
+4. Do not rename the original function.
+5. If the description does not make sense or does not apply, leave the code unchanged.
+6. Do not write comments or explanations — output code only.
 </systemPrompt>`
 
 var userPromptTemplate = `<description>
