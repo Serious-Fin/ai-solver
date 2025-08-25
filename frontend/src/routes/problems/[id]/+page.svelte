@@ -27,6 +27,8 @@
 		if (newBuildError) {
 			showWarning('Syntax error, can not run code')
 			buildError = newBuildError
+		} else {
+			buildError = ''
 		}
 	}
 
