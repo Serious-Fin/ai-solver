@@ -2,7 +2,7 @@
 	import Prism from 'prismjs'
 	import 'prismjs/components/prism-go'
 
-	let { code }: { code: string } = $props()
+	let { code, buildError }: { code: string; buildError: string } = $props()
 
 	let codeElement: HTMLElement
 
@@ -17,6 +17,7 @@
 		<h2 class="inter problem_article_header_text">Code</h2>
 	</header>
 	<pre class="code"><code class="language-go" bind:this={codeElement}>{code}</code></pre>
+	<p class="build-error inter">{buildError}</p>
 </article>
 
 <style>
@@ -25,6 +26,13 @@
 		box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.15);
 		font-size: 11pt;
 		border-radius: 7px;
+	}
+
+	.build-error {
+		color: red;
+		white-space: pre-wrap;
+		line-height: 1.4;
+		font-size: 11pt;
 	}
 
 	@media (min-width: 768px) {

@@ -138,6 +138,28 @@ func TestAllPassingCase(t *testing.T) {
 	}
 }
 
+func TestBuildError(t *testing.T) {
+	cmdOutput := `
+	{"ImportPath":"test_proj.test","Action":"build-output","Output":"# test_proj\n"}
+	{"ImportPath":"test_proj.test","Action":"build-output","Output":"code_test.go:7:1: expected declaration, found syntax\n"}
+	{"ImportPath":"test_proj.test","Action":"build-output","Output":"code_test.go:7:1: test test test\n"}
+	{"ImportPath":"test_proj.test","Action":"build-fail"}
+	{"Time":"2025-08-25T20:54:46.111364+03:00","Action":"start","Package":"test_proj"}
+	{"Time":"2025-08-25T20:54:46.111382+03:00","Action":"output","Package":"test_proj","Output":"FAIL\ttest_proj [setup failed]\n"}
+	{"Time":"2025-08-25T20:54:46.111386+03:00","Action":"fail","Package":"test_proj","Elapsed":0,"FailedBuild":"test_proj.test"}`
+
+	want := Response{
+		SucceededTests:   []int{},
+		FailedTests:      []FailInfo{},
+		BuildFailMessage: "expected declaration, found syntax\ntest test test\n",
+	}
+
+	got := parseBuildError(cmdOutput)
+	if got.BuildFailMessage != want.BuildFailMessage {
+		t.Errorf("got %v, want %v", got, want)
+	}
+}
+
 func TestAllFailingCase(t *testing.T) {
 	cmdOutput := `
 	{"Time":"2025-07-23T17:39:44.806464+03:00","Action":"start","Package":"serious-fin/api/problem"}

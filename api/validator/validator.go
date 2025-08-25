@@ -24,8 +24,9 @@ type Request struct {
 }
 
 type Response struct {
-	FailedTests    []FailInfo `json:"failedTests"`
-	SucceededTests []int      `json:"succeededTests"`
+	FailedTests      []FailInfo `json:"failedTests"`
+	SucceededTests   []int      `json:"succeededTests"`
+	BuildFailMessage string     `json:"buildFailMessage,omitempty"`
 }
 
 type FailInfo struct {
@@ -36,13 +37,14 @@ type FailInfo struct {
 }
 
 type testEvent struct {
-	Time        time.Time `json:"Time"`
+	Time        time.Time `json:"Time,omitempty"`
 	Action      string    `json:"Action"`
-	Package     string    `json:"Package"`
+	Package     string    `json:"Package,omitempty"`
 	Test        string    `json:"Test,omitempty"`
 	Elapsed     float64   `json:"Elapsed,omitempty"`
 	Output      string    `json:"Output,omitempty"`
 	FailedBuild string    `json:"FailedBuild,omitempty"`
+	ImportPath  string    `json:"ImportPath,omitempty"`
 }
 
 type testCreationParams struct {
@@ -85,6 +87,11 @@ func (vh *ValidatorHandler) Validate(body Request) (*Response, error) {
 	testOutput, err := runTests(dirPath)
 	if err != nil {
 		return nil, fmt.Errorf("error running tests in docker: %w", err)
+	}
+
+	buildErr := parseBuildError(testOutput)
+	if buildErr.BuildFailMessage != "" {
+		return buildErr, nil
 	}
 
 	testStates, err := parseCommandOutput(testOutput)
@@ -168,7 +175,6 @@ func runTests(testFilePath string) (string, error) {
 	testCmd.Dir = testFilePath
 	output, err := testCmd.Output()
 	if err != nil {
-		// return error only if it's status code is other than 1, because failing go tests return exit code 1
 		exitError, ok := err.(*exec.ExitError)
 		if !ok {
 			return string(output), fmt.Errorf("command execution returned error not of type ExitError: %w", err)
@@ -178,6 +184,39 @@ func runTests(testFilePath string) (string, error) {
 		}
 	}
 	return string(output), nil
+}
+
+var buildErrorRegex = regexp.MustCompile(`.*code_test\.go:\d+:\d+:\s*(.*)`)
+
+func parseBuildError(cmdOutput string) *Response {
+	response := &Response{
+		SucceededTests: []int{},
+		FailedTests:    []FailInfo{},
+	}
+
+	cmdOutput = strings.TrimSpace(cmdOutput)
+	scanner := bufio.NewScanner(strings.NewReader((cmdOutput)))
+	var builder strings.Builder
+	var line string
+	for scanner.Scan() {
+		line = scanner.Text()
+
+		var testLog testEvent
+		_ = json.Unmarshal([]byte(line), &testLog)
+
+		if testLog.Action != "build-output" {
+			continue
+		}
+
+		matches := buildErrorRegex.FindStringSubmatch(testLog.Output)
+		if len(matches) > 1 {
+			builder.WriteString(matches[1])
+			builder.WriteString("\n")
+		}
+	}
+
+	response.BuildFailMessage = builder.String()
+	return response
 }
 
 func parseCommandOutput(cmdOutput string) (*Response, error) {

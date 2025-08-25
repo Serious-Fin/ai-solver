@@ -17,6 +17,7 @@ export interface SingleTestStatus {
 export interface TestRunOutput {
 	succeededTests: number[]
 	failedTests: FailReason[]
+	buildFailMessage?: string
 }
 
 interface FailReason {

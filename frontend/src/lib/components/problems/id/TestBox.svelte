@@ -11,17 +11,20 @@
 		problemId,
 		testCases,
 		code,
-		markProblemCompletedFunc
+		markProblemCompletedFunc,
+		updateBuildError
 	}: {
 		problemId: number
 		testCases: TestCase[]
 		code: string
 		markProblemCompletedFunc: () => Promise<void>
+		updateBuildError: (newBuildError: string) => void
 	} = $props()
 
 	let testStatusReporter = new TestStatusReporter(testCases)
 	let testStates = $state(testStatusReporter.GetTestStatuses())
 	let isLoading = $state(false)
+	let buildError = $state('')
 
 	async function updateTests(testRunOutput: TestRunOutput) {
 		testStatusReporter.UpdateTestStatuses(testRunOutput)
@@ -39,6 +42,7 @@
 				if (result.type === 'success' && result.data?.response) {
 					const testRunOutput = result.data.response
 					updateTests(testRunOutput)
+					updateBuildError(testRunOutput.buildFailMessage)
 				} else if (result.type === 'failure') {
 					throw Error(result.data?.message || 'Unknown server error occurred')
 				} else {
@@ -77,6 +81,7 @@
 				{/if}
 			</button>
 		</form>
+		<p class="build-error">{buildError}</p>
 	</footer>
 </article>
 
@@ -97,6 +102,7 @@
 
 	footer {
 		display: flex;
-		justify-content: end;
+		align-items: end;
+		flex-direction: column;
 	}
 </style>

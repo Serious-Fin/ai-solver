@@ -5,7 +5,7 @@
 	import TestBox from '$lib/components/problems/id/TestBox.svelte'
 
 	import type { PageProps } from './$types'
-	import { markProblemCompleted, type TestCase } from '$lib/api/problems'
+	import { type TestCase } from '$lib/api/problems'
 	import UserBox from '$lib/components/UserBox.svelte'
 	import { handleFrontendError, showSuccess, showWarning } from '$lib/helpers'
 	let { data }: PageProps = $props()
@@ -16,10 +16,18 @@
 	let testCases: TestCase[] = data.problem.testCases ?? []
 	let code: string = $state(data.problem.goPlaceholder ?? '')
 	let isCompleted: boolean = $state(data.problem.isCompleted)
+	let buildError = $state('')
 	const user = data.user
 
 	function updateCode(newCode: string) {
 		code = newCode
+	}
+
+	function updateBuildError(newBuildError?: string) {
+		if (newBuildError) {
+			showWarning('Syntax error, can not run code')
+			buildError = newBuildError
+		}
 	}
 
 	async function markCompletionFetchLogic() {
@@ -68,11 +76,11 @@
 
 	<DescriptionBox {description}></DescriptionBox>
 
-	<CodeBox {code}></CodeBox>
+	<CodeBox {code} {buildError}></CodeBox>
 
 	<ChatBox {code} {updateCode}></ChatBox>
 
-	<TestBox {problemId} {testCases} {code} {markProblemCompletedFunc}></TestBox>
+	<TestBox {problemId} {testCases} {code} {markProblemCompletedFunc} {updateBuildError}></TestBox>
 </section>
 
 <style>
