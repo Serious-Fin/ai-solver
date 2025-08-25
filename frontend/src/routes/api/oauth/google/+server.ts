@@ -32,14 +32,14 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	const formData = await request.formData()
 	const credential = formData.get('credential')
 	if (!credential) {
-		sendToDiscord('Google credential was not on endpoint, which receives oauth callback')
+		await sendToDiscord('Google credential was not on endpoint, which receives oauth callback')
 		error(401, { message: 'Error logging in, try again' })
 	}
 	let user: User
 	try {
 		user = await getUserInfo(credential as string)
 	} catch (err) {
-		sendToDiscord(`Error getting user info from google OAuth credentials: ${err}`)
+		await sendToDiscord(`Error getting user info from google OAuth credentials: ${err}`)
 		error(401, { message: 'Error logging in, try again' })
 	}
 
@@ -47,7 +47,7 @@ export const POST: RequestHandler = async ({ url, request, cookies }) => {
 	try {
 		sessionId = await createSessionForUser(user)
 	} catch (err) {
-		sendToDiscord(`Error creating session for user, which signed up via google: ${err}`)
+		await sendToDiscord(`Error creating session for user, which signed up via google: ${err}`)
 		error(401, { message: 'Error logging in, try again' })
 	}
 
