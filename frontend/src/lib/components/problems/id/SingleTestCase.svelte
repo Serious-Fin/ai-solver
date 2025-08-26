@@ -43,9 +43,9 @@
 		</div>
 		<button class="drop-down-arrow" onclick={toggleDropdown}>
 			{#if isExpanded}
-				<img src="/arrow_drop_up.png" alt="up arrow" />
+				<img src="/arrow_drop_up.png" alt="up arrow" class="arrow-img" />
 			{:else}
-				<img src="/arrow_drop_down.png" alt="drop down arrow" />
+				<img src="/arrow_drop_down.png" alt="drop down arrow" class="arrow-img" />
 			{/if}
 		</button>
 	</header>
@@ -92,6 +92,12 @@
 	.title {
 		display: flex;
 		gap: 16px;
+	}
+
+	.arrow-img {
+		background-color: #2929290f;
+		padding: 3px;
+		border-radius: 50%;
 	}
 
 	.success {
