@@ -5,7 +5,27 @@ You don't write any code, just provide instructions to the agent of your choice.
 
 ## 🎥 Quick Demo
 
-![demo](./demo/demo.gif)
+Live version at [https://data-gen.eu](https://data-gen.eu)
+
+Choose from various different problems
+
+![problems](./demo/problems.png)
+
+Detailed problem page preview
+
+![problem page](./demo/page-preview.gif)
+
+Ask AI to solve the problem
+
+![query](./demo/query-preview.gif)
+
+Fix build problems
+
+![build](./demo/build-preview.gif)
+
+Pass all tests to complete the problem
+
+![tests](./demo/test-preview.gif)
 
 ## 🛠️ Tech Stack
 
