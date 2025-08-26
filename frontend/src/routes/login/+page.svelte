@@ -12,9 +12,15 @@
 </script>
 
 <section>
+	<article class="page-title">
+		<a class="btn" href={redirectTo}>
+			<img class="img_icon" src="/arrow_back.svg" alt="return back arrow" />
+		</a>
+		<h1 class="inter">Guide The AI</h1>
+	</article>
 	<article class="login_box">
 		<article class="problem_article_header">
-			<h1 class="inter problem_article_header_text">Login</h1>
+			<h2 class="inter problem_article_header_text">Login</h2>
 			<p class="inter login_box_p">via any of these accounts</p>
 		</article>
 		<article class="login_buttons">
@@ -49,6 +55,33 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		flex-direction: column;
+	}
+
+	.page-title {
+		display: flex;
+		gap: 10px;
+		margin-bottom: 20px;
+		align-items: center;
+		justify-content: baseline;
+	}
+
+	h1 {
+		color: white;
+		font-size: 22pt;
+	}
+
+	.btn {
+		width: 32px;
+		height: 32px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.img_icon {
+		width: 100%;
+		height: 100%;
 	}
 
 	.login_box {
@@ -56,7 +89,7 @@
 		max-width: 400px;
 		margin: 0 auto;
 		box-sizing: border-box;
-		padding: 40px 60px;
+		padding: 40px 40px;
 		border-radius: 7px;
 	}
 
@@ -94,5 +127,11 @@
 	.github_login:active {
 		background-color: rgb(236, 243, 254);
 		border: 2px solid rgb(0, 99, 155);
+	}
+
+	@media (min-width: 768px) {
+		.login_box {
+			padding: 40px 60px;
+		}
 	}
 </style>
