@@ -130,6 +130,7 @@
 		border: none;
 		background: none;
 		width: 70px;
+		cursor: pointer;
 	}
 
 	@media (min-width: 768px) {

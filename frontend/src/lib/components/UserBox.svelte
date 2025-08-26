@@ -121,6 +121,7 @@
 		font-size: 12pt;
 		padding: 4px 8px;
 		width: 64px;
+		cursor: pointer;
 	}
 
 	img {

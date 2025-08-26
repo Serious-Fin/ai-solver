@@ -111,6 +111,7 @@
 		align-items: center;
 		justify-content: center;
 		background-color: black;
+		cursor: pointer;
 	}
 
 	.img_icon {
